@@ -35,7 +35,11 @@ function load_value_from_file_to_variable()
 		if [ "$(type -t log)" = "function" ]; then
 			local logval="$val"
 			if [ ! -z "$4" ]; then
-				logval="[Secret - begins with $(echo "$val" | cut -c1-5)]"
+				if [[ "$4" =~ ^[0-9]*$ ]] && [ $4 -ge 1 ]; then
+					local secret_short_txt=" - begins with $(echo "$val" | cut -c1-$4)"
+				fi
+				val=""
+				logval="[Secret$secret_short_txt]"
 			fi
                 	log " - $script_varname set to '$logval' (applying '$1', field '$2')" 2
         	fi
