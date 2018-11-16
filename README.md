@@ -3,10 +3,11 @@ Collection of bash functions for common tasks
 
 # Snippets
 
-Script directory resolution (f.ex. in an installer before `bash_commons` are available)
+Simplified script directory resolution (f.ex. in an installer before `bash_commons` are available)
 ```bash
-# This snippet refuses file symlinks (folders are OK) and sets script_folder to the directory the script lies in
-if [ -h "${BASH_SOURCE[0]}" ]; then echo "Please call ... directly. The call through a symlink gives the wrong working directory. Aborting..."; exit 1; fi
+# Exit with error message on file symlinks, set $script_folder to the directory in which the script is located (folder symlinks resolved)
+symlink_error_msg="Error: Please don't call ... through file symlinks, this confuses the script about its own location. Call it directly. Aborting..."
+if [ -h "${BASH_SOURCE[0]}" ]; then echo "$symlink_error_msg"; exit 1; fi
 script_folder="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 ```
 **Important**: this code has to run before files are sourced, subshells are launched etc. because such operations affect `$BASH_SOURCE` (`get_script_path()` 
