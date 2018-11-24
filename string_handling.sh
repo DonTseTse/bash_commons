@@ -37,7 +37,8 @@ function escape()
 	is_globbing_enabled && set -f && globbing_was_enabled=1	# set -f adds the f (= no_glob) option = disables globbing
 	local string="$(get_piped_input)" sep
 	for escape_char in $@; do
-		#[ "$escape_char" = '*' ] && $escape_char='\*'
+		# to get "normal" escaping, the sed special chars have to be "disabled"
+		escape_char=$(escape_sed_special_characters "$escape_char")
 		# direct injection is vital here because if the regex has double-quotes, the \ are interpreted here as well
 		string="$(printf '%s' "$string" | sed -e $(get_sed_replace_expression "$escape_char" "$(printf '\\\\%s' "$escape_char")"))"
 	done
@@ -93,13 +94,14 @@ function trim()
 #
 # Parametrization:
 #  $1 string to search in
-#  $2 char/string to find
+#  $2 char/string to find - exact matching is used (bash's matching special chars are disabled by string escaping)
 # Pipes: - stdin: ignored
 #        - stdout: -1 if $2 is not found in $1
 #                  the position of the first occurence of $2 in $1
 # Status: 0
 function find_substring()
 {
+	# escape bash's string expansion pattern special chars to get "normal" matching
 	match="$(echo "$2" | escape '*' '?')"
 	#DEBUG >&2 printf 'input: %s - match: %s - pattern: ${1%%%%%s*}\n' "$1" "$match" "$match"
 	local substr="${1%%$match*}"
@@ -218,21 +220,61 @@ function get_string_bytes()
 }
 
 ########### sed helpers
+### escape_sed_special_characters
+# Escapes all characters in $1 which carry a special signification in sed expression
+#
+# Parametrization:
+#  $1 string for sed expression to escape
+# Pipes: - stdin: ignored
+#        - stdout: escaped $1
+# Status: 0
+function escape_sed_special_characters()
+{
+	echo "$1" | sed -e 's/\./\\\./' -e 's/\+/\\\+/' -e 's/\?/\\\?/' -e 's/\*/\\\*/' -e 's/\[/\\\[/' -e 's/\]/\\\]/' -e 's/\^/\\\^/' -e 's/\$/\\\$/'
+}
+
+
+### get_sed_extract_expression
+#
+# Parametrization:
+#  $1 marker
+#  $2 part to extract: can be "before" or "after", with regard to $3
+#  $3 occurence: can be "first" or "last"
+# Pipes: - stdin: ignored
+#        - stdout: if status is 0, the sed extract expression, empty otherwise
+# Status: 0 if an expression was computed
+#         1 if the function was unable to find a suitable separator character
+#         2 if values for $2 and/or $3 are unknown
+function get_sed_extract_expression()
+{
+	local sep=$(find_sed_operation_separator "$1")
+	#local marker="$(echo "$1" | escape '/' '.' '?' '[' ']')"
+	local marker="$1"
+        [ -z "$sep" ] && return 1
+	[ "$2" = "before" ] && [ "$3" = "first" ] && echo "s${sep}${marker}.*${sep}${sep}" && return
+	[ "$2" = "before" ] && [ "$3" = "last" ] && echo "s${sep}\\(.*\\)${marker}.*${sep}\\1${sep}" && return
+	[ "$2" = "after" ] && [ "$3" = "first" ] && echo "s${sep}^[^${marker}]*${marker}${sep}${sep}" && return
+	[ "$2" = "after" ] && [ "$3" = "last" ] && echo "s${sep}.*${marker}${sep}${sep}" && return
+	return 2
+}
+
+
 ### get_sed_replace_expression
 # Returns sed string replacement regex
 #
 # Usage: echo "some string" | sed -e $(get_sed_replace_expression "some" "awesome")
-#        get_replace_regex() should provide the regex s/some/awesome/g => the command prints "awesome string"
+#        get_sed_replace_expression() should provide the expression s/some/awesome/g => the
+#        command prints "awesome string"
 #
 # Parametrization:
 #  $1 sed match regex/string
 #  $2 sed replace string
 #  $3 mode - if omitted, replace every occurence (aka global)
 #          - "first" to replace only the first occurence
-#          - "last" to replace the last occurence
+#          - TODO "last" to replace the last occurence
 # Pipes: - stdin: ignored
 #        - stdout: if status is 0, the sed replace expression, empty otherwise
-# Status: 0 if a regex was computed
+# Status: 0 if an expression was computed
 #         1 if the function was unable to find a suitable separator character
 #         2 if the mode $3 is unknown
 function get_sed_replace_expression()
