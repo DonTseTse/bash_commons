@@ -28,6 +28,14 @@ configure_test 1 ""
 test find_sed_operation_separator "+%&()='/?!-" "_:,;<>#]|{}@"
 
 ###
+echo "*** escape_sed_special_characters() ***"
+configure_test 0 "\*\?\[test\]"
+test escape_sed_special_characters "*?[test]"
+
+#printf '%s\n' "$(escape_sed_special_characters "*?[test]")"
+stdout="$(escape_sed_special_characters "*?[test]")"
+check_test_results "\$(escape_sed_special_characters \"*?[test]\")" $? "$stdout"
+
 echo "*** get_sed_replace_regex() + sed ***"
 configure_test 0 "s/some/awesome/g"
 test get_sed_replace_expression "some" "awesome"
@@ -84,8 +92,37 @@ test get_sed_replace_expression "+%&()='/?!-" "_:,;<>#]|{}@" "awesome"
 configure_test 2 ""
 test get_sed_replace_expression "many" "more" "unknown"
 
+echo "*** get_sed_extract_expression() + sed ***"
+configure_test 0 "s/|.*//"
+test get_sed_extract_expression "|" "before" "first"
+
+configure_test 0 "section 1"
+regex_res="$(echo "section 1|section 2|section 3" | sed -e "$stdout")"
+check_test_results "\$(echo \"section 1|section 2|section 3\" | sed -e \"$stdout\")" $? "$regex_res"
+
+configure_test 0 "s/\(.*\)|.*/\1/"
+test get_sed_extract_expression "|" "before" "last"
+
+configure_test 0 "section 1|section 2"
+regex_res="$(echo "section 1|section 2|section 3" | sed -e "$stdout")"
+check_test_results "\$(echo \"section 1|section 2|section 3\" | sed -e \"$stdout\")" $? "$regex_res"
+
+configure_test 0 "s/^[^|]*|//"
+test get_sed_extract_expression "|" "after" "first"
+
+configure_test 0 "section 2|section 3"
+regex_res="$(echo "section 1|section 2|section 3" | sed -e "$stdout")"
+check_test_results "\$(echo \"section 1|section 2|section 3\" | sed -e \"$stdout\")" $? "$regex_res"
+
+configure_test 0 "s/.*|//"
+test get_sed_extract_expression "|" "after" "last"
+
+configure_test 0 "section 3"
+regex_res="$(echo "section 1|section 2|section 3" | sed -e "$stdout")"
+check_test_results "\$(echo \"section 1|section 2|section 3\" | sed -e \"$stdout\")" $? "$regex_res"
+
 ###
-echo "*** find_substring_index() ***"
+echo "*** find_substring() ***"
 configure_test 0 "1"
 test find_substring "test string" "e"
 
@@ -180,14 +217,14 @@ echo "*** get_string_bytes() ***"
 configure_test 0 "la"
 test get_string_bytes "la"
 
-configure_test 0 "$'303240la'"
+configure_test 0 "la\ la"
+test get_string_bytes "la la"
+
+configure_test 0 "$'\303\240la'"
 test get_string_bytes "$special_char_string"
 
 configure_test 0 ""
 test get_string_bytes ""
-
-configure_test 0 "  "
-test get_string_bytes "  "
 
 ###
 echo "*** sanitize_variable_quotes() ***"
