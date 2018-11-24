@@ -33,19 +33,22 @@
 #          -if $PREFIX is a non-empty string: $PREFIX_return, $PREFIX_stdout and $PREFIX_stderr (if $STDERR=1)
 function capture()
 {
-	local stdout_ret stderr_capture_file prefix param_array=("$@")
+	local status_capture stdout_capture stderr_capture_file prefix param_array=("$@")
 	[ -n "$PREFIX" ] && prefix="${PREFIX}_" # interesting: $PREFIX has to be disambiguated with ${} in the assignment,
                                                 # otherwise bash apparently thinks the variable continues because of the _
 	if [ -n "$STDERR" ] && [ "$STDERR" = "1" ]; then
 		stderr_capture_filepath=$(mktemp)
-		stdout_ret="$(2>$stderr_capture_filepath "${param_array[@]}")"
+		stdout_capture="$(2>$stderr_capture_filepath "${param_array[@]}")"
+		status_capture=$?
 		set_global_variable "${prefix}stderr" "$(< $stderr_capture_filepath)"
 		rm "$stderr_capture_filepath"
 	else
-		stdout_ret="$("${param_array[@]}")"
+		stdout_capture="$("${param_array[@]}")"
+		status_capture=$?
 	fi
-	set_global_variable "${prefix}return" "$?"
-	set_global_variable "${prefix}stdout" "$stdout_ret"
+	set_global_variable "${prefix}return" "$status_capture"
+	set_global_variable "${prefix}stdout" "$stdout_capture"
+	#>&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 
 ### is_function_defined
@@ -79,7 +82,9 @@ function set_global_variable()
 	# This bit weird cmd is required to force the creation of a global variable, not a local one (like "declare") 
 	# See https://stackoverflow.com/questions/9871458/declaring-global-variable-inside-a-function
 	[ -z "$1" ] && return 1
-	IFS="" read $1 <<< "$2"
+	#IFS="" read $1 <<< "$2"
+	printf -v $1 %s "$2"
+
 }
 
 ### calculate
