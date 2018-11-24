@@ -1,5 +1,6 @@
 #! /bin/bash
-#
+# Written in 2018 by DonTseTse
+
 # Dependencies: echo, grep, sed, printf
 #               + bash modules: set
 #

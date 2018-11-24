@@ -1,4 +1,5 @@
 #! /bin/bash
+# Written in 2018 by DonTseTse
 #
 # Dependencies: echo, printf
 #
