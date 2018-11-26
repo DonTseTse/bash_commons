@@ -9,8 +9,10 @@
 # Parametrization:
 #  $1 validation regex (match leads to status return 0)
 #  $2 (optional) read flags
-# Return: - status: 0 if the user entered a $1 match, 1 otherwise
-#         - stdout: the user input
+# Pipes: - stdin: ignored, used via read
+#        - stdout: the user input
+# Status: 0 if the user entered a $1 match
+#         1 otherwise
 function read_and_validate()
 {
 	local answer read_flag="$2"
@@ -21,12 +23,14 @@ function read_and_validate()
 	return $?
 }
 
-### get_user_validation
+### get_user_confirmation
 #
 # Parametrization:
-#  $1 (optional) confirmation character, default to 'y'
-# Return: - status: status of read_and_validate, which correponds to regex match (little trick :P)
-#         - stdout: prints a newline because cursor stands just after the user input
+#  $1 (optional) confirmation character, defaults to 'y'
+# Pipes: - stdin: ignored on start, used via read_and_validate()
+#        - stdout: prints a newline because cursor stands just after the user input
+# Status: 0 if the user enters $1 (or 'y' if $1 omitted)
+#         1 if the user enters something else
 function get_user_confirmation()
 {
 	local char="${1:-y}" valid=1
@@ -45,9 +49,10 @@ function get_user_confirmation()
 # Example: the user is offered 3 choices numbered 1-3, the regex is ^[1-3]$.
 #
 # Parametrization:
-#  $1 regex of accepted values
-# Return: - status: always 0
-#	  - stdout: the selected option
+#  $1 "acceptation" regex
+# Pipes: - stdin: ignored on start, used via read_and_validate()
+#        - stdout: the selected option
+# Status: 0 always 0
 function get_user_choice()
 {
 	local answer
@@ -61,8 +66,8 @@ function get_user_choice()
 ### conditional_exit
 #
 # Example:
-#    $> important_fct_call     # an important function which can fail
-#    $> conditional_exit $? "Damn! it failed. Aborting..." 20
+#    important_fct_call     # an important function which can fail
+#    conditional_exit $? "Damn! it failed. Aborting..." 20
 # If important_fct_call returns with a status code other than 0, the main script prints the "Damn! ..."
 # message and exits with status code 20
 #
@@ -71,9 +76,10 @@ function get_user_choice()
 #  $2 (optional) exit message, defaults to a empty string if omitted (it still prints a newline which
 #     is good to reset the terminal)
 #  $3 (optional) exit code, defaults to 1
-# Returns: - status: if the exit is not triggered, code 0
-#          - stdout: if the exit is triggered, $2 followed by a newline
-#          - exit: $3, defaults to 1
+# Pipes: - stdin: ignored
+#        - stdout: if the exit is triggered, $2 followed by a newline
+# Status: 0 if the exit is not triggered
+# Exit code: $3, defaults to 1
 function conditional_exit()
 {
 	if [[ ! "$1" =~ ^[0-1]$ ]] || [ $1 -ne 0 ]; then
