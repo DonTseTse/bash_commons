@@ -9,18 +9,18 @@ The behavior depends on whether position and length are positive, negative or in
 
  `position` | `length`  | Extraction start             | Extraction end                          | Example with `str='0123456789'`
  ---------  | --------- | ---------------------------- | --------------------------------------- | -------------------------------
-    < 0     |     -     | <string length> - `position` | <string end>                            | f.ex. ${str:3} => '3456789'     
-    > 0     |     -     | `position`                   | <string end>                            | f.ex. ${str: -5} => '56789'     
-    < 0     |    < 0    | <string length> - `position` | <string length> - `length`              | f.ex. ${str: -5:-2} => '567'    
-    < 0     |    > 0    | <string length> - `position` | <string length> - `position` + `length` | f.ex. ${str: -5:3} => '567'     
-    > 0     |    < 0    | `position`                   | <string length> - `length`              | f.ex. ${str:3:-3} => '3456'     
-    > 0     |    > 0    | `position`                   | `position` + `length`                   | f.ex. ${str:3:3} => '345'       
+ < 0 | -   | <string length> - `position` | <string end>                            | f.ex. ${str:3} => '3456789'     
+ > 0 | -   | `position`                   | <string end>                            | f.ex. ${str: -5} => '56789'     
+ < 0 | < 0 | <string length> - `position` | <string length> - `length`              | f.ex. ${str: -5:-2} => '567'    
+ < 0 | > 0 | <string length> - `position` | <string length> - `position` + `length` | f.ex. ${str: -5:3} => '567'     
+ > 0 | < 0 | `position`                   | <string length> - `length`              | f.ex. ${str:3:-3} => '3456'     
+ > 0 | > 0 | `position`                   | `position` + `length`                   | f.ex. ${str:3:3} => '345'       
 
 As you can see in the examples above, a space was inserted when `position` is negative. This is required to avoid a syntax 
 collision with bash's "default value fallback" syntax `${var:-default}` (returns `default` if `$var` not set). When a variable is
 used, as shown in the examples below, the space is not required:
 
-                      Code                     |                     Result
+                      Code                     |                     Result           
  --------------------------------------------- | -------------------------------------
  `str='0123456789'`                            |
  `minus=-5`                                    |
