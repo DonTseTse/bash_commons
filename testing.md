@@ -28,8 +28,8 @@ Globals:
 - `$expected_return`
 - `$expected_stdout`
 
-### test
-Run a test with results captured and compared to $expected_<return|stdout>, see (configure_test())[#configure_test]
+### test()
+Run a test with results captured and compared to $expected_<return|stdout>, see [configure_test()](#configure_test)
 
 Parametrization:
 - `$1 ...` command to test (`$1` is the command)
@@ -40,13 +40,13 @@ Pipes:
 
 Status: 0
 
-Globals: via (check_test_results())[#check_test_results]
+Globals: via [check_test_results()](#check_test_results)
 - `$expected_return` 
 - `$expected_stdout`
 - `$test_counter`
 - `$test_error_count`  
 
-### check_test_results
+### check_test_results()
 Checks if `$2` corresponds to `$expected_status` and `$3` to `$expect_stdout` and prints result
 
 Parametrization:
@@ -65,7 +65,7 @@ Globals:
 - `$expected_stdout`
 - `$test_counter`
 
-### conclude_test_session
+### conclude_test_session()
 Prints a summary and returns the status 0/success if all tests passed, 1 otherwise
 
 Pipes: 
