@@ -85,7 +85,7 @@ function trim()
 	return 0	# enforces status; otherwise if $input is an empty string, it would be 1 (from the failed [ -n ])
 }
 
-########### Misc string operatiors
+########### Misc string operators
 ### find_substring
 # Finds the position of the first match of $2 in $1 (the start position of the match, to be precise)
 # Returns -1 if $2 is not found inside $1.
@@ -106,6 +106,27 @@ function find_substring()
 	#DEBUG >&2 printf 'input: %s - match: %s - pattern: ${1%%%%%s*}\n' "$1" "$match" "$match"
 	local substr="${1%%$match*}"
 	[ ${#substr} -eq ${#1} ] && echo "-1" || echo ${#substr}
+}
+
+### get_absolute_path
+# Prepends $1 with $2 if defined, or the current working directory
+#
+# The path $1 and the optional root directory $2 don't have to exist
+#
+# Dev note: that's the reason why this function is in string_handling.sh and not filesystem.sh
+#
+# Parametrization:
+#  $1 path to "absolutify" if necessary
+#  $2 (optional) root path - if omitted, the current working directory is used
+# Pipes: - stdin: ignored
+#        - stdout: the computed absolute path
+# Status: 0 always
+function get_absolute_path()
+{
+        [ -z "$1" ] && return 1
+        local folder="${2:-$(pwd)}" path="$1"
+        is_string_a "$path" "!absolute_filepath" && path="$folder/$path"
+        echo "$path"
 }
 
 ########### String property utilities
@@ -148,16 +169,16 @@ function find_substring()
 #                  - in stdout mode: the result of the check, if status is 0
 #                    0 if the test type $2 failed on $1
 #                    1 if the test type $2 passed for $1
-# Status: - in status mode 0 if the test type $2 passed for $1
-#                          1 used in 3 situations
-#                            - if the test type $2 failed on $1
-#                            - if $1 empty
-#                            - if $2 is unknown
-#                          2 if $2 is empty
-#         - in stdout mode 0 if the check was performed (result is on stdout)
-#                          1 if $1 is empty
-#                          2 if $2 is empty
-#                          3 if $2 is unknown
+# Status: - in status mode: 0 if the test type $2 passed for $1
+#                           1 used in 3 situations
+#                             - if the test type $2 failed on $1
+#                             - if $1 empty
+#                             - if $2 is unknown
+#                           2 if $2 is empty
+#         - in stdout mode: 0 if the check was performed (result is on stdout)
+#                           1 if $1 is empty
+#                           2 if $2 is empty
+#                           3 if $2 is unknown
 function is_string_a()
 {
 	[ -z "$1" ] && return 1

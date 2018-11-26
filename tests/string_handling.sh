@@ -5,7 +5,7 @@
 
 ############# Preparation
 # Refuse symlinks and get the absolute path of the commons directory (this file lies in ./tests/.), load dependancies
-if [ -h "${BASH_SOURCE[0]}" ]; then echo "Error: called through symlink. Please call directly. Aborting..."; exit 1; fi
+[ -h "${BASH_SOURCE[0]}" ] && echo "Error: called through symlink. Please call directly. Aborting..." && exit 1
 commons_path="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && dirname "$(pwd)")"
 
 . "$commons_path/testing.sh"
@@ -32,10 +32,7 @@ echo "*** escape_sed_special_characters() ***"
 configure_test 0 "\*\?\[test\]"
 test escape_sed_special_characters "*?[test]"
 
-#printf '%s\n' "$(escape_sed_special_characters "*?[test]")"
-stdout="$(escape_sed_special_characters "*?[test]")"
-check_test_results "\$(escape_sed_special_characters \"*?[test]\")" $? "$stdout"
-
+###
 echo "*** get_sed_replace_regex() + sed ***"
 configure_test 0 "s/some/awesome/g"
 test get_sed_replace_expression "some" "awesome"
@@ -92,6 +89,7 @@ test get_sed_replace_expression "+%&()='/?!-" "_:,;<>#]|{}@" "awesome"
 configure_test 2 ""
 test get_sed_replace_expression "many" "more" "unknown"
 
+###
 echo "*** get_sed_extract_expression() + sed ***"
 configure_test 0 "s/|.*//"
 test get_sed_extract_expression "|" "before" "first"
@@ -151,10 +149,25 @@ configure_test 0 "2"
 test find_substring "22[27" "["
 
 ###
-echo "*** is_string_a() ***"
-relative_filepath="folder/file"
+echo " *** get_absolute_path() ***"
+relative_filepath="relative"
 absolute_filepath="/tmp/test"
+other_root_path="/test"
 
+configure_test 0 "$(pwd)/$relative_filepath"
+test get_absolute_path "$relative_filepath"
+
+configure_test 0 "$other_root_path/$relative_filepath"
+test get_absolute_path "$relative_filepath" "$other_root_path"
+
+configure_test 0 "$absolute_filepath"
+test get_absolute_path "$absolute_filepath"
+
+configure_test 1 ""
+test get_absolute_path
+
+###
+echo "*** is_string_a() ***"
 configure_test 0 "0"
 test is_string_a "$relative_filepath" "absolute_filepath" 1
 
