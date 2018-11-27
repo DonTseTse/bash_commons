@@ -1,8 +1,8 @@
 Documentation for the functions from [testing.sh](testing.sh)
 
 If the pipes are not documented, the default is:
-- stdin: ignored
-- stdout: empty
+- `stdin`: ignored
+- `stdout`: empty
 
 ### initialize_test_session()
 
@@ -10,7 +10,6 @@ If the pipes are not documented, the default is:
 	<tr><td><em>Parametrization</em></td><td width="90%">
 		<code>$1</code> name of the test session
 	</td></tr>
-	<tr><td><em>Pipes</em></td><td>-</td></tr>
 	<tr><td><em>Status</em></td><td>0</td></tr>
 	<tr><td><em>Globals</em></td><td><ul>
 		<li><code>$test_counter</code></li>
@@ -19,27 +18,19 @@ If the pipes are not documented, the default is:
 	</ul></td></tr>
 </table>
 
-Parametrization:
-- `$1` name of the test session
-
-Status: 0
-
-Globals: 
-- `$test_counter`
-- `$test_error_count`
-- `$test_session_name`
-
 ### configure_test()
 
-Parametrization:
-- `$1` expected return status
-- `$2` expected stdout
-
-Status: 0
-
-Globals: 
-- `$expected_return`
-- `$expected_stdout`
+<table style="width=100%">
+        <tr><td><em>Parametrization</em></td><td width="90%">
+                <code>$1</code> expected return status<br>
+		<code>$2</code> expected stdout
+        </td></tr>
+        <tr><td><em>Status</em></td><td>0</td></tr>
+        <tr><td><em>Globals</em></td><td><ul>
+                <li><code>$expected_return</code></li>
+                <li><code>$expected_stdout</code></li>
+        </ul></td></tr>
+</table>
 
 ### test()
 Run a test with results captured and compared to $expected_<return|stdout>, see [configure_test()](#configure_test)
