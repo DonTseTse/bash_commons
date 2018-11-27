@@ -11,7 +11,7 @@ If the pipes are not documented, the default is:
 		<code>$1</code> name of the test session
 	</td></tr>
 	<tr><td><em>Status</em></td><td>0</td></tr>
-	<tr><td><em>Globals</em></td><td><ul style="margin-left: 0px;">
+	<tr><td><em>Globals</em></td><td><ul style="padding-left:16px">
 		<li><code>$test_counter</code></li>
 		<li><code>$test_error_county</code></li>
 		<li><code>$test_session_name</code></li>
