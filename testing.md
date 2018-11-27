@@ -7,7 +7,7 @@ If the pipes are not documented, the default is:
 ### initialize_test_session()
 
 <table style="width=100%">
-	<tr><td><em>Parametrization</em></td><td style="width: 90%">
+	<tr><td><em>Parametrization</em></td><td width="90%">
 		<code>$1</code> name of the test session
 	</td></tr>
 	<tr><td><em>Pipes</em></td><td>-</td></tr>
