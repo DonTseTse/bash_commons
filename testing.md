@@ -7,14 +7,12 @@ If the pipes are not documented, the default is:
 ### initialize_test_session()
 
 <table>
-	<tr><td><b>Parametrization</b></td><td width="90%">
-		<code>$1</code> name of the test session
-	</td></tr>
-	<tr><td><em>Status</em></td><td>0</td></tr>
-	<tr><td><em>Globals</em></td><td>
-		<code>$test_counter</code><br>
-		<code>$test_error_county</code><br>
-		<code>$test_session_name</code>
+	<tr><td><b>Parametrization</b></td><td width="90%">- <code>$1</code> name of the test session</td></tr>
+	<tr><td><b>Status</b></td><td>0</td></tr>
+	<tr><td><b>Globals</b></td><td>
+		- <code>$test_counter</code><br>
+		- <code>$test_error_county</code><br>
+		- <code>$test_session_name</code>
 	</td></tr>
 </table>
 
