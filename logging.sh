@@ -1,39 +1,17 @@
 #! /bin/bash
-#
-# Written in 2018 by DonTseTse
-#
-# Dependencies: printf, echo, sed
-#
 
-. "$commons_path/string_handling.sh"
+# Logging functions
+#
+# Author: DonTseTse
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/logging.md
+# Dependencies: read, printf, echo, sed
 
-### log
-# Logging helper with support for prefix-aware multi-line output and independent stdout and file output handling
-#
-# Important: always call this function and launch_logging() directly on global level and not through $(...), otherwise
-#            the global variables don't work (a subshell receives a copy of the parent shell's variable set and has
-#            no access to the "original" ones)
-#
-#
-# Parametrization:
-#  $1 message to log
-#  $2 (optional) log level - if omitted, defaults to 1
-#  $3 (optional) output restriction - if omitted, both output channels are used
-#     - "file" avoids stdout write even if $stdout_logging is enabled
-#     - "stdout" avoid file logging even is $log_filepath is set
-# Pipes: - stdin: ignored
-#        - stdout: depending on configuration, the message for the console => log should never be called in a subshell
-# Status: 0 on success,
-#         1 is used in several error configurations:
-#           - if $logging_available is set to something else than 0 or 1
-#           - if the message log level $2 is set to something else than a single numeric digit
-# Globals used: - $logging_available (optional, defaults to 1/enabled internally if omitted)
-#               - $stdout_log_level (optional, if omitted, the system doesn't print on stdout)
-#               - $stdout_log_pattern (optional, defaults to %s ("just" the message))
-#               - $log_filepath (optional, if empty, no file logging occurs)
-#               - $log_level (optional, if it's not a numeric value, file logging is disabled)
-#		- $log_pattern (optional, defaults to %s ("just" the message"))
-#               - $logging_backlog array (optional, created internally)
+##### Commons dependencies
+. "$commons_path/string_handling.sh"    # for calculate()
+
+##### Functions
+
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/logging.md#log
 function log()
 {
 	local lc_logging_available="${logging_available:-1}" msg_log_level="${2:-1}" line
@@ -50,22 +28,12 @@ function log()
 		fi
 		[ -n "$lc_stdout_pattern" ] && printf "$lc_stdout_pattern" "${line}"
 		#printf "$line\n" can lead to string interpretation. f.ex. if $line = '- a list item' it's going to complain printf: - : invalid option
-		#if [ -n "$lc_file_pattern" ]; then
-		#	printf "$lc_file_pattern" "${line}" >> "$log_filepath"
-		#fi
 		[ -n "$lc_file_pattern" ] && printf "$lc_file_pattern" "${line}" >> "$log_filepath"
 	done <<< "$1"
 	return 0	# enforcing status otherwise it's unknown depending on the order of internal operations
 }
 
-### launch_logging
-# Processes the logging backlog and clears it
-#
-# Parametrization: -
-# Pipes: - stdin: ignored
-#        - stdout: if stdout logging is enabled, the logs for stdout, empty otherwise
-# Status: 0
-# Globals: $logging_available, $logging_backlog
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/logging.md#launch_logging
 function launch_logging()
 {
 	logging_available=1
@@ -81,17 +49,7 @@ function launch_logging()
 	logging_backlog=()
 }
 
-### prepare_secret_for_logging
-#
-# Parametrization:
-#  $1 secret
-#  $2 amount of chars to show. If > 0, the amount is shown from the beginning of the secret, if < 0, from the end
-#  $3 security factor - a decimal value between 0 and 1 which decides how much of the secret can be shown at most - overwrites
-#                       $2 if necessary
-# Pipes: - stdin: ignored
-#        - stdout: the log-formatted secret
-# Status: 0 in case of success
-#         1 if $1 is undefined or empty
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/logging.md#prepare_secret_for_logging
 function prepare_secret_for_logging()
 {
         [ -z "$1" ] && return 1
