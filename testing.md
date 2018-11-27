@@ -6,7 +6,7 @@ If the pipes are not documented, the default is:
 
 ### initialize_test_session()
 
-<table>
+<table style="width=100%">
 	<tr><td><em>Parametrization</em></td><td>$1 name of the test session</td></tr>
 	<tr><td><em>Pipes</em></td><td>-</td><tr>
 	<tr><td><em>Status</em></td><td>0</td></tr>
