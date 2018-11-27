@@ -24,7 +24,7 @@ defined, the `stderr` variable has the name `$PREFIX_stderr`.
 <table>
 	<tr><td><b>Parametrization</b></td><td width="90%">
 		<code>$1 ... n</code> call to capture ($1 is the command)<br>
-		+ via globals, see examples above
+		<em> and via globals, see examples above</em>
 	</td></tr>
 	<tr><td><b>Status</b></td><td>0</td></tr>
 	<tr><td><b>Globals</b></td><td>
@@ -32,8 +32,8 @@ defined, the `stderr` variable has the name `$PREFIX_stderr`.
 		<li><code>$STDERR</code> if it's set to 1, <code>stderr</code> is captured</li>
                 <li><code>$PREFIX</code> if it's a non empty-string, the global output variables names are prefixed - see examples above</li>
 		</ul>Output: <ul>
-		<li>if $PREFIX is not defined or empty: $return, $stdout and $stderr (if $STDERR=1)</li>
-                <li>if $PREFIX is a non-empty string: $PREFIX_return, $PREFIX_stdout and $PREFIX_stderr (if $STDERR=1)</li>
+		<li>if <code>$PREFIX</code> is not defined or empty: <code>$return</code>, <code>$stdout</code> and <code>$stderr</code> (if <code>$STDERR</code> set to 1)</li>
+                <li>if <code>$PREFIX</code> is a non-empty string: <code>$PREFIX_return</code>, <code>$PREFIX_stdout</code> and <code>$PREFIX_stderr</code> (if <code>$STDERR</code> set to 1)</li>
 		</ul>
 	</td></tr>
 </table>
@@ -62,7 +62,7 @@ Sets the variable called `$1` with the value `$2` on global level (i.e. accessib
 	</td></tr>
         <tr><td><b>Status</b></td><td>
 		- 0 in case of success<br>
-		- 1 if `$1` is empty
+		- 1 if <code>$1</code> is empty
 	</td></tr>
 </table>
 
@@ -74,19 +74,19 @@ So if the result given by bc for `$1` is f.ex. 3.0000000 the function returns 3,
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%">
 		- <code>$1</code> calculus to do, f.ex. "(2*2.25)/7" <br>
-		- <code>$2</code> <em>optional</em> maximal amount of decimals in the result. Defaults to 3 if omitted. Use 0 or 'int' to get a integer. 
+		- <code>$2</code> <em>optional</em> maximal amount of decimals in the result. Defaults to 3 if omitted. Use 0 or 'int' to get an integer.
 		See the explanations above as to why this is a maximum, not a guaranteed amount
 	</td></tr>
 	<tr><td><b>Pipes</b></td><td>
 		- stdin: ignored<br>
-		- stdout: if the `bc` execution was successful (status code 0), the calculus result with at most <code>$2</code> amount of decimals. Empty if `bc` failed
+		- stdout: if the <code>bc</code> execution was successful (status code 0), the calculus result with at most <code>$2</code> amount of decimals. Empty if <code>bc</code> failed
 	</td></tr>
         <tr><td><b>Status</b></td><td>the <code>bc</code> call's status code</td></tr>
 </table>
 
 
 ### get_piped_input()
-Usage example: usually used to get stdin to a variable, here f.ex. to $input
+Usage example: usually used to get `stdin` to a variable, here f.ex. to `$input`
 
 	input="$(get_piped_input)"
 
@@ -115,13 +115,13 @@ Usage example: usually used to get stdin to a variable, here f.ex. to $input
 
 ### is_globbing_enabled()
 
-Usage: one typical application is to "protect" an instruction which relies on globbing
+Returns true if bash globbing is enabled. One typical application is to "protect" an instruction which relies on globbing
 
-	`is_globbing_enabled && do_something_with_globbing`
-another is to check whether globbing needs to be turned off before an instruction where globbing is not desired
+	is_globbing_enabled && do_something_with_globbing
+another is to check whether globbing needs to be turned off before an instruction where it is not desired
 
-	`is_globbing_enabled && set -f`
-set -f disables bash globbing (sets its 'no_glob' option to true). To restore it later on, use set +f
+	is_globbing_enabled && set -f
+`set -f` disables bash globbing (sets its `'no_glob'` option to true). To restore it later on, use `set +f`
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%"><em>none</em></td></tr>
         <tr><td><b>Status</b></td><td>

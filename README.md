@@ -2,13 +2,20 @@
 Collection of bash functions for common tasks
 
 # Function collections:
-- [testing.sh](testing.sh) | Documentation: [testing.md](testing.md)
+- Testing: [code](testing.sh) | [documentation](testing.md)
 	- [initialize_test_session()](testing.md#initialize_test_session)
 	- [configure_test()](testing.md#configure_test)
 	- [test()](testing.md#test)
 	- [check_test_results()](testing.md#check_test_results)
 	- [conclude_test_session()](testing.md#conclude_test_session)
-- [helpers.sh](helpers.sh)
+- Helpers: [code](helpers.sh) | [documentation](helpers.md)
+	- [capture()](helpers.md#capture)
+	- [is_function_defined()](helpers.md#is_function_defined)
+	- [set_global_variable()](helpers.md#set_global_variable)
+	- [calculate()](helpers.md#calculate)
+	- [get_piped_input()](helpers.md#get_piped_input)
+	- [get_random_string()](helpers.md#get_random_string)
+	- [is_globbing_enabled()](helpers.md#is_globbing_enabled)
 
 # Snippets
 
