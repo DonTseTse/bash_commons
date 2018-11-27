@@ -15,8 +15,10 @@ undesired `stdout` output set `stdout_log_level` to 0.
         <tr><td><b>Parametrization</b></td><td width="90%">
 		- <code>$1</code> message to log<br>
 		- <code>$2</code> <em>optional</em> log level - if omitted, defaults to 1<br>
-		- <code>$3</code> <em>optional</em> output restriction - if omitted, both output channels are used. "file" avoids <code>stdout</code>
-		write even if <code>$stdout_logging</code> is enabled. "stdout" disables file logging even is <code>$log_filepath</code> is set
+		- <code>$3</code> <em>optional</em> output restriction - if omitted, both output channels are addressed. Value can be <code>file</code>
+                  to avoid <code>stdout</code> write or <code>stdout</code> to avoid file logging. This configuration only selects the addressed output
+                  channel(s), it does not overwrite the configurations which define whether logging actually occurs (the logging levels of the channel(s) 
+                  and the message and for file logging, whether a filepath is set)
 	</td></tr>
         <tr><td><b>Pipes</b></td><td>
                 - <code>stdin</code>: ignored<br>
