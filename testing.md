@@ -31,7 +31,7 @@ If the pipes are not documented, the default is:
 </table>
 
 ### test()
-Run a test with results captured and compared to $expected_<return|stdout>, see [configure_test()](#configure_test)
+Run a test with results captured and compared to <code>$expected_<return|stdout></code>, see [configure_test()](#configure_test)
 
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%"><code>$1 ...</code> command to test (<code>$1</code> is the command)</td></tr>
@@ -70,10 +70,10 @@ Checks if `$2` corresponds to `$expected_status` and `$3` to `$expect_stdout` an
 </table>
 
 ### conclude_test_session()
-Prints a summary and returns the status 0/success if all tests passed, 1 otherwise
+Prints a summary and returns a session success status
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%"></td></tr>
+        <tr><td><b>Parametrization</b></td><td width="90%"><em>none</em></td></tr>
         <tr><td><b>Pipes</b></td><td>
                 - <code>stdin</code>: ignored<br>
                 - <code>stdout</code>: test session summary
