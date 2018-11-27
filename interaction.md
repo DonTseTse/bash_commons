@@ -42,9 +42,9 @@ Important `read` flags:
 </table>
 
 
-### get_user_choice
+### get_user_choice()
 The function behaves as if it ignores input as long as it doesn't match the regex `$1`. This makes it suitable as "option selector".
-The way it works is that it uses `read`'s -s flag to keep the entered input hidden => if the input doesn't match `$1`, <a href="#read_and_validate">read_and_validate</a> 
+The way it works is that it uses `read`'s `-s` flag to keep the entered input hidden => if the input doesn't match `$1`, <a href="#read_and_validate">read_and_validate</a> 
 returns a status code $? != 0, the function loops and `read`s again 
 
 Example: the user is offered 3 choices numbered 1-3, the regex is `^[1-3]$`.
@@ -60,7 +60,7 @@ Example: the user is offered 3 choices numbered 1-3, the regex is `^[1-3]$`.
         <tr><td><b>Status</b></td><td>0</td></tr>
 </table>
 
-### conditional_exit
+### conditional_exit()
 Example:
 ```
 important_fct_call     # an important function which can fail
@@ -71,8 +71,8 @@ If `important_fct_call` returns with a status code other than 0, the script prin
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%">
 		- <code>$1</code> condition, if it's different than 0, the exit is triggered<br>
-		- <code>$2</code> <em>optional</em> exit message, defaults to a empty string if omitted (it still prints a newline which
-		is good to reset the terminal)<br>
+		- <code>$2</code> <em>optional</em> exit message, defaults to a empty string if omitted (it still prints a newline to reset 
+		  the terminal)<br>
 		- <code>$3</code> <em>optional</em> exit code, defaults to 1
         </td></tr>
         <tr><td><b>Pipes</b></td><td>

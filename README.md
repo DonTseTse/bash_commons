@@ -26,6 +26,27 @@ Collection of bash functions for common tasks
 	- [get_user_choice()](interaction.md#get_user_choice)
 	- [conditional_exit()](interaction.md#conditional_exit)
 
+### Testing
+Testing is based on session(s) which are sequences of test operations. A session begins with [initialize_test_session()](testing.md#initialize_test_session)
+and ends with [conclude_test_session()](testing.md#conclude_test_session). Formally, every bash command:
+
+- can have parameters
+- has a `stdin` input stream
+- has a `stdout` output stream and a `stderr` error output stream
+- returns/exists with a status code where 0 indicates success and anything above 0 is an error code
+
+Each test is the combination of 3 operations:
+
+1. set the expected result in terms of status code, `stdout` content and `stderr` content - [configure_test()](testing.md#configure_test)
+2. run the command capturing these values and compare - [test()](testing.md#test)
+3. print a result
+
+In some cases, f.ex. if the command uses piped input, it's not possible to use [test()](testing.md#test) - in these cases the test can be run in the
+testing script directly and call [check_test_results()](testing.md#check_test_results) with the results it captured. [test()](testing.md#test)
+calls [check_test_results()](testing.md#check_test_results) internally. 
+
+To see examples of the test scripts, check out bash_commons' [unit tests](tests).
+
 # Snippets
 
 Simplified script directory resolution (f.ex. in an installer before `bash_commons` are available)
