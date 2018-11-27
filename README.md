@@ -16,7 +16,10 @@ Collection of bash functions for common tasks
 	- [get_piped_input()](helpers.md#get_piped_input)
 	- [get_random_string()](helpers.md#get_random_string)
 	- [is_globbing_enabled()](helpers.md#is_globbing_enabled)
-
+- Logging: [code](logging.sh) | [documentation](logging.md)
+	- [log()](logging.md#log)
+	- [launch_logging()](logging.md#launch_logging)
+	- [prepare_secret_for_logging()](logging.md#prepare_secret_for_logging)
 # Snippets
 
 Simplified script directory resolution (f.ex. in an installer before `bash_commons` are available)
