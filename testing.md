@@ -1,4 +1,4 @@
-Documentation for the functions from [testing.sh](testing.sh)
+Documentation for the functions in [testing.sh](testing.sh).
 
 If the pipes are not documented, the default is:
 - `stdin`: ignored

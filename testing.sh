@@ -1,13 +1,17 @@
 #! /bin/bash
-# Written in 2018 by DonTseTse
+
+# Testing functions
 #
+# Author: DonTseTse
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/testing.md
 # Dependencies: echo, printf
-#
-# Commons dependencies
+
+##### Commons dependencies
 . "$commons_path/helpers.sh"    	# for capture()
 . "$commons_path/string_handling.sh"    # for is_string_a()
 
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/doc/testing.md#initialize_test_session
+##### Functions
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/testing.md#initialize_test_session
 function initialize_test_session()
 {
 	test_counter=1
@@ -15,14 +19,14 @@ function initialize_test_session()
 	test_session_name="$1"
 }
 
-#Documentation: https://github.com/DonTseTse/bash_commons/blob/doc/testing.md#configure_test
+#Documentation: https://github.com/DonTseTse/bash_commons/blob/master/testing.md#configure_test
 function configure_test()
 {
 	expected_return="$1"
 	expected_stdout="$2"
 }
 
-#Documentation: https://github.com/DonTseTse/bash_commons/blob/doc/testing.md#test
+#Documentation: https://github.com/DonTseTse/bash_commons/blob/master/testing.md#test
 function test()
 {
 	local param_array=("$@") i logging_param_array=("${param_array[@]}")
@@ -36,7 +40,7 @@ function test()
 	check_test_results "${logging_param_array[*]}" $return "$stdout"
 }
 
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/doc/testing.md#check_test_results
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/testing.md#check_test_results
 function check_test_results()
 {
 	printf ' - Test %i: $> %s <$ should return status: %i, stdout: "%s" ' $test_counter "$1" $expected_return  "$expected_stdout"
@@ -46,7 +50,7 @@ function check_test_results()
 	printf "[Error]\n   It returned status $2, stdout '$3'\n"
 }
 
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/doc/testing.md#conclude_test_session
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/testing.md#conclude_test_session
 function conclude_test_session()
 {
 	local nb_tests=$((test_counter - 1))

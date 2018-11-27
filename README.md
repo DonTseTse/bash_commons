@@ -1,6 +1,11 @@
 # bash_commons
 Collection of bash functions for common tasks
 
+# Function collections:
+- (testing.sh)[testing.sh] | Documentation: (testing.md)[testing.md]
+	- (initialize_test_session)[testing.md#initialize_test_session]
+- (helpers.sh)[helpers.sh]
+
 # Snippets
 
 Simplified script directory resolution (f.ex. in an installer before `bash_commons` are available)
