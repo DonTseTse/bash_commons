@@ -3,12 +3,7 @@ Collection of bash functions for common tasks
 
 # Function collections:
 - Testing: [code](testing.sh) | [documentation](testing.md)
-	- [initialize_test_session()](testing.md#initialize_test_session)
-	- [configure_test()](testing.md#configure_test)
-	- [test()](testing.md#test)
-	- [check_test_results()](testing.md#check_test_results)
-	- [conclude_test_session()](testing.md#conclude_test_session)
-- Helpers: [code](helpers.sh) | [documentation](helpers.md) | [unit tests](tests/helpers.sh
+- Helpers: [code](helpers.sh) | [documentation](helpers.md) | [unit tests](tests/helpers.sh)
 	- [capture()](helpers.md#capture)
 	- [is_function_defined()](helpers.md#is_function_defined)
 	- [set_global_variable()](helpers.md#set_global_variable)
@@ -27,25 +22,26 @@ Collection of bash functions for common tasks
 	- [conditional_exit()](interaction.md#conditional_exit)
 
 ### Testing
-Testing is based on session(s) which are sequences of test operations. A session begins with [initialize_test_session()](testing.md#initialize_test_session)
-and ends with [conclude_test_session()](testing.md#conclude_test_session). Formally, every bash command:
+Testing is based on "sessions" which are sequences of test operations. A session begins with [initialize_test_session()](testing.md#initialize_test_session)
+and ends with [conclude_test_session()](testing.md#conclude_test_session). Each test is the combination of 3 operations:
 
-- can have parameters
-- has a `stdin` input stream
-- has a `stdout` output stream and a `stderr` error output stream
-- returns/exists with a status code where 0 indicates success and anything above 0 is an error code
-
-Each test is the combination of 3 operations:
-
-1. set the expected result in terms of status code, `stdout` content and `stderr` content - [configure_test()](testing.md#configure_test)
-2. run the command capturing these values and compare - [test()](testing.md#test)
-3. print a result
+1. set the expected result in terms of status code, `stdout` content and `stderr` content with [configure_test()](testing.md#configure_test)
+2. run the command capturing these values with [test()](testing.md#test). In some cases, f.ex. if the command uses piped input, it's not possible
+   to use [test()](testing.md#test), the command has to be run in the testing script itself ([example](tests/helpers.sh#L82))
+3. compare and print a result with [check_test_results()](testing.md#check_test_results) - [test()](testing.md#test) calls it internally, 
 
 In some cases, f.ex. if the command uses piped input, it's not possible to use [test()](testing.md#test) - in these cases the test can be run in the
 testing script directly and call [check_test_results()](testing.md#check_test_results) with the results it captured. [test()](testing.md#test)
 calls [check_test_results()](testing.md#check_test_results) internally. 
 
 To see examples of the test scripts, check out bash_commons' [unit tests](tests).
+
+#### Function list
+- [initialize_test_session()](testing.md#initialize_test_session)
+- [configure_test()](testing.md#configure_test)
+- [test()](testing.md#test)
+- [check_test_results()](testing.md#check_test_results)
+- [conclude_test_session()](testing.md#conclude_test_session)
 
 # Snippets
 
