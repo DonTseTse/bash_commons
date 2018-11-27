@@ -18,20 +18,35 @@ If the pipes are not documented, the default is:
 
 ### configure_test()
 
-<table style="width=100%">
-        <tr><td><em>Parametrization</em></td><td width="90%">
-                <code>$1</code> expected return status<br>
-		<code>$2</code> expected stdout
+<table>
+        <tr><td><b>Parametrization</b></td><td width="90%">
+		- <code>$1</code> expected return status<br>
+                - <code>$2</code> expected stdout
         </td></tr>
-        <tr><td><em>Status</em></td><td>0</td></tr>
-        <tr><td><em>Globals</em></td><td><ul>
-                <li><code>$expected_return</code></li>
-                <li><code>$expected_stdout</code></li>
-        </ul></td></tr>
+        <tr><td><b>Status</b></td><td>0</td></tr>
+        <tr><td><b>Globals</b></td><td>
+		- <code>$expected_return</code><br>
+                - <code>$expected_stdout</code>
+        </td></tr>
 </table>
 
 ### test()
 Run a test with results captured and compared to $expected_<return|stdout>, see [configure_test()](#configure_test)
+
+<table>
+        <tr><td><b>Parametrization</b></td><td width="90%"><code>$1 ...</code> command to test (<code>$1</code> is the command)</td></tr>
+	<tr><td><b>Pipes</b></td><td>
+		- stdin: ignored
+		- stdout: test results printed by <a href="#check_test_results">check_test_results()</a>
+	<tr><td><b>Status</b></td><td>0</td></tr>
+	<tr><td><b>Globals</b></td><td>
+		via [check_test_results()](#check_test_results)
+		- <code>$expected_return</code><br>
+		- <code>$expected_stdout</code>
+		- `$test_counter`
+		- `$test_error_count`
+	</td></tr>
+</table>
 
 Parametrization:
 - `$1 ...` command to test (`$1` is the command)
