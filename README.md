@@ -2,9 +2,13 @@
 Collection of bash functions for common tasks
 
 # Function collections:
-- (testing.sh)[testing.sh] | Documentation: (testing.md)[testing.md]
-	- (initialize_test_session)[testing.md#initialize_test_session]
-- (helpers.sh)[helpers.sh]
+- [testing.sh](testing.sh) | Documentation: [testing.md](testing.md)
+	- [initialize_test_session()](testing.md#initialize_test_session)
+	- [configure_test()](testing.md#configure_test)
+	- [test()](testing.md#test)
+	- [check_test_results()](testing.md#check_test_results)
+	- [conclude_test_session()](testing.md#conclude_test_session)
+- [helpers.sh](helpers.sh)
 
 # Snippets
 
