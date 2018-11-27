@@ -8,11 +8,16 @@ If the pipes are not documented, the default is:
 
 <table>
 <tr><th>Parametrization</th><th>Pipes</th><th>Status</th><th>Globals</th></tr>
-<tr><td>`$1` name of the test session</td><td>-</td>0</td><td>
-- `$test_counter`
-- `$test_error_count`
-- `$test_session_name`
-</td></tr>
+<tr>
+	<td>$1 name of the test session</td>
+	<td>-</td>
+	<td>0</td>
+	<td><ul>
+			<li>$test_counter</li>
+			<li>$test_error_county</li>
+			<li>$test_session_name</li>
+	</ul></td>
+</tr>
 </table>
 
 Parametrization:
