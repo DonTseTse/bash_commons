@@ -5,12 +5,7 @@ any part of a string. The syntax has 2 forms (example of a variable `$str`):
 1. `${str:position}`
 2. `${str:position:length}` 
 
-The behavior depends on the syntax used and whether `position` (`pos`) and `length` (`len`) are positive or negative.
-It usually helps to see to see the extraction points like markers which are either a certain number of characters 
-in the string or a certain amount of characters from the string end:
-Example: value "string"
-- *extraction start* is 2, ^ is the marker => "st^ring"
-
+The behavior depends on the syntax used and whether `position` (`pos`) and `length` (`len`) are positive or negative:
 
 | `pos` | `len`  | Extraction start     | Extraction end               | Example with `str='0123456789'`
 |:-----:|:------:| -------------------- | ---------------------------- | -----------------------------
@@ -21,12 +16,13 @@ Example: value "string"
 | >= 0  | < 0    | `pos`                | *string end* - `len`         | `${str:3:-3}` => 3456
 | >= 0  | > 0    | `pos`                | `pos` + `len`                | `${str:3:3}` => 345
 
-It can be helpful to see the extraction points like markers which are either a certain number of characters   
-in the string or a certain amount of characters from the string end.
-
-Example: `${str:3:-3}` for `str='0123456789'`
+It can be helpful to see the extraction limiters like markers which are either a certain number of characters   
+in the string or a certain amount of characters from the string end. It's as if initially the marker was before the 
+first character respectively after the last one in case of backward search. 
+Example: `${str:3:-3}` for `str='0123456789'`: 
 - `pos` is 3, ^ is the marker => "012^3456789"
-- `len` is -3, ^ is the marker => "0123456^789" 
+- `len` is -3, ^ is the marker => "0123456^789"
+- the extracted string is 3456 
 
 As you can see in the examples column in the table, a space was inserted when `position` is negative. This is required to avoid a 
 syntax collision with bash's "default value fallback" syntax `${var:-default}` (returns `default` if `$var` not set). When a variable is
