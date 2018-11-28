@@ -4,6 +4,7 @@ If the pipes are not documented, the default is:
 - `stdin`: ignored
 - `stdout`: empty
 
+
 ### get_real_path
 The function processes `$1` in 4 ways:
 - if it's a relative path, it makes it absolute

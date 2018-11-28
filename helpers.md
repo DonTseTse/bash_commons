@@ -3,6 +3,7 @@ Documentation for the functions in [helpers.sh](helpers.sh).
 If the pipes are not documented, the default is:
 - `stdin`: ignored
 - `stdout`: empty
+Parameters enclosed in brackets [ ] are optional.
 
 ### capture()
 Collects `stdout`, `stderr` (if `$STDERR` = 1) and the return status of a command and copies them into global variables.
@@ -23,8 +24,7 @@ defined, the `stderr` variable has the name `$PREFIX_stderr`.
 
 <table>
 	<tr><td><b>Parametrization</b></td><td width="90%">
-		<code>$1 ... n</code> call to capture ($1 is the command)<br>
-		<em> and via globals, see examples above</em>
+		<code>$1 ... n</code> call to capture ($1 is the command)
 	</td></tr>
 	<tr><td><b>Status</b></td><td>0</td></tr>
 	<tr><td><b>Globals</b></td><td>
@@ -62,19 +62,22 @@ Sets the variable called `$1` with the value `$2` on global level (i.e. accessib
 	</td></tr>
         <tr><td><b>Status</b></td><td>
 		- <em>0</em> success<br>
-		- <em>1</em> if <code>$1</code> is empty
+		- <em>1</em> <code>$1</code> is empty
 	</td></tr>
 </table>
 
 ### calculate()
-Computes maths beyond `bash`'s `((  ))` using `bc`. Provides control over the amount of decimals and removes unsignificant
-decimals (trailing 0s in the result). Unsignificant decimals are always removed, even if this implies that the number of decimals (if any) is below `$2`.
-If the result given by bc for `$1` is f.ex. 3.000... the function returns 3, regardless of what `$2` is set to. 
+Computes algebraic operations beyond `bash`'s `((  ))` using `bc`. Provides control over the amount of decimals the result contains and removes 
+unsignificant decimals (trailing *0*s in the result). 
+
+The amount of decimals may be limited to a maximum using `$2` (defaults to *3*). `$2` is a maximum and not a fixed amount because
+unsignificant decimals are always removed, even if this implies that the number of decimals (if any) is below `$2`.
+If the result given by bc for `$1` is f.ex. *3.000...* the function returns *3*, regardless of `$2`'s value. 
 
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%">
 		- <code>$1</code> calculus to do, f.ex. <em>(2*2.25)/7</em> <br>
-		- <code>$2</code> (optional) maximal amount of decimals in the result. Defaults to <em>3</em> if omitted. Use <em>0</em> or <em>int</em> to get an integer.
+		- [<code>$2</code>] maximal amount of decimals in the result. Defaults to <em>3</em> if omitted. Use <em>0</em> or <em>int</em> to get an integer.
 		See the explanations above as to why this is a maximum, not a guaranteed amount
 	</td></tr>
 	<tr><td><b>Pipes</b></td><td>
@@ -87,12 +90,12 @@ If the result given by bc for `$1` is f.ex. 3.000... the function returns 3, reg
 
 
 ### get_piped_input()
-Usually used to capture `stdin` input to a variable, here f.ex. to `$input`
+Allows to capture piped `stdin` input to a variable, here f.ex. to `$input`
 
 	input="$(get_piped_input)"
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%"><em>none</em></td></tr>
+        <tr><td><b>Parametrization</b></td><td width="90%"></td></tr>
 	<tr><td><b>Pipes</b></td><td>
 		- <code>stdin</code>: read completely<br>
 		- <code>stdout</code>: <code>stdin</code> copy
@@ -101,34 +104,34 @@ Usually used to capture `stdin` input to a variable, here f.ex. to `$input`
 </table>
 
 ### get_random_string()
-Gets a random alphanumeric string from `/dev/urandom`. 
+Gets a alphanumeric string of length `$1` from `/dev/urandom`. 
 
 **Important: it's not suited for critical security applications like cryptography**. However, it's useful to get unique strings for non-critical usecases, 
-f.ex. *run IDs* which may be used to distinguish interleaving log entries from several instances of the same script running in parallel. 
+f.ex. "run IDs" which may be used to distinguish interleaving log entries from several instances of the same script running in parallel. 
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">- <code>$1</code> <em>optional</em> length of the random string, defaults to 16 if omitted</td></tr>
+        <tr><td><b>Parametrization</b></td><td width="90%">- [<code>$1</code>] length of the random string, defaults to <em>16</em> if omitted</td></tr>
 	<tr><td><b>Pipes</b></td><td>
 		- <code>stdin</code>: ignored<br>
 		- <code>stdout</code>: the random string
 	</td></tr>
         <tr><td><b>Status</b></td><td>
-		- 0 if <code>/dev/urandom</code> exists<br>
+		- 0 success, the random string is on <code>stdout</code><br>
 		- 1 if <code>/dev/urandom</code> doesn't exist
 	</td></tr>
 </table>
 
 ### is_globbing_enabled()
 
-Returns with status 0/success if bash globbing is enabled. One typical application is to "protect" an instruction which relies on globbing
+Returns with status *0* if bash globbing is enabled. One typical application is to "protect" an instruction which relies on globbing:
 
 	is_globbing_enabled && do_something_requiring_globbing
-another is to check whether globbing needs to be turned off before an instruction where it is not desired
+Another is to check whether globbing needs to be turned off before an instruction where it is not desired
 
 	is_globbing_enabled && set -f
-`set -f` disables bash globbing (sets its `no_glob` option to true). To (re)enable globbing, use `set +f`
+`set -f` disables bash globbing; it sets its `no_glob` option to true. To (re)enable globbing, use `set +f`
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%"><em>none</em></td></tr>
+        <tr><td><b>Parametrization</b></td><td width="90%"></td></tr>
         <tr><td><b>Status</b></td><td>
 		- <em>0</em> if globbing is enabled<br>
 		- <em>1</em> if globbing is disabled
@@ -141,14 +144,14 @@ Example:
 important_fct_call
 conditional_exit $? "important_fct_call failed! Aborting..." 20
 ````
-If `important_fct_call` returns with a status code other than 0, the script prints the "... failed! ..." message and exits with status code 20
+If `important_fct_call` returns with a status code other than *0*, the script prints the "... failed! ..." message and exits with status code *20*
 
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%">
                 - <code>$1</code> condition, if it's different than <em>0</em>, the exit is triggered<br>
-                - <code>$2</code> (optional) exit message, defaults to a empty string if omitted (it still prints a newline to reset
+                - [<code>$2</code>] exit message, defaults to a empty string if omitted (it still prints a newline to reset
                   the terminal)<br>
-                - <code>$3</code> (optional) exit code, defaults to <em>1</em>
+                - [<code>$3</code>] exit code, defaults to <em>1</em>
         </td></tr>
         <tr><td><b>Pipes</b></td><td>
                 - <code>stdin</code>: ignored<br>

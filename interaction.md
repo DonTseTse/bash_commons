@@ -1,26 +1,28 @@
-Documentation for the functions in [interaction.sh](interaction.sh).
+Documentation for the functions in [interaction.sh](interaction.sh). A general overview is given in [the project documentation](README.md#interaction).
 
 If the pipes are not documented, the default is:
 - `stdin`: ignored
 - `stdout`: empty
+Parameters enclosed in brackets [ ] are optional. 
 
 ### read_and_validate()
 
 Important `read` flags:
-- `-n <nb_chars>` : `read` stops after `nb_chars`, which gives a "auto-return" UX. Suited for a single char, for longer entries, a explicit [Enter] is usually better
+- `-n <nb_chars>` : `read` stops after `nb_chars`, which gives a "auto-return" UX. Especially suited when the expected input is a single character, for 
+longer entries, another type of UX is usually better. 
 
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> validation regex (if matched it leads to return status 0)<br>
-		- <code>$2</code> <em>optional</em> read flags
+		- <code>$1</code> validation regex (if matched it leads to return status <em>0</em>)<br>
+		- [<code>$2</code>] read flags
         </td></tr>
         <tr><td><b>Pipes</b></td><td>
                 - <code>stdin</code>: input ignored; used via <code>read</code><br>
                 - <code>stdout</code>: the user input
 	</td></tr>
         <tr><td><b>Status</b></td><td>
-		- 0 if the user entered a <code>$1</code> match<br>
-		- 1 otherwise
+		- <em>0</em> if the user entered a <code>$1</code> match<br>
+		- <em>1</em> otherwise
 	</td></tr>
 </table>
 
@@ -29,25 +31,25 @@ Important `read` flags:
 
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> <em>optional</em> confirmation character, defaults to 'y'
+		- [<code>$1</code>] confirmation character, defaults to <em>y</em>
         </td></tr>
         <tr><td><b>Pipes</b></td><td>
                 - <code>stdin</code>: input ignored; used via <a href="#read_and_validate">read_and_validate()</a><br>
                 - <code>stdout</code>: prints a newline because cursor stands just after the user input
         </td></tr>
         <tr><td><b>Status</b></td><td>
-                - 0 if the user enters <code>$1</code> (or 'y' if <code>$1</code> omitted)<br>
-		- 1 if the user enters something else
+                - <em>0</em> if the user enters <code>$1</code> (or <em>y</em> if <code>$1</code> omitted)<br>
+		- <em>1</em> if the user enters something else
         </td></tr>
 </table>
 
 
 ### get_user_choice()
 The function behaves as if it ignores input as long as it doesn't match the regex `$1`. This makes it suitable as "option selector".
-The way it works is that it uses `read`'s `-s` flag to keep the entered input hidden => if the input doesn't match `$1`, <a href="#read_and_validate">read_and_validate</a> 
-returns a status code $? != 0, the function loops and `read`s again 
+The way it works is that it uses `read`'s `-s` flag to keep the entered input hidden; if the input doesn't match `$1`, 
+<a href="#read_and_validate">read_and_validate</a> returns *1*, the function loops and `read`s again 
 
-Example: the user is offered 3 choices numbered 1-3, the regex is `^[1-3]$`.
+Example: the user is offered 3 choices numbered 1-3 => `$1` should be *^[1-3]$*
 
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%">
@@ -57,6 +59,6 @@ Example: the user is offered 3 choices numbered 1-3, the regex is `^[1-3]$`.
                 - <code>stdin</code>: input ignored; used via <a href="#read_and_validate">read_and_validate()</a><br>
                 - <code>stdout</code>: the selected option
         </td></tr>
-        <tr><td><b>Status</b></td><td>0</td></tr>
+        <tr><td><b>Status</b></td><td><em>0</em></td></tr>
 </table>
 

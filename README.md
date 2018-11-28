@@ -1,5 +1,7 @@
 # Bash commons (bash_commons)
-Library of bash functions. The functions are organized in several thematic collections; each collection is one source file. 
+Library of bash functions organized in several thematic collections; each collection is one source file. 
+The initial motivation is that it's code I kept pasting around different projects, different machines, etc. - it was time
+to create a clean repository to add tests and documentation.
 
 ## Collections:
 - Logging: [code](logging.sh) | [documentation](logging.md) | [tests](tests/logging.sh)
@@ -12,34 +14,35 @@ Library of bash functions. The functions are organized in several thematic colle
 ### Filesystem
 The filesystem collection provides: 
 - wrappers for `mkdir` and `mv`, [create_directory()](filesystem.md#create_directory) and 
-  [move()](filesystem.md#move) which provide permission checks, detailed status output and verbose variants 
-  ([create_directory_verbose()](filesystem.md#create_directory_verbose) and [move_verbose()](filesystem.md#move_verbose)).
-- utilities for path handling: [get_real_path()](filesystem.md#get_real_path) for any path and it special usecase 
-  [get_script_path()](filesystem.md#get_script_path) which returns the "clean" path of the executed script as well 
-  as the complementary [get_existing_path_part()](filesystem.md#get_existing_path_part) and 
-  [get_new_path_part()](filesystem.md#get_new_path_part)
-- a [is_writeable()](filesystem.md#is_writeable) utility which is able to check write permission also for "nested new
-  paths"
+  [move()](filesystem.md#move), which include permission checks, provide detailed status output and have verbose variants 
+  with configurable message patterns ([create_directory_verbose()](filesystem.md#create_directory_verbose) and 
+  [move_verbose()](filesystem.md#move_verbose)).
+- [get_real_path()](filesystem.md#get_real_path) and its special usecase [get_script_path()](filesystem.md#get_script_path) 
+  which returns the "clean" path of the executed script as well as the complementary 
+  [get_existing_path_part()](filesystem.md#get_existing_path_part) and [get_new_path_part()](filesystem.md#get_new_path_part)
+- [is_writeable()](filesystem.md#is_writeable) which, beside the classic write permission check, is able to check permissions 
+  for filesystem operations involving nested folders, like `mkdir` with the `-p` flag
 - the [try_filepath_deduction()](filesystem.md#try_filepath_deduction) utility useful to handle "if there's only one file
-  file of that type, use it" logic
+  matching, use it" logic
 
 #### Functions
-[create_directory()](filesystem.md#create_directory)
-[create_directory_verbose()](filesystem.md#create_directory_verbose)
-[get_existing_path_part()](filesystem.md#get_existing_path_part)
-[get_new_path_part()](filesystem.md#get_new_path_part)
-[get_script_path()](filesystem.md#get_script_path)
-[get_real_path()](filesystem.md#get_real_path)
-[is_writeable()](filesystem.md#is_writeable)
-[load_configuration_file_value()](filesystem.md#load_configuration_file_value)
-[move()](filesystem.md#move)
-[move_verbose()](filesystem.md#move_verbose)
-[try_filepath_deduction()](filesystem.md#try_filepath_deduction)
+- [create_directory()](filesystem.md#create_directory)
+- [create_directory_verbose()](filesystem.md#create_directory_verbose)
+- [get_existing_path_part()](filesystem.md#get_existing_path_part)
+- [get_new_path_part()](filesystem.md#get_new_path_part)
+- [get_script_path()](filesystem.md#get_script_path)
+- [get_real_path()](filesystem.md#get_real_path)
+- [is_writeable()](filesystem.md#is_writeable)
+- [load_configuration_file_value()](filesystem.md#load_configuration_file_value)
+- [move()](filesystem.md#move)
+- [move_verbose()](filesystem.md#move_verbose)
+- [try_filepath_deduction()](filesystem.md#try_filepath_deduction)
 
 ### Interaction
-The interaction function collection provides the basic building blocks for user interaction: [get_user_confirmation()](interaction.md#get_user_confirmation) 
-for yes/no type questions, [get_user_choice()](interaction.md#get_user_choice) for multiple choice questions. Both use 
-[read_and_validate()](interaction.md#read_and_validate) internally, which is the combination of a `read` and a regex check. 
+The interaction collection provides the basic building blocks for interactive scripts, f.ex. installers: 
+[get_user_confirmation()](interaction.md#get_user_confirmation) for yes/no type questions, 
+[get_user_choice()](interaction.md#get_user_choice) for multiple choice questions. Both use 
+[read_and_validate()](interaction.md#read_and_validate) internally, which is simply the combination of a `read` and a regex check. 
 
 #### Functions
 - [read_and_validate()](interaction.md#read_and_validate)
@@ -47,11 +50,11 @@ for yes/no type questions, [get_user_choice()](interaction.md#get_user_choice) f
 - [get_user_choice()](interaction.md#get_user_choice)
 
 ### Logging
-The logging function collection provides a range of features:
+The logging collection's functions provides a range of features:
 - distinct output chanels for `stdout` and file logging, each with their own logging level and message pattern 
 - a log message buffer which allows to use [log()](logging.md#log) before the logger is configured. Applications can start logging 
   from the very beginning with logging "disabled" - in fact, messages go into the buffer, nothing is actually logged. Once the configuration 
-  is known (usually, when the script parameters were processed - typically to handle that `-v` flag that should enable `stdout` logging), the 
+  is known (usually, when the script parameters were processed - typically to handle that `-v` flag that enables `stdout` logging), the 
   application calls [launch_logging()](logging.md#launch_logging) to "replay" the buffered messages and log them (or not) according to the 
   configuration in force when [launch_logging()](logging.md#launch_logging) is called
 - a utility to shorten and hide secrets before they enter the logs: [prepare_secret_for_logging()](logging.md#prepare_secret_for_logging)
@@ -63,16 +66,16 @@ The logging function collection provides a range of features:
 
 ### Testing
 Testing is based on "sessions" which are sequences of test operations. A session begins with [initialize_test_session()](testing.md#initialize_test_session)
-and ends with [conclude_test_session()](testing.md#conclude_test_session). Each test is the combination of 3 operations:
+and ends with [conclude_test_session()](testing.md#conclude_test_session). Each test is the combination of 2 or 3 operations:
 
 1. set the expected result in terms of status code, `stdout` content and `stderr` content with [configure_test()](testing.md#configure_test)
 2. run the command capturing these values with [test()](testing.md#test)
 
-To see examples of the test scripts, check out bash_commons' [tests](tests).
-
 In some cases, f.ex. if the command uses piped input, it's not possible to use [test()](testing.md#test), the command has to be run in the testing script 
 itself ([example](tests/helpers.sh#L81)). In this case the results can be evaluated using [check_test_results()](testing.md#check_test_results)
 ([test()](testing.md#test) calls it internally). 
+
+To see examples of the test scripts, check out bash_commons' own [tests](tests).
 
 #### Functions
 - [check_test_results()](testing.md#check_test_results)
