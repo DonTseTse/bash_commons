@@ -34,7 +34,7 @@ function get_user_confirmation()
 function get_user_choice()
 {
 	local answer
-	(exit 1)	# to have $? != 0 on the first iteration
+	(exit 1)
 	while [ $? -ne 0 ]; do
 		answer=$(read_and_validate "$1" "-n 1 -s")
 	done
