@@ -17,6 +17,16 @@ Library of bash functions. The functions are organized in several thematic colle
 - [conditional_exit()](interaction.md#conditional_exit)
 
 ### Logging
+The logging function collection provides a range of features:
+- distinct output chanels for `stdout` and file logging, each with their own logging level and message pattern. An application can restrict  
+  to which channel(s) a log entry goes
+- a log message buffer which allows to use [log()](logging.md#log) before the logger is configured. Applications can start logging 
+  from the very beginning with logging "disabled" - in fact, messages go into the buffer, nothing is actually logged. Once the configuration 
+  is known (usually, when the script parameters were processed - typically to handle that `-v` flag that should enable `stdout` logging), the 
+  application calls [launch_logging()](logging.md#launch_logging) to "replay" the buffered messages and log them (or not) according to the 
+  logging configuration in force when [launch_logging()](logging.md#launch_logging) is called
+- a utility to shorten and hide secrets to make them loggable: [prepare_secret_for_logging()](logging.md#prepare_secret_for_logging)
+
 #### Functions
 - [launch_logging()](logging.md#launch_logging)
 - [log()](logging.md#log)
