@@ -60,26 +60,3 @@ Example: the user is offered 3 choices numbered 1-3, the regex is `^[1-3]$`.
         <tr><td><b>Status</b></td><td>0</td></tr>
 </table>
 
-### conditional_exit()
-Example:
-```
-important_fct_call     # an important function which can fail
-conditional_exit $? "Damn! it failed. Aborting..." 20
-````
-If `important_fct_call` returns with a status code other than 0, the script prints the "Damn! ..." message and exits with status code 20
-
-<table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> condition, if it's different than 0, the exit is triggered<br>
-		- <code>$2</code> <em>optional</em> exit message, defaults to a empty string if omitted (it still prints a newline to reset 
-		  the terminal)<br>
-		- <code>$3</code> <em>optional</em> exit code, defaults to 1
-        </td></tr>
-        <tr><td><b>Pipes</b></td><td>
-                - <code>stdin</code>: ignored<br>
-                - <code>stdout</code>: if the exist is triggered, <code>$2</code> followed by a newline
-        </td></tr>
-        <tr><td><b>Status</b></td><td>0 if the exit is not triggered</td></tr>
-	<tr><td><b>Exit</b></td><td><code>$3</code>, defaults to 1</td></tr>
-</table>
-

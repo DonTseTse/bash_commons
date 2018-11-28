@@ -31,6 +31,8 @@ function capture()
 	#>&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 
+
+
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#is_function_defined
 function is_function_defined()
 {
@@ -83,3 +85,14 @@ function is_globbing_enabled()
 	# since no no_glob disables it), -z makes the function return status 0/success
 	[ -z "$(echo $- | grep f)" ]
 }
+
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#conditional_exit
+function conditional_exit()
+{
+        if [[ ! "$1" =~ ^[0-1]$ ]] || [ $1 -ne 0 ]; then
+                local msg="${2:-\n}" code="${3:-1}"
+                printf "$msg\n"
+                exit $code
+        fi
+}
+

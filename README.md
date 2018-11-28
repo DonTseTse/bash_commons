@@ -9,23 +9,52 @@ Library of bash functions. The functions are organized in several thematic colle
 - Testing: [code](testing.sh) | [documentation](testing.md)
 - Helpers: [code](helpers.sh) | [documentation](helpers.md) | [tests](tests/helpers.sh)
 
+### Filesystem
+The filesystem collection provides: 
+- wrappers for `mkdir` and `mv`, [create_directory()](filesystem.md#create_directory) and 
+  [move()](filesystem.md#move) which provide permission checks, detailed status output and verbose variants 
+  ([create_directory_verbose()](filesystem.md#create_directory_verbose) and [move_verbose()](filesystem.md#move_verbose)).
+- utilities for path handling: [get_real_path()](filesystem.md#get_real_path) for any path and it special usecase 
+  [get_script_path()](filesystem.md#get_script_path) which returns the "clean" path of the executed script as well 
+  as the complementary [get_existing_path_part()](filesystem.md#get_existing_path_part) and 
+  [get_new_path_part()](filesystem.md#get_new_path_part)
+- a [is_writeable()](filesystem.md#is_writeable) utility which is able to check write permission also for "nested new
+  paths"
+- the [try_filepath_deduction()](filesystem.md#try_filepath_deduction) utility useful to handle "if there's only one file
+  file of that type, use it" logic
+
+#### Functions
+[create_directory()](filesystem.md#create_directory)
+[create_directory_verbose()](filesystem.md#create_directory_verbose)
+[get_existing_path_part()](filesystem.md#get_existing_path_part)
+[get_new_path_part()](filesystem.md#get_new_path_part)
+[get_script_path()](filesystem.md#get_script_path)
+[get_real_path()](filesystem.md#get_real_path)
+[is_writeable()](filesystem.md#is_writeable)
+[load_configuration_file_value()](filesystem.md#load_configuration_file_value)
+[move()](filesystem.md#move)
+[move_verbose()](filesystem.md#move_verbose)
+[try_filepath_deduction()](filesystem.md#try_filepath_deduction)
+
 ### Interaction
+The interaction function collection provides the basic building blocks for user interaction: [get_user_confirmation()](interaction.md#get_user_confirmation) 
+for yes/no type questions, [get_user_choice()](interaction.md#get_user_choice) for multiple choice questions. Both use 
+[read_and_validate()](interaction.md#read_and_validate) internally, which is the combination of a `read` and a regex check. 
+
 #### Functions
 - [read_and_validate()](interaction.md#read_and_validate)
 - [get_user_confirmation()](interaction.md#get_user_confirmation)
 - [get_user_choice()](interaction.md#get_user_choice)
-- [conditional_exit()](interaction.md#conditional_exit)
 
 ### Logging
 The logging function collection provides a range of features:
-- distinct output chanels for `stdout` and file logging, each with their own logging level and message pattern. An application can restrict  
-  to which channel(s) a log entry goes
+- distinct output chanels for `stdout` and file logging, each with their own logging level and message pattern 
 - a log message buffer which allows to use [log()](logging.md#log) before the logger is configured. Applications can start logging 
   from the very beginning with logging "disabled" - in fact, messages go into the buffer, nothing is actually logged. Once the configuration 
   is known (usually, when the script parameters were processed - typically to handle that `-v` flag that should enable `stdout` logging), the 
   application calls [launch_logging()](logging.md#launch_logging) to "replay" the buffered messages and log them (or not) according to the 
-  logging configuration in force when [launch_logging()](logging.md#launch_logging) is called
-- a utility to shorten and hide secrets to make them loggable: [prepare_secret_for_logging()](logging.md#prepare_secret_for_logging)
+  configuration in force when [launch_logging()](logging.md#launch_logging) is called
+- a utility to shorten and hide secrets before they enter the logs: [prepare_secret_for_logging()](logging.md#prepare_secret_for_logging)
 
 #### Functions
 - [launch_logging()](logging.md#launch_logging)
@@ -58,6 +87,7 @@ Utilities used by the other functions.
 #### Functions
 - [calculate()](helpers.md#calculate)
 - [capture()](helpers.md#capture)
+- [conditional_exit()](helpers.md#conditional_exit)
 - [get_random_string()](helpers.md#get_random_string)
 - [get_piped_input()](helpers.md#get_piped_input)
 - [is_function_defined()](helpers.md#is_function_defined)

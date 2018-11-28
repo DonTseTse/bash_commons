@@ -40,13 +40,3 @@ function get_user_choice()
 	done
 	echo "$answer"
 }
-
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/interaction.md#conditional_exit
-function conditional_exit()
-{
-	if [[ ! "$1" =~ ^[0-1]$ ]] || [ $1 -ne 0 ]; then
-		local msg="${2:-\n}" code="${3:-1}"
-		printf "$msg\n"
-		exit $code
-	fi
-}
