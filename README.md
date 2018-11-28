@@ -17,21 +17,21 @@ The filesystem collection provides:
   [move()](filesystem.md#move), which include permission checks, provide detailed status output and have verbose variants 
   with configurable message patterns ([create_directory_verbose()](filesystem.md#create_directory_verbose) and 
   [move_verbose()](filesystem.md#move_verbose)).
-- [get_real_path()](filesystem.md#get_real_path) and its special usecase [get_script_path()](filesystem.md#get_script_path) 
-  which returns the "clean" path of the executed script as well as the complementary 
+- [get_real_path()](filesystem.md#get_real_path) and its special application [get_script_path()](filesystem.md#get_script_path) 
+  which return "clean" paths. For files or folder to create it provides the complementary 
   [get_existing_path_part()](filesystem.md#get_existing_path_part) and [get_new_path_part()](filesystem.md#get_new_path_part)
 - [is_writeable()](filesystem.md#is_writeable) which, beside the classic write permission check, is able to check permissions 
   for filesystem operations involving nested folders, like `mkdir` with the `-p` flag
-- the [try_filepath_deduction()](filesystem.md#try_filepath_deduction) utility useful to handle "if there's only one file
-  matching, use it" logic
+- the [try_filepath_deduction()](filesystem.md#try_filepath_deduction) utility which allows to implement a "if there's only one file
+  matching, take that" logic
 
 #### Functions
 - [create_directory()](filesystem.md#create_directory)
 - [create_directory_verbose()](filesystem.md#create_directory_verbose)
 - [get_existing_path_part()](filesystem.md#get_existing_path_part)
 - [get_new_path_part()](filesystem.md#get_new_path_part)
-- [get_script_path()](filesystem.md#get_script_path)
 - [get_real_path()](filesystem.md#get_real_path)
+- [get_script_path()](filesystem.md#get_script_path)
 - [is_writeable()](filesystem.md#is_writeable)
 - [load_configuration_file_value()](filesystem.md#load_configuration_file_value)
 - [move()](filesystem.md#move)
@@ -50,7 +50,7 @@ The interaction collection provides the basic building blocks for interactive sc
 - [get_user_choice()](interaction.md#get_user_choice)
 
 ### Logging
-The logging collection's functions provides a range of features:
+The logging collection's functions work together as one module which provides several features:
 - distinct output chanels for `stdout` and file logging, each with their own logging level and message pattern 
 - a log message buffer which allows to use [log()](logging.md#log) before the logger is configured. Applications can start logging 
   from the very beginning with logging "disabled" - in fact, messages go into the buffer, nothing is actually logged. Once the configuration 
@@ -72,10 +72,10 @@ and ends with [conclude_test_session()](testing.md#conclude_test_session). Each 
 2. run the command capturing these values with [test()](testing.md#test)
 
 In some cases, f.ex. if the command uses piped input, it's not possible to use [test()](testing.md#test), the command has to be run in the testing script 
-itself ([example](tests/helpers.sh#L81)). In this case the results can be evaluated using [check_test_results()](testing.md#check_test_results)
+itself ([example](tests/helpers.sh#L81)). In this case the results shall be evaluated using [check_test_results()](testing.md#check_test_results)
 ([test()](testing.md#test) calls it internally). 
 
-To see examples of the test scripts, check out bash_commons' own [tests](tests).
+For examples of test scripts, check out bash_commons' own [tests](tests).
 
 #### Functions
 - [check_test_results()](testing.md#check_test_results)

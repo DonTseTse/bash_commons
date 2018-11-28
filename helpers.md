@@ -3,37 +3,39 @@ Documentation for the functions in [helpers.sh](helpers.sh).
 If the pipes are not documented, the default is:
 - `stdin`: ignored
 - `stdout`: empty
+
 Parameters enclosed in brackets [ ] are optional.
 
 ### capture()
-Collects `stdout`, `stderr` (if `$STDERR` = 1) and the return status of a command and copies them into global variables.
+Collects `stdout`, `stderr` (if `$STDERR` is set to *1*) and the return status of a command and copies them into global variables.
 
-Example: `capture echo "Hello world"` defines the global variables `return=0` and `stdout="Hello world"`.
-To prefix the variable names in case confusion might arise, use the global variable `$PREFIX`.
+Example: `capture echo "Hello world"` defines the global variables `return` which contains *0* and `stdout` with the value 
+*Hello world*. To prefix the variable names in case confusion might arise, use the global variable `$PREFIX`.
 The easiest way is to set it in the call context (`$PREFIX` is only defined for that command):
 
 	PREFIX="echo" capture echo "Hello world"
-defines the global variables `echo_return=0` and `echo_stdout="Hello world"`.
+defines the global variables `echo_return` and `echo_stdout` with the same values.
 
 To capture `stderr` use the global variable `$STDERR` and set it to 1. Let's take an example where there's some `stderr` 
 for sure, f.ex. the attempt to create a folder inside `/proc` which is never writeable, not even to root:
 
 	STDERR=1 capture mkdir /proc/test
 will define the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` error message). If `$PREFIX` is 
-defined, the `stderr` variable has the name `$PREFIX_stderr`.
+defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 
 <table>
 	<tr><td><b>Parametrization</b></td><td width="90%">
-		<code>$1 ... n</code> call to capture ($1 is the command)
+		<code>$1 ... n</code> call to capture (<code>$1</code> is the command)
 	</td></tr>
-	<tr><td><b>Status</b></td><td>0</td></tr>
+	<tr><td><b>Status</b></td><td><em>0</em></td></tr>
 	<tr><td><b>Globals</b></td><td>
 		Input: <ul>
-		<li><code>$STDERR</code> if it's set to 1, <code>stderr</code> is captured</li>
+		<li><code>$STDERR</code> if it's set to <em>1</em>, <code>stderr</code> is captured</li>
                 <li><code>$PREFIX</code> if it's a non empty-string, the capture variables names are prefixed - see examples above</li>
 		</ul>Output: <ul>
-		<li>if <code>$PREFIX</code> is not defined or empty: <code>$return</code>, <code>$stdout</code> and <code>$stderr</code> (if <code>$STDERR</code> is set to <em>1</em>)</li>
-                <li>if <code>$PREFIX</code> is a non-empty string: <code>$PREFIX_return</code>, <code>$PREFIX_stdout</code> and <code>$PREFIX_stderr</code> (if <code>$STDERR</code> set to <em>1</em>)</li>
+			<li>if <code>$PREFIX</code> is not defined or empty: <code>$return</code> and <code>$stdout</code></li>
+			<li>if <code>$PREFIX</code> is a non-empty string: <code>$PREFIX_return</code>, <code>$PREFIX_stdout</code></li>
+			<li>if <code>$STDERR</code> is set to <em>1</em>, <code>$stderr</code> respectively <code>$PREFIX_stderr</code> in addition</li>
 		</ul>
 	</td></tr>
 </table>
@@ -47,8 +49,8 @@ will only call `log` if it's defined.
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%">- <code>$1</code> name of the function</td></tr>
         <tr><td><b>Status</b></td><td>
-		- <em>0</em> function exists<br>
-		- <em>1</em> function doesn't exist
+		- <em>0</em> function <code>$1</code> is defined<br>
+		- <em>1</em> function <code>$1</code> is not defined
 	</td></tr>
 </table>
 

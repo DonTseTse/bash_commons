@@ -12,18 +12,15 @@ Important `read` flags:
 longer entries, another type of UX is usually better. 
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> validation regex (if matched it leads to return status <em>0</em>)<br>
-		- [<code>$2</code>] read flags
-        </td></tr>
-        <tr><td><b>Pipes</b></td><td>
-                - <code>stdin</code>: input ignored; used via <code>read</code><br>
-                - <code>stdout</code>: the user input
-	</td></tr>
-        <tr><td><b>Status</b></td><td>
-		- <em>0</em> if the user entered a <code>$1</code> match<br>
-		- <em>1</em> otherwise
-	</td></tr>
+        <tr><td rowspan="2"><b>Parametrization</b></td>
+		<td><code>$1</code></td><td width="90%">validation regex (if matched it leads to return status <em>0</em>)
+	<tr>	<td>[<code>$2</code>]</td><td>read flags</td></tr>
+        <tr><td rowspan="2"><b>Pipes</b></td>
+		<td><code>stdin</code></td><td>input ignored; used via <code>read</code></td></tr>
+	<tr>	<td><code>stdout</code></td><td>the user input</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+		<td><em>0</em></td><td>if the user entered a <code>$1</code> match</td></tr>
+	<tr>	<td><em>1</em> otherwise</td></tr>
 </table>
 
 
