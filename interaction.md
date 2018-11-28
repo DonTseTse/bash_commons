@@ -12,32 +12,28 @@ Important `read` flags:
 longer entries, another type of UX is usually better. 
 
 <table>
-        <tr><td rowspan="2"><b>Parametrization</b></td>
-		<td><code>$1</code></td><td width="90%">validation regex (if matched it leads to return status <em>0</em>)
-	<tr>	<td>[<code>$2</code>]</td><td>read flags</td></tr>
+        <tr><td rowspan="2"><b>Param.</b></td>
+		<td align="center"><code>$1</code></td><td width="90%">validation regex (if matched it leads to return status <em>0</em>)</td></tr>
+	<tr>	<td align="center">[<code>$2</code>]</td><td>read flags</td></tr>
         <tr><td rowspan="2"><b>Pipes</b></td>
-		<td><code>stdin</code></td><td>input ignored; used via <code>read</code></td></tr>
-	<tr>	<td><code>stdout</code></td><td>the user input</td></tr>
+		<td align="center"><code>stdin</code></td><td>piped input ignored; used via <code>read</code></td></tr>
+	<tr>	<td align="center"><code>stdout</code></td><td>the user input</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
-		<td><em>0</em></td><td>if the user entered a <code>$1</code> match</td></tr>
-	<tr>	<td><em>1</em> otherwise</td></tr>
+		<td align="center"><em>0</em></td><td>if the user entered a <code>$1</code> match</td></tr>
+	<tr>	<td align="center"><em>1</em></td><td>otherwise</td></tr>
 </table>
 
 
 ### get_user_confirmation()
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-		- [<code>$1</code>] confirmation character, defaults to <em>y</em>
-        </td></tr>
-        <tr><td><b>Pipes</b></td><td>
-                - <code>stdin</code>: input ignored; used via <a href="#read_and_validate">read_and_validate()</a><br>
-                - <code>stdout</code>: prints a newline because cursor stands just after the user input
-        </td></tr>
-        <tr><td><b>Status</b></td><td>
-                - <em>0</em> if the user enters <code>$1</code> (or <em>y</em> if <code>$1</code> omitted)<br>
-		- <em>1</em> if the user enters something else
-        </td></tr>
+        <tr><td><b>Param.</b></td><td align="center">[<code>$1</code>]</td><td width="90%">confirmation character, defaults to <em>y</em></td></tr>
+        <tr><td rowspan="2"><b>Pipes</b></td>
+                <td align="center"><code>stdin</code></td><td>piped input ignored; used via <a href="#read_and_validate">read_and_validate()</a></td></tr>
+        <tr>    <td align="center"><code>stdout</code></td><td>a newline control sequence to reset the cursor which stands just after the user input</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>if the user enters <code>$1</code> (or <em>y</em> if <code>$1</code> omitted)</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>if the user enters something else</td></tr>
 </table>
 
 
@@ -49,13 +45,10 @@ The way it works is that it uses `read`'s `-s` flag to keep the entered input hi
 Example: the user is offered 3 choices numbered 1-3 => `$1` should be *^[1-3]$*
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> "acceptation" regex
-        </td></tr>
-        <tr><td><b>Pipes</b></td><td>
-                - <code>stdin</code>: input ignored; used via <a href="#read_and_validate">read_and_validate()</a><br>
-                - <code>stdout</code>: the selected option
-        </td></tr>
-        <tr><td><b>Status</b></td><td><em>0</em></td></tr>
+        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">"acceptation" regex</td></tr>
+        <tr><td rowspan="2"><b>Pipes</b></td>
+                <td align="center"><code>stdin</code></td><td>piped input ignored; used via <a href="#read_and_validate">read_and_validate()</a></td></tr>
+        <tr>    <td align="center"><code>stdout</code></td><td>the selection option</td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 

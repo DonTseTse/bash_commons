@@ -1,9 +1,9 @@
-Values are described in *italic*. 
+Values are in *italic*.
 
 #### Function documentation
 
 <table>
-        <tr><td rowspan="2"><b>Parametrization</b></td>
+        <tr><td rowspan="2"><b>Param.</b></td>
 		<td><code>$1</code></td><td width="90%">1st parameter</td></tr>
 	<tr>	<td>[<code>$2</code>]</td><td>2nd parameter, optional</td></tr>
         <tr><td rowspan="2"><b>Pipes</b></td>
