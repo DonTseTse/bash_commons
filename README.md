@@ -1,25 +1,26 @@
-# bash_commons
-Collection of bash functions for common tasks
+# Bash commons (bash_commons)
+Library of bash functions. The functions are organized in several thematic collections; each collection is one source file. 
 
-# Function collections:
+## Collections:
+- Logging: [code](logging.sh) | [documentation](logging.md) | [tests](tests/logging.sh)
+- Interaction: [code](interaction.sh) | [documentation](interaction.md)
+- Filesystem: [code](filesystem.sh) | [documentation](filesystem.md) | [tests](tests/filesystem.sh)
+- String handling: [code](string_handling.sh) | [documentation](string_handling.md) | [tests](tests/string_handling.sh)
 - Testing: [code](testing.sh) | [documentation](testing.md)
 - Helpers: [code](helpers.sh) | [documentation](helpers.md) | [tests](tests/helpers.sh)
-	- [capture()](helpers.md#capture)
-	- [is_function_defined()](helpers.md#is_function_defined)
-	- [set_global_variable()](helpers.md#set_global_variable)
-	- [calculate()](helpers.md#calculate)
-	- [get_piped_input()](helpers.md#get_piped_input)
-	- [get_random_string()](helpers.md#get_random_string)
-	- [is_globbing_enabled()](helpers.md#is_globbing_enabled)
-- Logging: [code](logging.sh) | [documentation](logging.md) | [tests](tests/logging.sh)
-	- [log()](logging.md#log)
-	- [launch_logging()](logging.md#launch_logging)
-	- [prepare_secret_for_logging()](logging.md#prepare_secret_for_logging)
-- Interaction: [code](interaction.sh) | [documentation](interaction.md)
-	- [read_and_validate()](interaction.md#read_and_validate)
-	- [get_user_confirmation()](interaction.md#get_user_confirmation)
-	- [get_user_choice()](interaction.md#get_user_choice)
-	- [conditional_exit()](interaction.md#conditional_exit)
+
+### Interaction
+#### Functions
+- [read_and_validate()](interaction.md#read_and_validate)
+- [get_user_confirmation()](interaction.md#get_user_confirmation)
+- [get_user_choice()](interaction.md#get_user_choice)
+- [conditional_exit()](interaction.md#conditional_exit)
+
+### Logging
+#### Functions
+- [launch_logging()](logging.md#launch_logging)
+- [log()](logging.md#log)
+- [prepare_secret_for_logging()](logging.md#prepare_secret_for_logging)
 
 ### Testing
 Testing is based on "sessions" which are sequences of test operations. A session begins with [initialize_test_session()](testing.md#initialize_test_session)
@@ -34,7 +35,7 @@ In some cases, f.ex. if the command uses piped input, it's not possible to use [
 itself ([example](tests/helpers.sh#L81)). In this case the results can be evaluated using [check_test_results()](testing.md#check_test_results)
 ([test()](testing.md#test) calls it internally). 
 
-#### Functionss
+#### Functions
 - [check_test_results()](testing.md#check_test_results)
 - [conclude_test_session()](testing.md#conclude_test_session)
 - [configure_test()](testing.md#configure_test)
@@ -42,13 +43,13 @@ itself ([example](tests/helpers.sh#L81)). In this case the results can be evalua
 - [test()](testing.md#test)
 
 ### Helpers
-Utility functions used by the other function collections. 
+Utilities used by the other functions. 
 
 #### Functions
-- [capture()](helpers.md#capture)
 - [calculate()](helpers.md#calculate)
-- [get_piped_input()](helpers.md#get_piped_input)
+- [capture()](helpers.md#capture)
 - [get_random_string()](helpers.md#get_random_string)
+- [get_piped_input()](helpers.md#get_piped_input)
 - [is_function_defined()](helpers.md#is_function_defined)
 - [is_globbing_enabled()](helpers.md#is_globbing_enabled)
 - [set_global_variable()](helpers.md#set_global_variable)
