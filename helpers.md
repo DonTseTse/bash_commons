@@ -22,17 +22,19 @@ for sure, f.ex. the attempt to create a folder inside `/proc` which is never wri
 	STDERR=1 capture mkdir /proc/test
 will define the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` error message). If `$PREFIX` is 
 defined the `stderr` capture variable has the name `$PREFIX_stderr`.
-
 <table>
-	<tr><td><b>Parametrization</b></td><td width="90%">
-		<code>$1 ... n</code> call to capture (<code>$1</code> is the command)
+        <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="90%">call to capture (<code>$1</code> is the command)</td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>of the user input doesn't match <code>$1</code></td></tr>
+	<tr><td rowspan="2"><b>Globals</b></td>
+                <td align="center">Input</td><td>
+			<ul>
+		                <li><code>$STDERR</code> if it's set to <em>1</em>, <code>stderr</code> is captured</li>
+				<li><code>$PREFIX</code> if it's a non empty-string, the capture variables names are prefixed - see examples above</li>
+			</ul>
 	</td></tr>
-	<tr><td><b>Status</b></td><td><em>0</em></td></tr>
-	<tr><td><b>Globals</b></td><td>
-		Input: <ul>
-		<li><code>$STDERR</code> if it's set to <em>1</em>, <code>stderr</code> is captured</li>
-                <li><code>$PREFIX</code> if it's a non empty-string, the capture variables names are prefixed - see examples above</li>
-		</ul>Output: <ul>
+        <tr>    <td align="center">Output</td><td>
+		<ul>
 			<li>if <code>$PREFIX</code> is not defined or empty: <code>$return</code> and <code>$stdout</code></li>
 			<li>if <code>$PREFIX</code> is a non-empty string: <code>$PREFIX_return</code>, <code>$PREFIX_stdout</code></li>
 			<li>if <code>$STDERR</code> is set to <em>1</em>, <code>$stderr</code> respectively <code>$PREFIX_stderr</code> in addition</li>
@@ -41,55 +43,47 @@ defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 </table>
 
 ### is_function_defined()
-Usage example: use in instruction chains to avoid potential "command ... unknown" errors. Example:
+Meant to be used in instruction chains to avoid potential "command ... unknown" errors. Example:
 
 	is_function_defined "log" && log "..."
 will only call `log` if it's defined.
-
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">- <code>$1</code> name of the function</td></tr>
-        <tr><td><b>Status</b></td><td>
-		- <em>0</em> function <code>$1</code> is defined<br>
-		- <em>1</em> function <code>$1</code> is not defined
-	</td></tr>
+        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">name of the function</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>function <code>$1</code> is defined</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>function <code>$1</code> is not defined</td></tr>
 </table>
 
 ### set_global_variable()
 Sets the variable called `$1` with the value `$2` on global level (i.e. accessible everywhere in the execution context)
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> variable name - the usual bash variable name restrictions apply<br>
-		- <code>$2</code> value
-	</td></tr>
-        <tr><td><b>Status</b></td><td>
-		- <em>0</em> success<br>
-		- <em>1</em> <code>$1</code> is empty
-	</td></tr>
+        <tr><td><b>Param.</b></td>
+		<td align="center"><code>$1</code></td><td width="90%">variable name - the usual bash variable name restrictions apply</td></tr>
+	<tr>	<td align="center"><code>$2</code></td><td>value</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>success</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td><code>$1</code> is empty</td></tr>
 </table>
 
 ### calculate()
-Computes algebraic operations beyond `bash`'s `((  ))` using `bc`. Provides control over the amount of decimals the result contains and removes 
-unsignificant decimals (trailing *0*s in the result). 
+Computes algebraic operations beyond `bash`'s `((  ))` using `bc`. Provides control over the maximal amount of decimals in the result and removes 
+unsignificant decimals (trailing *0*s). 
 
-The amount of decimals may be limited to a maximum using `$2` (defaults to *3*). `$2` is a maximum and not a fixed amount because
+The amount of decimals may be limited to a maximum using `$2` (defaults to *3*). `$2` is a maximum because
 unsignificant decimals are always removed, even if this implies that the number of decimals (if any) is below `$2`.
 If the result given by bc for `$1` is f.ex. *3.000...* the function returns *3*, regardless of `$2`'s value. 
-
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> calculus to do, f.ex. <em>(2*2.25)/7</em> <br>
-		- [<code>$2</code>] maximal amount of decimals in the result. Defaults to <em>3</em> if omitted. Use <em>0</em> or <em>int</em> to get an integer.
-		See the explanations above as to why this is a maximum, not a guaranteed amount
-	</td></tr>
-	<tr><td><b>Pipes</b></td><td>
-		- <code>stdin</code>: ignored<br>
-		- <code>stdout</code>: if the <code>bc</code> execution was successful (status code <em>0</em>), the calculus result with at most 
-                  <code>$2</code> amount of decimals. Empty if <code>bc</code> failed
-	</td></tr>
-        <tr><td><b>Status</b></td><td>the <code>bc</code> call's status code</td></tr>
+        <tr><td rowspan="2"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">expression to compute, f.ex. <em>(2*2.25)/7</em></td></tr>
+        <tr>    <td align="center">[<code>$2</code>]</td><td>maximal amount of decimals in the result. Defaults to <em>3</em> if omitted. 
+		Use <em>0</em> or <em>int</em> to get an integer</td></tr>
+        <tr><td rowspan="2"><b>Pipes</b></td>
+                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
+        <tr>    <td align="center"><code>stdout</code></td><td>if the <code>bc</code> execution was successful (status code <em>0</em>), the calculus 
+		result with at most <code>$2</code> decimals. Empty if <code>bc</code> failed</td></tr>
+        <tr><td><b>Status</b></td><td colspan="2">the status returned by the <code>bc</code> call</td></tr>
 </table>
-
 
 ### get_piped_input()
 Allows to capture piped `stdin` input to a variable, here f.ex. to `$input`
@@ -97,12 +91,10 @@ Allows to capture piped `stdin` input to a variable, here f.ex. to `$input`
 	input="$(get_piped_input)"
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%"></td></tr>
-	<tr><td><b>Pipes</b></td><td>
-		- <code>stdin</code>: read completely<br>
-		- <code>stdout</code>: <code>stdin</code> copy
-	</td></tr>
-        <tr><td><b>Status</b></td><td><em>0</em></td></tr>
+        <tr><td rowspan="2"><b>Pipes</b></td>
+                <td align="center"><code>stdin</code></td><td>read completely</td></tr>
+        <tr>    <td align="center"><code>stdout</code></td><td>copy of <code>stdin</code>'s piped input</td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 
 ### get_random_string()
@@ -112,15 +104,13 @@ Gets a alphanumeric string of length `$1` from `/dev/urandom`.
 f.ex. "run IDs" which may be used to distinguish interleaving log entries from several instances of the same script running in parallel. 
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">- [<code>$1</code>] length of the random string, defaults to <em>16</em> if omitted</td></tr>
-	<tr><td><b>Pipes</b></td><td>
-		- <code>stdin</code>: ignored<br>
-		- <code>stdout</code>: the random string
-	</td></tr>
-        <tr><td><b>Status</b></td><td>
-		- 0 success, the random string is on <code>stdout</code><br>
-		- 1 if <code>/dev/urandom</code> doesn't exist
-	</td></tr>
+        <tr><td><b>Param.</b></td><td align="center">[<code>$1</code>]</td><td width="90%">length of the random string, defaults to <em>16</em> if omitted</td></tr>
+        <tr><td rowspan="2"><b>Pipes</b></td>
+                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
+        <tr>    <td align="center"><code>stdout</code></td><td>the random string</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>success, the random string is on <code>stdout</code></td></tr>
+        <tr>    <td align="center"><em>1</em></td><td><code>/dev/urandom</code> doesn't exist</td></tr>
 </table>
 
 ### is_globbing_enabled()
@@ -132,12 +122,11 @@ Another is to check whether globbing needs to be turned off before an instructio
 
 	is_globbing_enabled && set -f
 `set -f` disables bash globbing; it sets its `no_glob` option to true. To (re)enable globbing, use `set +f`
+
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%"></td></tr>
-        <tr><td><b>Status</b></td><td>
-		- <em>0</em> if globbing is enabled<br>
-		- <em>1</em> if globbing is disabled
-	</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>globbing is enabled</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>globbing is disabled</td></tr>
 </table>
 
 ### conditional_exit()
@@ -149,16 +138,14 @@ conditional_exit $? "important_fct_call failed! Aborting..." 20
 If `important_fct_call` returns with a status code other than *0*, the script prints the "... failed! ..." message and exits with status code *20*
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-                - <code>$1</code> condition, if it's different than <em>0</em>, the exit is triggered<br>
-                - [<code>$2</code>] exit message, defaults to a empty string if omitted (it still prints a newline to reset
-                  the terminal)<br>
-                - [<code>$3</code>] exit code, defaults to <em>1</em>
-        </td></tr>
-        <tr><td><b>Pipes</b></td><td>
-                - <code>stdin</code>: ignored<br>
-                - <code>stdout</code>: if the exit is triggered, <code>$2</code> followed by a newline
-        </td></tr>
-        <tr><td><b>Status</b></td><td><em>0</em> if the exit is not triggered</td></tr>
-        <tr><td><b>Exit status</b></td><td><code>$3</code>, defaults to <em>1</em></td></tr>
+        <tr><td rowspan="3"><b>Param.</b></td>
+		<td align="center"><code>$1</code></td><td width="90%">condition, if it's different than <em>0</em>, the exit is triggered</td></tr>
+	<tr>	<td align="center">[<code>$2</code>]</td><td>exit message, defaults to a empty string if omitted (it still prints a newline to reset
+                  the terminal)</td></tr>
+	<tr>	<td align="center">[<code>$3</code>]</td><td>exit code, defaults to <em>1</em></td></tr>
+        <tr><td rowspan="2"><b>Pipes</b></td>
+                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
+        <tr>    <td align="center"><code>stdout</code></td><td>if the exit is triggered, <code>$2</code> followed by a newline</td></tr>
+        <tr><td><b>Status</b></td><tr><td align="center"><em>0</em></td><td><code></td></tr>
+        <tr><td><b>Exit</b></td><tr><td align="center"><code>$3</code></td><td><code></td></tr>
 </table>
