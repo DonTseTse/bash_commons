@@ -50,7 +50,7 @@ The way it works is that it uses `read`'s `-s` flag to keep the entered input hi
 Example: the user is offered 3 choices numbered 1-3 - `$1` should be *^[1-3]$*
 
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">"acceptation" regex</td></tr>
+        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">options regex</td></tr>
         <tr><td rowspan="2"><b>Pipes</b></td>
                 <td align="center"><code>stdin</code></td><td>piped input ignored; used via <a href="#read_and_validate">read_and_validate()</a></td></tr>
         <tr>    <td align="center"><code>stdout</code></td><td>the selection option</td></tr>
