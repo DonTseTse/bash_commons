@@ -108,3 +108,7 @@ script_folder="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 ```
 **Important**: this code has to run before files are sourced, subshells are launched etc. because such operations affect `$BASH_SOURCE` (`get_script_path()` 
                from [filesystem.sh](filesystem.sh) is able to cope with that and file symlinks)
+
+# TODO
+- string_handling get_sed_replace_expression() - add regex for last occurence replacement (`$3` set to *last*)
+

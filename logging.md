@@ -38,6 +38,12 @@ undesired `stdout` output set `stdout_log_level` to 0.
 
 ### launch_logging()
 Processes the logging backlog and clears it
+<table>
+	<tr><td rowspan="2"><b>Pipes</b></td>
+		<td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
+	<tr>    <td align="center"><code>stdout</code></td><td>the logs for <code>stdout</code>, empty otherwise</td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>success</td></tr>
+</table>
 
 <table>
         <tr><td><b>Parametrization</b></td><td width="90%"><em>none</em></td></tr>
@@ -56,19 +62,16 @@ Processes the logging backlog and clears it
 Formats a secret for logging.
 
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> secret<br>
-		- <code>$2</code> amount of chars to show. If > 0, the amount is shown from the beginning of the secret, if < 0, from the end<br>
-		- <code>$3</code> security factor - a decimal value between 0 and 1 which decides how much of the secret can be shown at most - overwrites
-		  <code>$2</code> if necessary
-	</td></tr>
-        <tr><td><b>Pipes</b></td><td>
-                - <code>stdin</code>: ignored<br>
-                - <code>stdout</code>: the formatted variant of the secret suited for logging
-	</td></tr>
-        <tr><td><b>Status</b></td><td>
-		- 0 in case of success<br>
-		- 1 if <code>$1</code> is undefined or empty
-	</td></tr>
+        <tr><td rowspan="2"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">secret</td></tr>
+        <tr>    <td align="center"><code>$2</code></td><td>amount of chars to show. If it's positive, the amount is shown from the beginning of the secret, if it's 
+		negative, from the end</td></tr>
+        <tr>    <td align="center"><code>$3</code></td><td>security factor - a decimal value between 0 and 1 which decides how much of the secret can be shown at most 
+		- overwrites <code>$2</code> if necessary</td></tr>
+        <tr><td rowspan="2"><b>Pipes</b></td>
+                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
+        <tr>    <td align="center"><code>stdout</code></td><td>the formatted secret suited for logging</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>success</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td><code>$1</code> undefined or empty</td></tr>
 </table>
-

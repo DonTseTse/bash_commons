@@ -11,11 +11,11 @@ Combined `read` and regex check.
 
 Important `read` flags:
 - `-n <nb_chars>` : `read` stops after `nb_chars`, which gives a "auto-return" UX
-- `s` : `read` hides the user input
+- `-s` : makes `read` hide the user input
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
 		<td align="center"><code>$1</code></td><td width="90%">validation regex (if matched it leads to return status <em>0</em>)</td></tr>
-	<tr>	<td align="center">[<code>$2</code>]</td><td>read flags, defaults to an empty string</td></tr>
+	<tr>	<td align="center">[<code>$2</code>]</td><td>flags passed to <code>read</code>, defaults to an empty string</td></tr>
         <tr><td rowspan="2"><b>Pipes</b></td>
 		<td align="center"><code>stdin</code></td><td>piped input ignored; used via <code>read</code></td></tr>
 	<tr>	<td align="center"><code>stdout</code></td><td>the user input</td></tr>
@@ -45,9 +45,9 @@ matches `$1` the function returns with status *0* and provides the selected opti
 
 The way it works is that it uses `read`'s `-s` flag to keep the entered input hidden; if the input doesn't match `$1`, 
 <a href="#read_and_validate">read_and_validate()</a> returns *1*, the function loops and calls 
-<a href="#read_and_validate">read_and_validate()</a> again 
+<a href="#read_and_validate">read_and_validate()</a> again.
 
-Example: the user is offered 3 choices numbered 1-3 - `$1` should be *^[1-3]$*
+Example: the user is offered 3 choices numbered 1 to 3, `$1` should be *^[1-3]$*
 
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">options regex</td></tr>
