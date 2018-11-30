@@ -110,5 +110,6 @@ script_folder="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
                from [filesystem.sh](filesystem.sh) is able to cope with that and file symlinks)
 
 # TODO
-- string_handling get_sed_replace_expression() - add regex for last occurence replacement (`$3` set to *last*)
-
+- string_handling 
+	-get_sed_replace_expression() - add regex for last occurence replacement (`$3` set to *last*)
+	-is_string_a() - add regex for email, etc checks

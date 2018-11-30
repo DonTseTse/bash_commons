@@ -6,89 +6,98 @@ If the pipes are not documented, the default is:
 
 Parameters enclosed in brackets [ ] are optional.
 
-### escape
-# Takes the piped input and escapes the char(s) given as parameter with backslashes
-#
-# Special care is taken to disable bash globbing to make sure that affected characters, typically '*', can be escaped properly
-# At the end, the original globbing configuration is restored.
-#
-# Usage: - $> echo "path/to/file" | escape "/"
-#          gives "path\/to\/file" on stdout
-#
-# Parametrization:
-#  $1...n characters to escape
-# Pipes: - stdin: read completely
-#        - stdout: the escaped string
-# Status: 0
+### escape()
+Takes the piped input and escapes specified char(s) with backslashes
 
-### sanitize_variable_quotes
-# In configuration files, if a definition is var="...", the loaded value is '"..."' (the double quotes are part of the value).
-# This function removes them. It checks for single and double quotes.
-#
-# Parametrization:
-#  $1 (optional) string to sanitize
-# Pipes: - stdin: read completely if $1 is undefined/empty
-#        - stdout: processed string
-# Status: 0
+Special care is taken to disable bash globbing to make sure that affected characters, typically ***, can be escaped properly
+At the end, the original globbing configuration is restored.
+
+Usage:
+
+	echo "path/to/file" | escape "/"
+writes `path\/to\/file` on `stdout`
+<table>
+	<tr><td rowspan="2"><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">character to escape</td></tr>
+	<tr>	<td align="center">[<code>$2...n</code>]</td><td>additional character(s) to escape</td></tr>
+	<tr><td rowspan="2"><b>Pipes</b></td><td align="center"><code>stdin</code></td><td>read completely</td></tr>
+	<tr>            <td align="center"><code>stdout</code></td><td><code>stdin</code> where <code>$1...n</code> were escaped</td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+</table>
+
+### sanitize_variable_quotes()
+In configuration files, if a definition is `var="..."`, the loaded value is *"..."* (the quotes are part of the value).
+This function removes them. It checks for single and double quotes.
+<table>
+	<tr><td><b>Param.</b></td><td align="center">[<code>$1</code>]</td><td width="90%">string to sanitize, if omitted or empty <code>stdin</code> is read</td></tr>
+	<tr><td rowspan="2"><b>Pipes</b></td><td align="center"><code>stdin</code></td><td>if <code>$1</code> is undefined or empty, read completely</td></tr>
+	<tr>            <td align="center"><code>stdout</code></td><td>sanitized <code>$1</code> or <code>stdin</code></td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+</table>
+
+### trim()
+Cut leading and trailing whitespace on either the provided parameter or the piped stdin
+
+Use configurations:
+- Input as parameter: trimmed_string=$(trim "$string_to_trim")
+- Piped input: trimmed_string=$(echo "$string_to_trim" | trim)
+
+Note: in the sed expressions, \s stands for [[:space:]]
+<table>
+	<tr><td><b>Param.</b></td><td align="center">[<code>$1</code>]</td><td width="90%">string to trim, if omitted or empty <code>stdin</code> is read</td></tr>
+	<tr><td rowspan="2"><b>Pipes</b></td><td align="center"><code>stdin</code></td><td>if <code>$1</code> is undefined or empty, read completely</td></tr>
+	<tr>		<td align="center"><code>stdout</code></td><td>trimmed <code>$1</code> or <code>stdin</code></td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+</table>
 
 
-### trim
-# Cut leading and trailing whitespace on either the provided parameter or the piped stdin
-#
-# Usage:
-#  - Input as parameter: trimmed_string=$(trim "$string_to_trim")
-#  - Piped input: trimmed_string=$(echo "$string_to_trim" | trim)
-#
-# Note: in the sed expressions, \s stands for [[:space:]]
-#
-# Parametrization:
-#  $1 (optional) string to trim. If it's empty trim tries to get input from a eventual stdin pipe
-# Pipes: - stdin: read completely if $1 is undefined/empty
-#        - stdout: trimmed $1/stdin
-# Status: 0 always, even if $1 and stdin are undefined/empty
+### find_substring()
+Finds the position of the first match of $2 in $1 (the start position of the match, to be precise)
+Returns -1 if $2 is not found inside $1.
 
-### find_substring
-# Finds the position of the first match of $2 in $1 (the start position of the match, to be precise)
-# Returns -1 if $2 is not found inside $1.
-#
-# Inspired by https://stackoverflow.com/questions/5031764/position-of-a-string-within-a-string-using-linux-shell-script
-#
-# Parametrization:
-#  $1 string to search in
-#  $2 char/string to find - exact matching is used (bash's matching special chars are disabled by string escaping)
-# Pipes: - stdin: ignored
-#        - stdout: -1 if $2 is not found in $1
-#                  the position of the first occurence of $2 in $1
-# Status: 0
+Inspired by https://stackoverflow.com/questions/5031764/position-of-a-string-within-a-string-using-linux-shell-script
+<table>
+	<tr><td rowspan="2"><b>Param.</b></td>
+		<td align="center"><code>$1</code></td><td width="90%">string to search in</td></tr>
+	<tr>    <td align="center"><code>$2</code></td><td>char/string to find - exact matching is used (bash's matching special chars are disabled by string escaping)</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>
+		<ul>
+			<li>the position of the first occurence of <code>$2</code> in <code>$1</code></li>
+			<li><em>-1</em> if <code>$2</code> is not found in <code>$1</code></li>
+		</ul>
+	</td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+</table>
 
-### get_absolute_path
-# Prepends $1 with $2 if defined, or the current working directory
-#
-# The path $1 and the optional root directory $2 don't have to exist
-#
-# Dev note: that's the reason why this function is in string_handling.sh and not filesystem.sh
-#
-# Parametrization:
-#  $1 path to "absolutify" if necessary
-#  $2 (optional) root path - if omitted, the current working directory is used
-# Pipes: - stdin: ignored
-#        - stdout: the computed absolute path
-# Status: 0 always
 
-### is_string_a
-The function is able to work in 2 modes depending on $3:
+### get_absolute_path()
+Transforms `$1` in a absolute filepath if it's relative. The directory used is `$2` if defined, the current working directory otherwise. 
+
+The path $1 and the optional root directory $2 don't have to exist
+<table>
+	<tr><td rowspan="2"><b>Param.</b></td>
+		<td align="center"><code>$1</code></td><td width="90%">path to "absolutify" if necessary</td></tr>
+	<tr>    <td align="center">[<code>$2</code>]</td><td>root path - if omitted, the current working directory is used</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the computed absolute path</td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+</table>
+
+### is_string_a()
+Checks if string `$1` is of a certain "type" `$2`, f.ex. if it's an absolute filepath or a integer. Tests types are listed in  `$2`'s 
+documentation; the type may be inverted if it's preceeded by a *!*, f.ex. *!absolute_filepath* for a relative filepath. 
+
+The function is able to work in 2 modes (depending on $3):
 - in "status" mode it may be used easily in instruction chains (see examples below); all that matters is that it
-  returns with status code 0 in case of success and a positive value in case of error. The error types "$1 empty"
-  "test type unknown" and "check failed" all have the same status code (1) and may hence not be distinguished by
+  returns with status code 0 in case of success and a positive value in case of error. The error types "`$1` empty"
+  "test type unknown" and "check failed" all have the same status code (*1*) and may hence not be distinguished by
   the caller
 - in "stdout" mode the status code indicates only the execution success/error state, the result of the operation is
-  on stdout. There's hence no ambiguity on the status code signification
+  on `stdout`. There's no ambiguity on the status code signification
 
-**Warning**: be careful with inverted checks in combination with an empty $1. One might consider that
+**Warning**: be careful with inverted checks if `$1` can be empty. One might consider that
 
 	is_string_a "" "!absolute_filepath"
-should return success since an empty string is indeed not an absolute filepath, but because of the
-protections it returns 1/error
+should return *0* (= success) since an empty string is not an absolute filepath but the function returns status *1* if 
+`$1` is empty
 
 Usage examples: the status mode allows to use it in statement chains easily
 	
@@ -98,21 +107,18 @@ whereas the stdout mode gives a better control, adapted if $1 can't be trusted
 	is_int=$(is_string_a "$unknown" "integer")
         [ $? -eq 0 ] && [ $is_int -eq 1 ] && echo "This is a integer: $unknown"
 
-#TODO email etc
-#to check for relative filepath, use '!absolute_filepath'
-
 <table>
-        <tr><td rowspan="3"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">string to check</td></tr>
-        <tr>    <td align="center"><code>$2</code></td><td>test type:
+	<tr><td rowspan="3"><b>Param.</b></td>
+	<td align="center"><code>$1</code></td><td width="90%">string to check</td></tr>
+	<tr>    <td align="center"><code>$2</code></td><td>test type:
 		<ul>
 			<li><em>absolute_filepath</em>: checks if the first non-whitespace character of <code>$1</code> is a <em>/</em>
-                        No filesystem check is done. Works with inexistant filepaths</li>
+			No filesystem check is done. Works with inexistant filepaths</li>
 			<li><em>integer</em>: checks if the string only contains numbers</li>
 		</ul>
 		Types can be inverted with a leading <em>!</em>, f.ex. <em>!integer</em>
 	</td></tr>
-        <tr>    <td align="center">[<code>$3</code>]</td><td>stdout output flag (output mode):
+	<tr>    <td align="center">[<code>$3</code>]</td><td>stdout output flag (output mode):
 		<ul>
 			<li>if omitted, set to an empty string or anything else than <em>1</em>, the function is in "status mode"
 			warning: use with care especially with inverted types! See the explanations above for details</li>
@@ -124,26 +130,22 @@ whereas the stdout mode gives a better control, adapted if $1 can't be trusted
 
 Pipes & status in "status mode":
 <table>
-	<tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>empty</td></tr>
-        <tr><td rowspan="3"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>the test type <code>$2</code> passed on <code>$1</code></td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>used in 3 situations:
-			<ul>
-				<li>the test type <code>$2</code> failed on <code>$1</code></li>
-				<li><code>$1</code> is empty</li>
-				<li><code>$2</code> is unknown</li>
-			</ul>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td width="90%">empty</td></tr>
+	<tr><td rowspan="3"><b>Status</b></td>
+		<td align="center"><em>0</em></td><td>the test type <code>$2</code> passed on <code>$1</code></td></tr>
+	<tr>    <td align="center"><em>1</em></td><td>used in 3 situations:
+		<ul>
+			<li>the test type <code>$2</code> failed on <code>$1</code></li>
+			<li><code>$1</code> is empty</li>
+			<li><code>$2</code> is unknown</li>
+		</ul>
 	</td></tr>
 	<tr>    <td align="center"><em>2</em></td><td><code>$2</code> is empty</td></tr>
 </table>
 
 Pipes & status in "stdout mode":
 <table>
-	<tr><td rowspan="2"><b>Pipes</b></td>
-		<td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-	<tr>    <td align="center"><code>stdout</code></td><td>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td width="90%">
 		<ul>
 			<li><em>0</em> the test of type <code>$2</code> failed on <code>$1</code></li>
 			<li><em>1</em> the test of type <code>$2</code> passed on <code>$1</code></li>
@@ -156,77 +158,66 @@ Pipes & status in "stdout mode":
 	<tr>    <td align="center"><em>3</em></td><td><code>$2</code> is unknown</td></tr>
 </table>
 
-### get_string_bytelength
+### get_string_bytelength()
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to get the bytelength of</td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>the bytelength of <code>$1</code></td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to get the bytelength of</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the bytelength of <code>$1</code></td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 
-### get_string_bytes
+### get_string_bytes()
 Returns byte representation of a string. Non-ascii chars like à,é,å,ê,etc. are transformed to their character code,
 é f.ex. is \303\251
 
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to get the byte representation of</td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>the byte representation of <code>$1</code></td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to get the byte representation of</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the byte representation of <code>$1</code></td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 
-### escape_sed_special_characters
+### escape_sed_special_characters()
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to escape</td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>escaped <code>$1</code></td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to escape</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>escaped <code>$1</code></td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 
-### get_sed_extract_expression
+### get_sed_extract_expression()
 Compute sed string extraction expression
 <table>
-        <tr><td rowspan="2"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">marker</td></tr>
-        <tr>    <td align="center"><code>$2</code></td><td>part to extract: can be <em>before</em> or <em>after</em>, with regard to <code>$3</code></td></tr>
-        <tr>    <td align="center"><code>$3</code></td><td>occurence: can be <em>first</em> or <em>last</em></td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>the sed extract expression, empty in case of error</td></tr>
-        <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>success, expression was computed and is on `stdout`</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>function was unable to find a suitable sed separator character</td></tr>
-        <tr>    <td align="center"><em>2</em></td><td>values for <code>$2</code> and/or <code>$3</code> are unknown</td></tr>
+	<tr><td rowspan="3"><b>Param.</b></td>
+		<td align="center"><code>$1</code></td><td width="90%">marker</td></tr>
+	<tr>    <td align="center"><code>$2</code></td><td>part to extract: can be <em>before</em> or <em>after</em>, with regard to the <code>$1</code occurence selected with
+		<code>$3</code></td></tr>
+	<tr>    <td align="center"><code>$3</code></td><td>occurence: can be <em>first</em> or <em>last</em></td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the sed extraction expression, empty in case of error</td></tr>
+	<tr><td rowspan="3"><b>Status</b></td>
+		<td align="center"><em>0</em></td><td>success, expression was computed and is on `stdout`</td></tr>
+	<tr>    <td align="center"><em>1</em></td><td>function was unable to find a suitable sed separator character</td></tr>
+	<tr>    <td align="center"><em>2</em></td><td>value of <code>$2</code> and/or <code>$3</code> is unknown</td></tr>
 </table>
 
-### get_sed_replace_expression
+### get_sed_replace_expression()
 Computes sed string replacement expression
 
 Example: 
 
 	echo "some string" | sed -e $(get_sed_replace_expression "some" "awesome")
-	get_sed_replace_expression() should provide the expression s/some/awesome/g => the
-Prints *awesome string*
+
+The expression returned would be *s/some/awesome/g*; the command prints *awesome string*
 <table>
-        <tr><td rowspan="2"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">sed match regex/string</td></tr>
-        <tr>    <td align="center"><code>$2</code></td><td>sed replace string</td></tr>
-        <tr>    <td align="center">[<code>$3</code>]</td><td>mode: 
+	<tr><td rowspan="3"><b>Param.</b></td>
+		<td align="center"><code>$1</code></td><td width="90%">sed match regex/string</td></tr>
+	<tr>    <td align="center"><code>$2</code></td><td>sed replace string</td></tr>
+	<tr>    <td align="center">[<code>$3</code>]</td><td>mode: 
 		<ul>
 			<li>if omitted, replace every occurence (aka global)</li>
-			<li>*first* to replace only the first occurence</li>
+			<li><em>first</em> to replace only the first occurence</li>
 		</ul>
 	</td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>the sed replace expression, empty if an error occur</td></tr>
-        <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>success, the expression was computed and printed on <code>stdout</code></td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>if the function was unable to find a suitable separator character</td></tr>
-        <tr>    <td align="center"><em>2</em></td><td>if the mode <code>$3</code> is unknown</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the sed replace expression, empty if an error occur</td></tr>
+	<tr><td rowspan="3"><b>Status</b></td>
+		<td align="center"><em>0</em></td><td>success, the expression was computed and written on <code>stdout</code></td></tr>
+	<tr>    <td align="center"><em>1</em></td><td>the function was unable to find a suitable separator character</td></tr>
+	<tr>    <td align="center"><em>2</em></td><td>the mode <code>$3</code> is unknown</td></tr>
 </table>
-
-
