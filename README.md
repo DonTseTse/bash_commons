@@ -113,3 +113,6 @@ script_folder="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 - string_handling 
 	-get_sed_replace_expression() - add regex for last occurence replacement (`$3` set to *last*)
 	-is_string_a() - add regex for email, etc checks
+	- find_substring() - add a search_from parameter
+- filesystem
+	- move_verbose(): make var name configurable, use in move() instead of $4 => prefix becomes $mv_msg_def[prefix]

@@ -217,9 +217,21 @@ The expression is *s/some/awesome/g* and the command prints *awesome string*
 			<li><em>first</em> to replace only the first occurence</li>
 		</ul>
 	</td></tr>
-	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the sed replace expression, empty if an error occur</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the sed replace expression, empty in case of error</td></tr>
 	<tr><td rowspan="3"><b>Status</b></td>
 		<td align="center"><em>0</em></td><td>success, the expression was computed and written on <code>stdout</code></td></tr>
 	<tr>    <td align="center"><em>1</em></td><td>the function was unable to find a suitable separator character</td></tr>
 	<tr>    <td align="center"><em>2</em></td><td>the occurence selection <code>$3</code> is unknown</td></tr>
+</table>
+
+### find_sed_operation_separator()
+Provides a sed separator character which is not in $1 and $2
+<table>
+        <tr><td rowspan="2"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">sed match regex/string</td></tr>
+        <tr>    <td align="center"><code>$2</code></td><td>2nd sed argument</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the sed operation separator character, empty in case of error</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>found a suitable separator character, written on <code>stdout</code></td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>none of the 23 characters available is suited</td></tr>
 </table>
