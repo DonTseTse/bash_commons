@@ -17,20 +17,7 @@
 . "$commons_path/helpers.sh" 		# for get_piped_input()
 
 ########### String transformation utilities
-### escape
-# Takes the piped input and escapes the char(s) given as parameter with backslashes
-#
-# Special care is taken to disable bash globbing to make sure that affected characters, typically '*', can be escaped properly
-# At the end, the original globbing configuration is restored.
-#
-# Usage: - $> echo "path/to/file" | escape "/"
-#          gives "path\/to\/file" on stdout
-#
-# Parametrization:
-#  $1...n characters to escape
-# Pipes: - stdin: read completely
-#        - stdout: the escaped string
-# Status: 0
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#escape
 function escape()
 {
 	local globbing_was_enabled=0
@@ -46,15 +33,7 @@ function escape()
 	[ $globbing_was_enabled -eq 1 ] && set +f		# set +f removes the f option
 }
 
-### sanitize_variable_quotes
-# In configuration files, if a definition is var="...", the loaded value is '"..."' (the double quotes are part of the value).
-# This function removes them. It checks for single and double quotes.
-#
-# Parametrization:
-#  $1 (optional) string to sanitize
-# Pipes: - stdin: read completely if $1 is undefined/empty
-#        - stdout: processed string
-# Status: 0
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#sanitize_variable_quotes
 function sanitize_variable_quotes()
 {
         local input="${1:-$(get_piped_input)}"
@@ -64,20 +43,8 @@ function sanitize_variable_quotes()
 	echo "$input"
 }
 
-### trim
-# Cut leading and trailing whitespace on either the provided parameter or the piped stdin
-#
-# Usage:
-#  - Input as parameter: trimmed_string=$(trim "$string_to_trim")
-#  - Piped input: trimmed_string=$(echo "$string_to_trim" | trim)
-#
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#trim
 # Note: in the sed expressions, \s stands for [[:space:]]
-#
-# Parametrization:
-#  $1 (optional) string to trim. If it's empty trim tries to get input from a eventual stdin pipe
-# Pipes: - stdin: read completely if $1 is undefined/empty
-#        - stdout: trimmed $1/stdin
-# Status: 0 always, even if $1 and stdin are undefined/empty
 function trim()
 {
         local input="${1:-$(get_piped_input)}"
@@ -86,19 +53,7 @@ function trim()
 }
 
 ########### Misc string operators
-### find_substring
-# Finds the position of the first match of $2 in $1 (the start position of the match, to be precise)
-# Returns -1 if $2 is not found inside $1.
-#
-# Inspired by https://stackoverflow.com/questions/5031764/position-of-a-string-within-a-string-using-linux-shell-script
-#
-# Parametrization:
-#  $1 string to search in
-#  $2 char/string to find - exact matching is used (bash's matching special chars are disabled by string escaping)
-# Pipes: - stdin: ignored
-#        - stdout: -1 if $2 is not found in $1
-#                  the position of the first occurence of $2 in $1
-# Status: 0
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#find_substring
 function find_substring()
 {
 	# escape bash's string expansion pattern special chars to get "normal" matching
@@ -108,19 +63,9 @@ function find_substring()
 	[ ${#substr} -eq ${#1} ] && echo "-1" || echo ${#substr}
 }
 
-### get_absolute_path
-# Prepends $1 with $2 if defined, or the current working directory
-#
-# The path $1 and the optional root directory $2 don't have to exist
-#
+
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_absolute_path
 # Dev note: that's the reason why this function is in string_handling.sh and not filesystem.sh
-#
-# Parametrization:
-#  $1 path to "absolutify" if necessary
-#  $2 (optional) root path - if omitted, the current working directory is used
-# Pipes: - stdin: ignored
-#        - stdout: the computed absolute path
-# Status: 0 always
 function get_absolute_path()
 {
         [ -z "$1" ] && return 1
@@ -209,13 +154,7 @@ function is_string_a()
 	[ $test_exists -eq 0 ] && return 3
 }
 
-### get_string_bytelength
-#
-# Parametrization:
-#  $1 string to get the bytelength of
-# Pipes: - stdin: ignored
-#        - stdout: the bytelength
-# Status: 0
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_string_bytelength
 function get_string_bytelength()
 {
 	# this is the shortest version found to work => if local is included to the assignment or if it's merged with the printf
@@ -225,15 +164,7 @@ function get_string_bytelength()
 	printf "%d" "$len"
 }
 
-### get_string_bytes
-# Returns byte representation of a string. Non-ascii chars like à,é,å,ê,etc. are transformed to their character code,
-# é f.ex. is \303\251
-#
-# Parametrization:
-#  $1 string to get the bytelength of
-# Pipes: - stdin: ignored
-#        - stdout: the bytelength
-# Status: 0
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_string_bytes
 function get_string_bytes()
 {
 	[ -n "$1" ] && LANG=C LC_ALL=C printf %q "$1"
@@ -241,31 +172,13 @@ function get_string_bytes()
 }
 
 ########### sed helpers
-### escape_sed_special_characters
-# Escapes all characters in $1 which carry a special signification in sed expression
-#
-# Parametrization:
-#  $1 string for sed expression to escape
-# Pipes: - stdin: ignored
-#        - stdout: escaped $1
-# Status: 0
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#escape_sed_special_characters
 function escape_sed_special_characters()
 {
 	echo "$1" | sed -e 's/\./\\\./' -e 's/\+/\\\+/' -e 's/\?/\\\?/' -e 's/\*/\\\*/' -e 's/\[/\\\[/' -e 's/\]/\\\]/' -e 's/\^/\\\^/' -e 's/\$/\\\$/'
 }
 
-
-### get_sed_extract_expression
-#
-# Parametrization:
-#  $1 marker
-#  $2 part to extract: can be "before" or "after", with regard to $3
-#  $3 occurence: can be "first" or "last"
-# Pipes: - stdin: ignored
-#        - stdout: if status is 0, the sed extract expression, empty otherwise
-# Status: 0 if an expression was computed
-#         1 if the function was unable to find a suitable separator character
-#         2 if values for $2 and/or $3 are unknown
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_sed_extract_expression
 function get_sed_extract_expression()
 {
 	local sep=$(find_sed_operation_separator "$1")
@@ -279,25 +192,7 @@ function get_sed_extract_expression()
 	return 2
 }
 
-
-### get_sed_replace_expression
-# Returns sed string replacement regex
-#
-# Usage: echo "some string" | sed -e $(get_sed_replace_expression "some" "awesome")
-#        get_sed_replace_expression() should provide the expression s/some/awesome/g => the
-#        command prints "awesome string"
-#
-# Parametrization:
-#  $1 sed match regex/string
-#  $2 sed replace string
-#  $3 mode - if omitted, replace every occurence (aka global)
-#          - "first" to replace only the first occurence
-#          - TODO "last" to replace the last occurence
-# Pipes: - stdin: ignored
-#        - stdout: if status is 0, the sed replace expression, empty otherwise
-# Status: 0 if an expression was computed
-#         1 if the function was unable to find a suitable separator character
-#         2 if the mode $3 is unknown
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_sed_replace_expression
 function get_sed_replace_expression()
 {
 	local sep=$(find_sed_operation_separator "$1" "$2")
