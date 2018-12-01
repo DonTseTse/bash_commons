@@ -7,7 +7,7 @@ Parameters enclosed in brackets [ ] are optional.
 
 ### get_real_path()
 The function processes `$1` in 4 ways:
-- if it's a relative path, it's transformed to it's absolute equivalent
+- if it's a relative path, it's transformed to the absolute equivalent
 - it resolves symbolic file links, even if they are chained (i.e. a link pointing to a link pointing to a link etc.)
 - it resolves symbolic folder links using `cd`'s `-P` flag
 - it cleans up `../` and `./` components in `$1`
@@ -18,14 +18,14 @@ works with paths that don't exist.
 	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">path to resolve and clean</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the "real" path of <code>$1</code>, empty otherwise</td></tr>
 	<tr><td rowspan="2"><b>Status</b></td>
-		<td align="center"><em>0</em></td><td><code>$1</code> exists</td></tr>
-	<tr>    <td align="center"><em>1</em></td><td>otherwise</td></tr>
+		<td align="center"><em>0</em></td><td>success</td></tr>
+	<tr>    <td align="center"><em>1</em></td><td><code>$1</code> doesn't exist</td></tr>
 </table>
 
 ### get_script_path()
 Inspired by this [StackOverflow(SO) answer](https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within/246128#246128). 
 The function returns the full path including the filename and it's able to work in any call constellation: sourced, called in a subshell etc. 
-It relies on `$BASH_SOURCE` which changes depending on the constellation, the element in this array with the highest index is always the path of the script 
+It relies on `$BASH_SOURCE` which changes depending on the constellation, however, the element in this array with the highest index is always the path of the script 
 executed initially.
 
 **Important**: call `get_script_path()` before any directory changes in the script. This is due to the fact that the `$BASH_SOURCE` entry depends on the way 
@@ -88,8 +88,8 @@ Extracts the part of `$1` which does not exist on the filesystem.
 	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 
-### get_existing_path_part
-Extracts the part of `$1` which exists on the filesystem. Returns "at least" /
+### get_existing_path_part()
+Extracts the part of `$1` which exists on the filesystem. Returns "at least" */*
 <table>
 	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">path</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>part of <code>$1</code> which exists on the filesystem</td></tr>
@@ -98,10 +98,13 @@ Extracts the part of `$1` which exists on the filesystem. Returns "at least" /
 
 ### move()
 Advantages over `mv`:
-- additional return codes allow better error interpretation, not just the basic 0/success and 1/error
+- checks the required read/write permissions and returns specific status codes for these errors 
 - control over `stdout` and `stderr`: `mv` prints on `stderr` on failure. This function allows to be sure:
-	- that `stdout` returns either nothing, the `mv` status code or the `mv` `stderr` message, depending on `$2`
+	- that `stdout` returns either nothing, the `mv` status code or the `mv` `stderr` message, depending on `$3`
 	- that `stderr` remains silent, even in case of `mv` failure
+
+In the context of <a href="#move_verbose">move_verbose()</a> (`$3` set to *verbose*) the additional permission checks allows to provide specific error messages 
+whereas <code>mv</code>'s status is *1* in all these cases ("something failed"). 
 
 Examples:
 - silent mode: `move "path/to/src" "path/to/dest"`
@@ -119,8 +122,8 @@ Examples:
         <tr>    <td align="center">[<code>$3</code>]</td><td><code>stdout</code> configuration:
 		<ul>
 			<li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
-			<li><em>status</em> / <em>$?</em> for the <code>mv</code> status code</li>
-                        <li><em>error_message</em> / <em>err_msg</em> / <em>stderr</em> <code>mv</code> call <code>stderr</code> output</li>
+			<li><em>status</em> or <em>$?</em> for the <code>mv</code> call's status code</li>
+                        <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em> for the <code>mv</code> call's <code>stderr</code> output</li>
                         <li><em>verbose</em> calls <a href="#create_directory_verbose">create_directory_verbose()</a> internally</li>
 		</ul>
 	</td></tr>
@@ -128,8 +131,8 @@ Examples:
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>
 		<ul>
 			<li>empty if <code>$3</code> omitted or set to an empty string
-                        <li>the <code>mv<code> status code if <code>$3</code> is set to <em>status</em></li>
-                        <li>eventual <code>sterr</code> output of the <code>mv</code> call, if <code>$3</code> is set to <em>error_message</em></li>
+                        <li>the status returned by the <code>mv</code> call if <code>$3</code> is set to <em>status</em></li>
+                        <li>eventual <code>sterr</code> output of the <code>mv</code> call if <code>$3</code> is set to <em>error_message</em></li>
                         <li>the message if <code>$3</code> is set to <em>verbose</em></li>		
 		</ul>
 	</td></tr>
@@ -246,7 +249,7 @@ The supported variables are `%path` and `%err_msg`
 ### try_filepath_deduction()
 If there's only a single file (match) in the folder $1, returns its path
 <table>
-        <tr><td rowspan="3"><b>Param.</b></td>
+        <tr><td rowspan="2"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path of the folder to search in</td></tr>
         <tr>    <td align="center">[<code>$2</code>]</td><td>search pattern, if omitted, defaults to <em>*</em> (= everything)</td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the absolute filepath of the single match, empty otherwise</td></tr>
@@ -258,27 +261,33 @@ If there's only a single file (match) in the folder $1, returns its path
 </table>
 
 ### load_configuration_file_value()
-The variable definition should have the format:
+Bash allows to `source` (aka `.`) files which is a convenient way to load f.ex. configuration files, however, it has disadvantages as well:
+- the files have to comply with the bash syntax of course, f.ex. regarding comments, the way the variables are defined, etc. 
+- the calling application has no control which variables are defined (or not), which ones are overwritten, etc.
 
-	variable=value
-It should be on a single line, alone, with any number of whitespaces before the variable name or between the variable name
-the assignment '=' and the value
+It's sometimes easier and more flexible to load values with a file content search and extraction method like this function. It's based on a search with `grep` 
+and the extraction of the value using string processing utilities. 
 
-Examples:
+Variable definitions should have the format:
+
+	<variable name>=value
+Each definition has to be on a single line, with any number of whitespaces before the variable name, between the variable name and the assignment operator '=' or between 
+the operator and the value. Inline comments are not allowed, they should be on their own lines. Examples of valid definitions:
 
 	cfg_filepath="/etc/test.conf"
+	I'm a comment
 	   cfg_filepath="/etc/test2.conf"
 	timeout     = 25
 <table>
-        <tr><td rowspan="3"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">path of the configuration file</td></tr>
-        <tr>    <td align="center"><code>$2</code></td><td>name of the variable to load</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the loaded value, empty otherwise</td></tr>
-        <tr><td rowspan="5"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>successful</td></tr>
+	<tr><td rowspan="2"><b>Param.</b></td>
+		<td align="center"><code>$1</code></td><td width="90%">path of the configuration file</td></tr>
+	<tr>    <td align="center"><code>$2</code></td><td>name of the variable to load</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the loaded value, empty otherwise</td></tr>
+	<tr><td rowspan="6"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>successful, value is written on <code>stdout</code></td></tr>
         <tr>    <td align="center"><em>1</em></td><td><code>$1</code> is empty</td></tr>                                                    
         <tr>    <td align="center"><em>2</em></td><td><code>$2</code> is empty</td></tr>
         <tr>    <td align="center"><em>3</em></td><td><code>$1</code> doesn't exist</td></tr>
         <tr>    <td align="center"><em>4</em></td><td>no read permission on <code>$1</code></td></tr>
-        <tr>    <td align="center"><em>5</em></td><td>a variable with name <code>$2</code> is not found/defined</td></tr>
+        <tr>    <td align="center"><em>5</em></td><td>a variable with name <code>$2</code> could not be found</td></tr>
 </table>
