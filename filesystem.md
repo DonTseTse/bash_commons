@@ -10,7 +10,7 @@ The function processes `$1` in 4 ways:
 - if it's a relative path, it's transformed to the absolute equivalent
 - it resolves symbolic file links, even if they are chained (i.e. a link pointing to a link pointing to a link etc.)
 - it resolves symbolic folder links using `cd`'s `-P` flag
-- it cleans up `../` and `./` components in `$1`
+- it cleans up *../* and *./* components in `$1`
 
 It works for both file and folder paths with the restriction that they must exist. The [string handling collection's get_absolute_path()](string_handling.md#get_absolute_path)
 works with paths that don't exist. 
@@ -96,75 +96,18 @@ Extracts the part of `$1` which exists on the filesystem. Returns "at least" */*
 	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 
-### move()
-Advantages over `mv`:
-- checks the required read/write permissions and returns specific status codes for these errors 
-- control over `stdout` and `stderr`: `mv` prints on `stderr` on failure. This function allows to be sure:
-	- that `stdout` returns either nothing, the `mv` status code or the `mv` `stderr` message, depending on `$3`
-	- that `stderr` remains silent, even in case of `mv` failure
-
-In the context of <a href="#move_verbose">move_verbose()</a> (`$3` set to *verbose*) the additional permission checks allows to provide specific error messages 
-whereas <code>mv</code>'s status is *1* in all these cases ("something failed"). 
-
-Examples:
-- silent mode: `move "path/to/src" "path/to/dest"`
-- status code: `status=$(move "/path/to/src" "/path/to/dest" "status")`
-- error message:
-	```
-	err_msg=$(move "/path/to/src" "path/to/dest"  "error_message")
-	status=$?
-	```
-- verbose mode: calls <a href="#move_verbose">move_verbose()</a> internally, see its documentation for details
+### try_filepath_deduction()
+If there's only a single file (match) in the folder $1, returns its path
 <table>
-        <tr><td rowspan="4"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">source path</td></tr>
-        <tr>    <td align="center"><code>$2</code></td><td>destination path</td></tr>
-        <tr>    <td align="center">[<code>$3</code>]</td><td><code>stdout</code> configuration:
-		<ul>
-			<li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
-			<li><em>status</em> or <em>$?</em> for the <code>mv</code> call's status code</li>
-                        <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em> for the <code>mv</code> call's <code>stderr</code> output</li>
-                        <li><em>verbose</em> calls <a href="#create_directory_verbose">create_directory_verbose()</a> internally</li>
-		</ul>
-	</td></tr>
-        <tr>    <td align="center">[<code>$4</code>]</td><td>if <code>$3</code> is set to <em>verbose</em>, the prefix</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>
-		<ul>
-			<li>empty if <code>$3</code> omitted or set to an empty string
-                        <li>the status returned by the <code>mv</code> call if <code>$3</code> is set to <em>status</em></li>
-                        <li>eventual <code>sterr</code> output of the <code>mv</code> call if <code>$3</code> is set to <em>error_message</em></li>
-                        <li>the message if <code>$3</code> is set to <em>verbose</em></li>		
-		</ul>
-	</td></tr>
-        <tr><td rowspan="7"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>moved successfully</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td><code>mv</code> error, if <code>$3</code> is set to <em>error_message</em>, <code>stdout</code> 
-		contains the content of <code>mv</code>'s <code>stderr</code> output</td></tr>
-        <tr>    <td align="center"><em>2</em></td><td><code>$1</code> is empty</td></tr>
-        <tr>    <td align="center"><em>3</em></td><td><code>$1</code> doesn't exist</td></tr>
-        <tr>    <td align="center"><em>4</em></td><td><code>$1</code> is not readable</td></tr>
-        <tr>    <td align="center"><em>5</em></td><td><code>$2</code> exists and won't be overwritten</td></tr>
-        <tr>    <td align="center"><em>6</em></td><td><code>$2</code> is not writeable</td></tr>
-</table>
-
-### move_verbose()
-To overwrite these messages simply create a mkdir_msg_def variable before the call:
-
-	mkdir_msg_def=("Info: folder created\n" "Error in %err_msg\n" "Info: folder exists, nothing to do\n")
-	mkdir_msg_def[3]="Error: could not create directory, path not writeable\n"
-	move_directory_verbose "/new/test/dir" "   "
-The supported variables are `%path` and `%err_msg`
-<table>
-        <tr><td rowspan="3"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">source path</td></tr>
-        <tr>    <td align="center"><code>$2</code></td><td>destination path</td></tr>
-        <tr>    <td align="center">[<code>$3</code>]</td><td>prefix, if omitted, defaults to a empty string</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the printed message</td></tr>
-        <tr><td><b>Status</b></td><td colspan="2"><a href="#move">move()</a>'s status</td></tr>
-        <tr><td><b>Globals</b></td><td colspan="2">
-		<code>$mv_msg_def</code> as an array with 6 keys corresponding to the possible return states 
-		of <a href="#move">move()</a>.<code>$mv_msg_def[0]<code> for success, index 1 for a <code>mv</code> error, etc.
-	</td></tr>	
+        <tr><td rowspan="2"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">path of the folder to search in</td></tr>
+        <tr>    <td align="center">[<code>$2</code>]</td><td>search pattern, if omitted, defaults to <em>*</em> (= everything)</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the absolute filepath of the single match, empty otherwise</td></tr>
+        <tr><td rowspan="4"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>successful deduction, path is written on <code>stdout</code></td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>folder <code>$1</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>there's no match for <code>$2</code> in <code>$1</code></td></tr>
+        <tr>    <td align="center"><em>3</em></td><td>there's more than 1 match for <code>$2</code> in <code>$1</code></td></tr>
 </table>
 
 ### create_directory()
@@ -188,6 +131,22 @@ Examples:
 	mkdir_msg_def[3]="Error: could not create directory, path not writeable\n"
 	create_directory "$1" "verbose"  "   "
 	``` 
+
+Variant of <a href="#create_directory">create_directory()</a> with configurable message output
+
+Default message if f.ex. `path` is `new/test/dir`:
+- 0/success pattern: "%path created\n" => "new/test/dir created\n"
+- 1/error   pattern: "%err_msg\n" => error message printed by mkdir, terminated by a newline
+- 2/"folder exists" pattern: "%path exists\n" => "new/test/dir exists\n"
+- 3/"path not writeable" pattern: "could not create %path, path is not writeable\n" => "could not create new/test/dir,
+path is not writeable\n"
+
+To overwrite these messages simply create a mkdir_msg_def variable before the call:
+
+        mkdir_msg_def=("Info: folder created\n" "Error in %err_msg\n" "Info: folder exists, nothing to do\n")
+        mkdir_msg_def[3]="Error: could not create directory, path not writeable\n"
+        create_directory_verbose "/new/test/dir" "   "
+The supported variables are `%path` and `%err_msg`
 
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
@@ -218,46 +177,135 @@ Examples:
         <tr>    <td align="center"><em>4</em></td><td><code>$1</code> is not writeable</td></tr>
 </table>
 
-### create_directory_verbose()
-Variant of <a href="#create_directory">create_directory()</a> with configurable message output
-
-Default message if f.ex. `path` is `new/test/dir`:
-- 0/success pattern: "%path created\n" => "new/test/dir created\n"
-- 1/error   pattern: "%err_msg\n" => error message printed by mkdir, terminated by a newline
-- 2/"folder exists" pattern: "%path exists\n" => "new/test/dir exists\n"
-- 3/"path not writeable" pattern: "could not create %path, path is not writeable\n" => "could not create new/test/dir,
-path is not writeable\n"
-
-To overwrite these messages simply create a mkdir_msg_def variable before the call:
-
-	mkdir_msg_def=("Info: folder created\n" "Error in %err_msg\n" "Info: folder exists, nothing to do\n")
-	mkdir_msg_def[3]="Error: could not create directory, path not writeable\n"
-	create_directory_verbose "/new/test/dir" "   "
-The supported variables are `%path` and `%err_msg`
+### do_filesystem_operation()
+Handler for filesystem file/folder copy/move, used by the wrapper functions <a href="#copy_file">copy_file()</a>, <a href="#copy_folder">copy_folder()</a>,
+<a href="#move_file">move_file()</a> and <a href="#move_folder">move_folder()</a>. See their documentation for details.
 <table>
-        <tr><td rowspan="2"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
-        <tr>    <td align="center">[<code>$2</code>]</td><td>prefix, if omitted, defaults to a empty string</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the printed message</td></tr>
-        <tr><td><b>Status</b></td><td colspan="2"><a href="#create_directory">create_directory()</a>'s status</td></tr>
-        <tr><td><b>Globals</b></td><td colspan="2">
-		<code>$create_directory_msg_def as an array with 5 keys corresponding to the 5 possible return states of <a href="#create_directory">create_directory()</a>.
-                <code>$create_directory_msg_def[0]</code> success message, etc.
+        <tr><td rowspan="5"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">mode, possible values:
+		<ul>
+			<li><em>copy</em> or <em>cp</em></li>
+			<li><em>move</em> or <em>mv</em></li>
+		</ul>
+	</td></tr>
+                <td align="center"><code>$2</code></td><td width="90%">source path</td></tr>
+        <tr>    <td align="center"><code>$3</code></td><td>destination path</td></tr>
+        <tr>    <td align="center">[<code>$4</code>]</td><td><code>stdout</code> configuration:
+                <ul>
+                        <li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
+                        <li><em>status</em> or <em>$?</em> for the <code>mv</code> call's status code</li>
+                        <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em> for the <code>mv</code> call's <code>stderr</code> output</li>
+                        <li><em>verbose</em> calls <a href="#create_directory_verbose">create_directory_verbose()</a> internally</li>
+                </ul>
         </td></tr>
+        <tr>    <td align="center">[<code>$5</code>]</td><td>if <code>$4</code> is set to <em>verbose</em>, the name of the array variable which contains the 
+		custom message patterns. If omitted, the default message patterns are used</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>
+                <ul>
+                        <li>empty if <code>$4</code> omitted or set to an empty string
+                        <li>the status returned by the <code>mv</code> call if <code>$4</code> is set to <em>status</em></li>
+                        <li>eventual <code>sterr</code> output of the <code>mv</code> respectively <code>cp</code> call if <code>$4</code> is set to <em>error_message</em></li>
+                        <li>the message if <code>$4</code> is set to <em>verbose</em></li>
+                </ul>
+        </td></tr>
+        <tr><td rowspan="8"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>operation successful</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>operation failure, if <code>$3</code> is set to <em>error_message</em> (or its aliases), <code>stdout</code>
+                contains <code>mv</code>'s respectively <code>cp</code>'s <code>stderr</code> output</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>the source path <code>$2</code> is empty</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td>the source path <code>$2</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>4</em></td><td>no read permission on source path <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>5</em></td><td>the destination path <code>$3</code> exists</td></tr>
+        <tr>    <td align="center"><em>6</em></td><td>no write permission on destination path <code>$3</code></td></tr>
+        <tr>    <td align="center"><em>7</em></td><td>mode <code>$1</code> unknown</td></tr>
 </table>
 
-### try_filepath_deduction()
-If there's only a single file (match) in the folder $1, returns its path
+### copy_file() copy_folder() move_file() move_folder()
+<a name="copy_file"></a>
+<a name="copy_folder"></a>
+<a name="move_file"></a>
+<a name="move_folder"></a>
+`cp` and `mv` wrapper with:
+- several checks, f.ex. if source/destination exists or the required read/write permissions, which allow to get specific status codes for 
+  all these error types
+- control over `stdout` and `stderr`: `mv` and `cp` write on `stderr` in case of failure. The functions allows to be sure:
+        - that `stdout` returns either nothing, the `mv`/`cp` status code or `stderr` message, or a custom message, depending on `$3`
+        - that `stderr` remains silent, even in case of `mv`/`cp` failure
+- the specific status codes and the stdout control allow to have a "verbose" mode with custom dynamic messages by status (i.e. templates 
+  for each success and error state, with variable placeholders that allow to inject the runtime parameters in the message)
+
+**Stdout configuration**:
+- silent mode: `move_file "path/to/src" "path/to/dest"`
+- status code: `status=$(move_folder "/path/to/src" "/path/to/dest" "status")`
+- error message:
+        ```
+        err_msg=$(copy_file "/path/to/src" "/path/to/dest"  "error_message")
+        status=$?
+        ```
+- verbose mode: 
+	```
+        copy_file "/path/to/src" "/path/to/dest"  "verbose"
+        status=$?
+        ```
+	Depending on the outcome, it would print one the default message template (shown below) corresponding to the status. To overwrite these
+	templates create an array variable and pass it's name to the function as `$4`. If `$4` is defined, the function looks for an array element
+	with the index of the status. If that element is undefined, it reverts to the default template. This allows to overwrite only certain states,
+	f.ex. the success (0), as shown below:
+	```
+	my_msg_defs[0]="Success! %source copied to %destination"
+	copy_file "/path/to/src" "/path/to/dest"  "verbose" "my_msg_defs"
+	```
+	would print *Success! /path/to/src copied to /path/to/dest* in case of success. 
+
+**Verbose mode message templates**
+These templates support 4 variable placeholders: 
+- `%source`: `$2`
+- `%destination`: `$3`
+- `%stderr_msg`: the `stderr` output of the `mv` or `cp` call. Only relevant for status *1*.
+- `%operation`: has the value *move* or *copy*
+The default message template are:
 <table>
-        <tr><td rowspan="2"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">path of the folder to search in</td></tr>
-        <tr>    <td align="center">[<code>$2</code>]</td><td>search pattern, if omitted, defaults to <em>*</em> (= everything)</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the absolute filepath of the single match, empty otherwise</td></tr>
-        <tr><td rowspan="4"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>successful deduction, path is written on <code>stdout</code></td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>folder <code>$1</code> doesn't exist</td></tr>
-        <tr>    <td align="center"><em>2</em></td><td>there's no match for <code>$2</code> in <code>$1</code></td></tr>
-        <tr>    <td align="center"><em>3</em></td><td>there's more than 1 match for <code>$2</code> in <code>$1</code></td></tr>
+<tr><th>Status</th><th width="90%">Template</th></tr>
+<tr><td><em>0</em></td><td><code>%source</code> moved to <code>%destination</code>\n</td></tr>
+<tr><td><em>1</em></td><td><code>%stderr_msg</code>\n</td></tr>
+<tr><td><em>2</em></td><td>error: <code>%operation</code> failed, source path empty\n</td></tr>
+<tr><td><em>3</em></td><td>error: <code>%operation</code> from <code>%source</code> to <code>%destination</code> failed because <code>%source</code> doesn't exist\n</td></tr>
+<tr><td><em>4</em></td><td>error: <code>%operation</code> from <code>%source</code> to <code>%destination</code> failed because there's no read permission on <code>%source</code>\n</td></tr>
+<tr><td><em>5</em></td><td>error: <code>%operation</code> from <code>%source</code> to <code>%destination</code> failed because <code>%destination</code> exists (won't overwrite)\n</td></tr>
+<tr><td><em>6</em></td><td>error: <code>%operation</code> from <code>%source</code> to <code>%destination</code> failed because there's no write permission on <code>%destination</code>\n</td></tr>
+</table>
+
+<table>
+        <tr><td rowspan="4"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">source path</td></tr>
+        <tr>    <td align="center"><code>$2</code></td><td>destination path</td></tr>
+        <tr>    <td align="center">[<code>$3</code>]</td><td><code>stdout</code> configuration:
+                <ul>
+                        <li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
+                        <li><em>status</em> or <em>$?</em> for the <code>mv</code> call's status code</li>
+                        <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em> for the <code>mv</code> call's <code>stderr</code> output</li>
+                        <li><em>verbose</em> calls <a href="#create_directory_verbose">create_directory_verbose()</a> internally</li>
+                </ul>
+        </td></tr>
+        <tr>    <td align="center">[<code>$4</code>]</td><td>if <code>$3</code> is set to <em>verbose</em>, the name of the array variable which contains the
+                custom message patterns. If omitted, the default message patterns are used</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>
+                <ul>
+                        <li>empty if <code>$3</code> omitted or set to an empty string
+                        <li>the status returned by the <code>mv</code> call if <code>$3</code> is set to <em>status</em></li>
+                        <li>eventual <code>sterr</code> output of the <code>mv</code> call if <code>$3</code> is set to <em>error_message</em></li>
+                        <li>the message if <code>$3</code> is set to <em>verbose</em></li>
+                </ul>
+        </td></tr>
+	<tr><td rowspan="7"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>operation successful</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>operation failure, if <code>$3</code> is set to <em>error_message</em> (or its aliases), <code>stdout</code>
+                contains <code>mv</code>'s respectively <code>cp</code>'s <code>stderr</code> output</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>the source path <code>$2</code> is empty</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td>the source path <code>$2</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>4</em></td><td>no read permission on source path <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>5</em></td><td>the destination path <code>$3</code> exists</td></tr>
+        <tr>    <td align="center"><em>6</em></td><td>no write permission on destination path <code>$3</code></td></tr>
 </table>
 
 ### load_configuration_file_value()

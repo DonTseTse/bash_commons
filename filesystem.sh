@@ -1,6 +1,7 @@
 #! /bin/bash
 
-. "$commons_path/string_handling.sh"  # sanitize_variable_quotes()
+. "$commons_path/string_handling.sh"  		# for sanitize_variable_quotes()
+. "$commons_path/helpers.sh"           		# for get_array_element()
 
 ########### Path handling utilities
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#get_real_path
@@ -80,76 +81,94 @@ function try_filepath_deduction()
 
 
 ########### Filesystem operations
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#move
-function move()
-{
-	#DEBUG >&2 echo "move() called with \$1 $1 \$2 $2 \$3 $3"
-	[ "$3" = '$?' ] || [ "$3" = "status" ] && local status="$(move "$1" "$2"; echo $?)" && echo "$status" && return $status
-	[ "$3" = "verbose" ] && move_verbose "$1" "$2" "$4" && return
-	[ -z "$1" ] && return 2
-	[ ! -e "$1" ] && return 3
-	[ ! -r "$1" ] && return 4
-	[ -e "$2" ] && return 5
-        # $1 is not empty => is_writeable() will always return status 0, no need to check
-        [ "$(is_writeable "$2")" -ne 1 ] && return 6
-        local mv_status mv_err_msg
-        # when mv fails, it prints on stderr, captured here
-	mv_err_msg=$(2>&1 mv -n "$1" "$2") 	# mv with -n forbids overwrites
-	mv_status=$?
-        [ "$3" = "stderr" ] || [ "$3" = "err_msg" ] || [ "$3" = "error_message" ] && echo "$mv_err_msg"
-	return $mv_status
-}
-
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#move_verbose
-function move_verbose()
-{
-        local status err_msg msg_def msg
-        msg_def[0]="${mv_msg_def[0]:-%source moved to %destination\n}"
-        msg_def[1]="${mv_msg_def[1]:-%err_msg\n}"
-        msg_def[2]="${mv_msg_def[2]:-%source doesn't exist\n}"
-        msg_def[3]="${mv_msg_def[3]:-%source is not readable\n}"
-        msg_def[4]="${mv_msg_def[4]:-%destination exists, won't overwrite\n}"
-        msg_def[5]="${mv_msg_def[5]:-could not create %destination, path is not writeable\n}"
-        err_msg="$(move "$1" "$2" "stderr")"
-        status=$?
-        msg="$(echo "${msg_def[status]}" | sed -e "s^%source^$1^" -e "s^%destination^$2^" -e "s^%err_msg^$err_msg^")"
-        printf "$(printf "$3%s" "$msg")"
-        return $status
-}
-
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#create_directory
 function create_directory()
 {
-	[ "$2" = '$?' ] || [ "$2" = "status" ] && local status="$(create_directory "$1"; echo $?)" && echo "$status" && return $status
-	[ "$2" = "verbose" ] && create_directory_verbose "$1" "$3" && return
-	[ -z "$1" ] && return 2
-	[ -d "$1" ] && return 3
-	[ "$(is_writeable "$1" 1)" -ne 1 ] && return 4
-	local mkdir_status mkdir_err_msg
-	# $1 is not empty => is_writeable will always return status 0, no need to check
-	# is_writeable() is configured to check on the highest level *existing* directory (since it's mkdir with -p)
-	# when mkdir fails, it prints on stderr, captured here
-	mkdir_err_msg=$(2>&1 mkdir -p "$1")
-	mkdir_status=$?
-	#[ "$2" = '$?' ] || [ "$2" = "status" ] && echo "$mkdir_status"
-	[ "$2" = "stderr" ] || [ "$2" = "err_msg" ] || [ "$2" = "error_message" ] && echo "$mkdir_err_msg"
-	return $mkdir_status
+	# status & verbose mode handled with recursion to be able to cope with all the returns before the processing
+        [ "$2" = '$?' ] || [ "$2" = "status" ] && local status="$(create_directory "$1"; echo $?)" && echo "$status" && return $status
+	if [ "$2" = "verbose" ]; then
+		local default_msg_defs=("folder %path created\n" "%err_msg\n" "No path provided\n" "%path exists\n" "could not create %path, path is not writeable\n")
+		local err_msg="$(create_directory "$1" "stderr")" status=$? msg_def
+		[ -n "$3" ] && msg_def="$(get_array_element "$3" $status)"
+                [ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
+		#>&2 echo "prefix: $(get_array_element "$3" "prefix")"
+                printf '%s' "$(echo "$msg_def" | sed -e "s^%path^$1^g" -e "s^%err_msg^$err_msg^g")"
+		return $status
+        fi
+        local mkdir_status mkdir_err_msg
+        [ -z "$1" ] && return 2
+        [ -d "$1" ] && return 3
+        # $1 is not empty => is_writeable will always return status 0, no need to check
+        # is_writeable() is configured to check on the highest level *existing* directory (since it's mkdir with -p)
+        [ "$(is_writeable "$1" 1)" -ne 1 ] && return 4
+        # when mkdir fails, it prints on stderr, captured here
+        mkdir_err_msg="$(2>&1 mkdir -p "$1")"
+        mkdir_status=$?
+        [ "$2" = "stderr" ] || [ "$2" = "err_msg" ] || [ "$2" = "error_message" ] && echo "$mkdir_err_msg"
+        return $mkdir_status
 }
 
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#create_directory_verbose
-function create_directory_verbose()
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#filesystem_operation
+function do_filesystem_operation()
 {
-	local status err_msg msg_def msg
-	msg_def[0]="${mkdir_msg_def[0]:-folder %path created\n}"
-	msg_def[1]="${mkdir_msg_def[1]:-%err_msg\n}"
-	msg_def[2]="${mkdir_msg_def[2]:-No path provided\n}"
-	msg_def[3]="${mkdir_msg_def[3]:-%path exists\n}"
-	msg_def[4]="${mkdir_msg_def[4]:-could not create %path, path is not writeable\n}"
-	err_msg="$(create_directory "$1" "stderr")"
+	#DEBUG >&2 echo "do_filesystem_operation() called with \$1 $1 \$2 $2 \$3 $3 \$4 $4 \$5 $5"
+	# status collected with a little trick to be able to echo it
+        [ "$4" = '$?' ] || [ "$4" = "status" ] && local status="$(do_filesystem_operation "$1" "$2" "$3"; echo $?)" && echo "$status" && return $status
+	if [ "$4" = "verbose" ]; then
+                local default_msg_defs[0]="%source moved to %destination\n"
+		default_msg_defs[1]="%stderr_msg\n"
+		default_msg_defs[2]="error: %operation failed, source path empty\n"
+		default_msg_defs[3]="error: %operation from %source to %destination failed because %source doesn't exist\n"
+		default_msg_defs[4]="error: %operation from %source to %destination failed because there's no read permission on %source\n"
+                default_msg_defs[5]="error: %operation from %source to %destination failed because %destination exists (won't overwrite)\n"
+                default_msg_defs[6]="error: %operation from %source to %destination failed because there's no write permission on %destination\n"
+		default_msg_defs[7]="error: mode '$1' unknown\n"
+                [ "$1" = "cp" ] || [ "$1" = "copy" ] && default_msg_defs[0]="%source copied to %destination\n"
+                local stderr_msg="$(do_filesystem_operation "$1" "$2" "$3" "stderr")" status=$? msg_def
+                [ -n "$5" ] && local msg_def="$(get_array_element "$5" $status)"
+		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
+                #>&2 echo "msg_def: $msg_def"
+                printf '%s' "$(echo "$msg_def" | sed -e "s^%source^$2^g" -e "s^%destination^$3^g" -e "s^%stderr_msg^$stderr_msg^g" -e "s^%operation^$1^g")"
+		return $status
+        fi
+	[ "$1" = "mv" ] || [ "$1" = "move" ] && local operation="mv -n"	# mv with -n forbids overwrites
+	[ "$1" = "cp" ] || [ "$1" = "copy" ] && local operation="cp -r"
+	[ -z "$operation" ] && return 7
+	[ -z "$2" ] && return 2
+	[ ! -e "$2" ] && return 3
+	[ ! -r "$2" ] && return 4
+	[ -e "$3" ] && return 5
+        # at this stage it's sure $3 is not empty => is_writeable() will always return status 0, no need to check
+        [ "$(is_writeable "$3")" -ne 1 ] && return 6
+        local status err_msg
+        # when mv/cp fails, it prints on stderr, captured here
+	err_msg="$(2>&1 $operation "$2" "$3")"
 	status=$?
-	msg="$(echo "${msg_def[status]}" | sed -e "s^%path^$1^" -e "s^%err_msg^$err_msg^")"
-	printf "$(printf "$2%s" "$msg")"
+        [ "$4" = "stderr" ] || [ "$4" = "err_msg" ] || [ "$4" = "error_message" ] && echo "$err_msg"
 	return $status
+}
+
+# Dev note: the copy/move file/folder functions seem good usecases for aliases but it's better to have actual functions
+#           see https://unix.stackexchange.com/questions/1496/why-doesnt-my-bash-script-recognize-aliases
+
+function copy_file()
+{
+	do_filesystem_operation "copy" "$@"
+}
+
+function copy_folder()
+{
+	do_filesystem_operation "copy" "$@"
+}
+
+function move_file()
+{
+	do_filesystem_operation "move" "$@"
+}
+
+function move_folder()
+{
+	do_filesystem_operation "move" "$@"
 }
 
 ########### File operations

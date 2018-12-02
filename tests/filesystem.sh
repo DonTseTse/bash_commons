@@ -17,12 +17,12 @@ not_writable_folder_path="/proc"
 
 ### Preparation
 # Refuse symlinks and get the absolute path of the commons directory (this file lies in ./tests/.), load dependancies
+set -e
 [ -h "${BASH_SOURCE[0]}" ] && echo "Error: called through symlink. Please call directly. Aborting..." && exit 1
 commons_path="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && dirname "$(pwd)")"
-
 . "$commons_path/testing.sh"
 . "$commons_path/filesystem.sh"
-
+set +e
 initialize_test_session "filesystem.sh functions"
 
 echo "*** Preparation ***"
@@ -268,8 +268,19 @@ test create_directory "$filepath_deduction_test_folder"
 configure_test 0 "0"
 test create_directory "$test_base_folder/mkdir_test2" "status"
 
-configure_test 0 "folder $test_base_folder/mkdir_test3 created"
+configure_test 0 "folder $test_base_folder/mkdir_test3 created\n"
 test create_directory "$test_base_folder/mkdir_test3" "verbose"
+
+configure_test 3 "$test_base_folder/mkdir_test3 exists\n"
+test create_directory "$test_base_folder/mkdir_test3" "verbose"
+
+mkdir_msgs=("Success %path" "Error %err_msg")
+echo " - \$> mkdir_msgs=(\"Success %path\" \"Error %err_msg\")"
+
+test create_directory "$test_base_folder/mkdir_test3" "verbose" "mkdir_msgs"
+
+configure_test 0 "Success $test_base_folder/mkdir_test4"
+test create_directory "$test_base_folder/mkdir_test4" "verbose" "mkdir_msgs"
 
 return_val=4
 if [ "$UID" -eq 0 ]; then
@@ -284,10 +295,13 @@ test create_directory "$not_writable_folder_path/mkdir_test" "error_message"
 configure_test $return_val ""
 test create_directory "$not_writable_folder_path/mkdir_test"
 
-echo "*** move() ***"
-touch "$test_base_folder/a"
+echo "*** move_file() / move_folder() ***"
+echo ' - touch "$test_base_folder/a'
+mkdir "$test_base_folder/folder_to_move" "$test_base_folder/folder_to_copy"
+touch "$test_base_folder/a" "$test_base_folder/folder_to_copy/a"
+echo " - Created $test_base_folder/a , folders $test_base_folder/folder_to_move and $test_base_folder/folder_to_copy as well as $test_base_folder/folder_to_copy/a"
 configure_test 0 ""
-test move "$test_base_folder/a" "$test_base_folder/b"
+test "move_file" "$test_base_folder/a" "$test_base_folder/b"
 
 return_val=6
 if [ "$UID" -eq 0 ]; then
@@ -296,22 +310,50 @@ if [ "$UID" -eq 0 ]; then
         echo " - move() includes a write permission check which gives a false positive for the root user because by convention it can write absolutely everywhere"
         echo "   However, in directories like $not_writable_folder_path, the operation fails"
 fi
+
 configure_test $return_val ""
-test move "$test_base_folder/b" "$not_writable_folder_path/a"
+test move_file "$test_base_folder/b" "$not_writable_folder_path/a"
 
 configure_test $return_val "$return_val"
-test move "$test_base_folder/b" "$not_writable_folder_path/a" '$?'
+test move_file "$test_base_folder/b" "$not_writable_folder_path/a" '$?'
 
 configure_test $return_val "$return_val"
-test move "$test_base_folder/b" "$not_writable_folder_path/a" 'status'
+test move_file "$test_base_folder/b" "$not_writable_folder_path/a" 'status'
 
 configure_test $return_val "$mv_err_msg"
-test move "$test_base_folder/b" "$not_writable_folder_path/a" "stderr"
+test move_file "$test_base_folder/b" "$not_writable_folder_path/a" "stderr"
 
+echo ' - $> msg_defs=("My success message: moved %source to %destination")'
+msg_defs=("My success message: moved %source to %destination")
+configure_test 0 "My success message: moved $test_base_folder/b to $test_base_folder/a"
+test move_file "$test_base_folder/b" "$test_base_folder/a" "verbose" "msg_defs"
+
+configure_test 0 ""
+test move_folder "$test_base_folder/folder_to_move" "$test_base_folder/moved_folder"
+
+echo "*** copy_file() / copy_folder() ***"
+touch "$test_base_folder/c"
+echo ' - touch "$test_base_folder/c"'
+
+configure_test 5 "error: copy from $test_base_folder/a to $test_base_folder/c failed because $test_base_folder/c exists (won't overwrite)\n"
+test copy_file "$test_base_folder/a" "$test_base_folder/c" "verbose"
+
+configure_test 0 "$test_base_folder/folder_to_copy copied to $test_base_folder/copied_folder\n"
+test copy_folder "$test_base_folder/folder_to_copy" "$test_base_folder/copied_folder" "verbose"
+
+configure_test 0 "0"
+test copy_folder "$test_base_folder/folder_to_copy" "$test_base_folder/copied folder" "status"
+
+msg_defs=("My success message: moved %source to %destination" "%err_msg" "Source empty" "Source %source doesn't exist")
+configure_test 2 "Source empty"
+test copy_folder "" "" "verbose" "msg_defs"
+
+configure_test 3 "Source $not_existing_file_path doesn't exist"
+test copy_file "$not_existing_file_path" "$test_base_folder/shouldntexist" "verbose" "msg_defs"
 ###
 test_file_path="$test_root_path/cfg_testfile"
 cat > "$test_file_path"  << EOF
-This is not an assignment even if it uses contains the word variable
+This line is not an assignment even if it uses contains the word variable
 #another comment
 variable="value"
 numeric=1
@@ -356,5 +398,5 @@ test load_configuration_file_value "$test_file_path" "variable2"
 #rm "/tmp/test.conf" "/tmp/test2.conf"
 cd "$pwd_before_tests"
 
-[ "$UID" -eq 0 ] && printf " - Note: If you want to run the test as normal user, try \$> su -c \"cd <commons_path>; /bin/bash tests/filesystem.sh\" -s /bin/bash <user>\n   If <user> has no permissions on <commons_path>, create a copy f.ex. \$> cp -r <commons_path> /tmp/bash_commons <\$ and use /tmp/bash_commons as <commons_path>\n"
+[ "$UID" -eq 0 ] && printf " - Note: If you want to run the test as normal user, try \$> su -c \"cd $commons_path; /bin/bash tests/filesystem.sh\" -s /bin/bash <user>\n   If <user> has no permissions on <commons_path>, create a copy f.ex. \$> cp -r <commons_path> /tmp/bash_commons <\$ and use /tmp/bash_commons as <commons_path>\n"
 conclude_test_session
