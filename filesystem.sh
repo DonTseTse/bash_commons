@@ -108,12 +108,12 @@ function create_directory()
         return $mkdir_status
 }
 
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#filesystem_operation
-function do_filesystem_operation()
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#handle_cp_or_mv
+function handle_cp_or_mv()
 {
 	#DEBUG >&2 echo "do_filesystem_operation() called with \$1 $1 \$2 $2 \$3 $3 \$4 $4 \$5 $5"
 	# status collected with a little trick to be able to echo it
-        [ "$4" = '$?' ] || [ "$4" = "status" ] && local status="$(do_filesystem_operation "$1" "$2" "$3"; echo $?)" && echo "$status" && return $status
+        [ "$4" = '$?' ] || [ "$4" = "status" ] && local status="$(handle_cp_or_mv "$1" "$2" "$3"; echo $?)" && echo "$status" && return $status
 	if [ "$4" = "verbose" ]; then
                 local default_msg_defs[0]="%source moved to %destination\n"
 		default_msg_defs[1]="%stderr_msg\n"
@@ -124,7 +124,7 @@ function do_filesystem_operation()
                 default_msg_defs[6]="error: %operation from %source to %destination failed because there's no write permission on %destination\n"
 		default_msg_defs[7]="error: mode '$1' unknown\n"
                 [ "$1" = "cp" ] || [ "$1" = "copy" ] && default_msg_defs[0]="%source copied to %destination\n"
-                local stderr_msg="$(do_filesystem_operation "$1" "$2" "$3" "stderr")" status=$? msg_def
+                local stderr_msg="$(handle_cp_or_mv "$1" "$2" "$3" "stderr")" status=$? msg_def
                 [ -n "$5" ] && local msg_def="$(get_array_element "$5" $status)"
 		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
                 #>&2 echo "msg_def: $msg_def"
@@ -153,22 +153,22 @@ function do_filesystem_operation()
 
 function copy_file()
 {
-	do_filesystem_operation "copy" "$@"
+	handle_cp_or_mv "copy" "$@"
 }
 
 function copy_folder()
 {
-	do_filesystem_operation "copy" "$@"
+	handle_cp_or_mv "copy" "$@"
 }
 
 function move_file()
 {
-	do_filesystem_operation "move" "$@"
+	handle_cp_or_mv "move" "$@"
 }
 
 function move_folder()
 {
-	do_filesystem_operation "move" "$@"
+	handle_cp_or_mv "move" "$@"
 }
 
 ########### File operations
