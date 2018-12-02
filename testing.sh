@@ -34,7 +34,7 @@ function test()
 	# no need to distinguish counter and idx here since it's fct params with the $1, $2, etc... => param_array elements have natural indexation
 	for i in ${!param_array[*]}; do
 		[ $i -eq 0 ] && continue	# don't quote the command
-		is_string_a "${param_array[i]}" "!integer" && logging_param_array[i]="'${param_array[i]}'"
+		is_string_a "${param_array[i]}" "!integer" && logging_param_array[i]="\"${param_array[i]}\""
 	done
 	capture "${param_array[@]}"
 	check_test_results "${logging_param_array[*]}" $return "$stdout"
@@ -45,9 +45,10 @@ function check_test_results()
 {
 	printf ' - Test %i: $> %s <$ should return status: %i, stdout: "%s" ' $test_counter "$1" $expected_return  "$expected_stdout"
 	((test_counter++))
-	[ "$2" -eq "$expected_return" ] && [ "$3" = "$expected_stdout" ] && echo "[OK]" && return
+	[ -n "$2" ] && [[ "$2" =~ ^[0-9]*$ ]] && [ "$2" -eq "$expected_return" ] && [ "$3" = "$expected_stdout" ] && echo "[OK]" && return
 	((test_error_count++))
-	printf "[Error]\n   It returned status $2, stdout '$3'\n"
+	#>&2 echo "[Error]\n   It returned status $2, stdout '$3'\n"
+	printf '[Error]\n   It returned status %s, stdout "%s"\n' "$2" "$3"
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/testing.md#conclude_test_session
