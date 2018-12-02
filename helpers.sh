@@ -28,7 +28,7 @@ function capture()
 	fi
 	set_global_variable "${prefix}return" "$status_capture"
 	set_global_variable "${prefix}stdout" "$stdout_capture"
-	#>&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
+	#DEBUG >&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 
 
@@ -47,6 +47,16 @@ function set_global_variable()
 	# See https://stackoverflow.com/questions/9871458/declaring-global-variable-inside-a-function
 	#IFS="" read $1 <<< "$2"
 	printf -v $1 %s "$2"
+}
+
+# Documentation: TODO
+function get_array_element
+{
+	[ -z "$1" ] && return 2
+	[ -z "$2" ] && return 3
+	local var_syntax
+	printf -v var_syntax '${%s[%s]}' "$1" "$2"
+        eval "[ -n \"$var_syntax\" ] && echo \"$var_syntax\""
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#calculate

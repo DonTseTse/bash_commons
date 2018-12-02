@@ -66,6 +66,25 @@ Sets the variable called `$1` with the value `$2` on global level (i.e. accessib
         <tr>    <td align="center"><em>1</em></td><td><code>$1</code> is empty</td></tr>
 </table>
 
+### get_array_element()
+The usual bash syntax to access array elements is ${<array_name>[<index>]} where index can be a variable, f.ex. `${my_array[$index]`. However
+`<array_name>` can't be a variable, anything like `${$var_name[$index]}` fails. The variable name expansion syntax with `!` works but it expands 
+to the first and only the first array element, and all attemps to use both syntaxes combined don't seem to work, see []()
+
+This function uses `printf` to "inject" the variable name and index into a code snippet which is then eval'd, this works, at least for numeric
+indizes. **Warning**: for associative arrays (string indizes) it misbehaves if the element with the required index doesn't exist - it will not 
+return an empty string, but the value of the first element in the array. 
+<table>
+        <tr><td rowspan="2"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">array variable name</td></tr>
+        <tr>    <td align="center"><code>$2</code></td><td>index</td></tr>
+	<tr><td><b>Pipes</b></td><td><code>stdout</code></td><td>the value at index <code>$2</code> in the array with the name <code>$1</code></td></tr>
+	<tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>success, value is written on <code>stdout</code></td></tr>
+		<td align="center"><em>1</em></td><td><code>${$1[$2]}</code> is undefined or empty</td></tr>
+        <tr>
+</table>
+
 ### calculate()
 Computes algebraic operations beyond `bash`'s `((  ))` using `bc`. Provides control over the maximal amount of decimals in the result and removes 
 unsignificant decimals (trailing *0*s). 

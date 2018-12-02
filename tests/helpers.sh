@@ -48,6 +48,24 @@ echo "set_global_variable() is used in capture(), just checking the error case h
 configure_test 1 ""
 test set_global_variable
 
+echo "*** get_array_element() ***"
+echo ' - $> arr=("1st" "2nd" "3rd")'
+arr=("idx0" "idx1" "idx2")
+configure_test 0 "idx1"
+test get_array_element "arr" 1
+
+configure_test 1 ""
+test get_array_element "arr" 5
+
+configure_test 1 ""
+test get_array_element "unexistant" 1
+
+configure_test 2 ""
+test get_array_element ""
+
+configure_test 3 ""
+test get_array_element "arr"
+
 ###
 echo "*** calculate() ***"
 echo "If no precision is specified, calculate() defaults to 3 decimals"
