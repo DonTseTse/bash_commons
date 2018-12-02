@@ -1,4 +1,4 @@
-Documentation for the functions in [filesystem.sh](filesystem.sh). A general overview is given in [the project documentation](README.md#filesystem)
+Documentation for the functions in [filesystem.sh](filesystem.sh). A general overview is given in [the project documentation](README.md#filesystem).
 
 If the pipes are not documented, the default is:
 - `stdin`: ignored
@@ -13,8 +13,8 @@ The function processes `$1` in 4 ways:
 - it resolves symbolic folder links using `cd`'s `-P` flag
 - it cleans up *../* and *./* components
 
-It works for both file and folder paths with the restriction that they must exist. The [string handling collection's get_absolute_path()](string_handling.md#get_absolute_path)
-works with paths that don't exist. 
+It works for both file and folder paths with the restriction that they must exist. Use the [string handling collection's get_absolute_path()](string_handling.md#get_absolute_path)
+for paths that don't exist. 
 <table>
 	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">path to resolve and clean</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the "real" path of <code>$1</code>, empty otherwise</td></tr>
@@ -29,8 +29,8 @@ The function returns the full path including the filename and it's able to work 
 It relies on `$BASH_SOURCE` which changes depending on the constellation, however, the element in this array with the highest index is always the path of the script 
 executed initially.
 
-**Important**: call `get_script_path()` before any directory changes in the script. The `$BASH_SOURCE` entry depends on the way the script is called and one of the 
-possibilities is that the script it's executed in a terminal using a relative filepath with respect to the shell's *current directory*; in that case the `$BASH_SOURCE` 
+**Important**: call this function as early as possible; before any directory changes in the script. The `$BASH_SOURCE` entry depends on the way the script is called and one of the 
+possibilities is that the script is executed in a terminal using a relative filepath with respect to the shell's *current directory*; in that case the `$BASH_SOURCE` 
 entry  only contains that relative filepath and if the current directory changes, the output of this function is wrong. 
 <table>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td width="90%">"real" absolute path (folder + file symlink resolved, cleaned) of the executed script</td></tr>
@@ -97,7 +97,7 @@ Extracts the part of `$1` which exists on the filesystem. Returns "at least" */*
 </table>
 
 ### try_filepath_deduction()
-If there's only a single file (match) in the folder $1, returns its path
+If there's only a single file (match) in the folder `$1`, returns its path
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path of the folder to search in</td></tr>
@@ -180,25 +180,24 @@ Internal handler for file/folder copy/move, used by the wrapper functions <a hre
         <tr>    <td align="center">[<code>$4</code>]</td><td><code>stdout</code> configuration:
                 <ul>
                         <li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
-                        <li><em>status</em> or <em>$?</em> for the <code>mv</code> call's status code</li>
-                        <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em> for the <code>mv</code> call's <code>stderr</code> output</li>
-                        <li><em>verbose</em> calls <a href="#create_directory_verbose">create_directory_verbose()</a> internally</li>
+                        <li><em>status</em> or <em>$?</em>: <code>mv</code>/<code>cp</code> call's status code</li>
+                        <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em>: <code>mv</code>/<code>cp</code> call's <code>stderr</code> output</li>
+                        <li><em>verbose</em>: status specific message, see explanations in the wrapper functions</li>
                 </ul>
         </td></tr>
         <tr>    <td align="center">[<code>$5</code>]</td><td>if <code>$4</code> is set to <em>verbose</em>, the name of the array variable which contains the 
 		custom message patterns. If omitted, the default message patterns are used</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>:
                 <ul>
                         <li>empty if <code>$4</code> omitted or set to an empty string
-                        <li>the status returned by the <code>mv</code> call if <code>$4</code> is set to <em>status</em></li>
+                        <li>the status returned by the <code>mv</code>/<code>cp</code> call if <code>$4</code> is set to <em>status</em></li>
                         <li>eventual <code>sterr</code> output of the <code>mv</code> respectively <code>cp</code> call if <code>$4</code> is set to <em>error_message</em></li>
                         <li>the message if <code>$4</code> is set to <em>verbose</em></li>
                 </ul>
         </td></tr>
         <tr><td rowspan="8"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>operation successful</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>operation failure, if <code>$3</code> is set to <em>error_message</em> (or its aliases), <code>stdout</code>
-                contains <code>mv</code>'s respectively <code>cp</code>'s <code>stderr</code> output</td></tr>
+                <td align="center"><em>0</em></td><td><code>mv</code>/<code>cp</code> successful</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td><code>mv</code>/<code>cp</code> failure</td></tr>
         <tr>    <td align="center"><em>2</em></td><td>the source path <code>$2</code> is empty</td></tr>
         <tr>    <td align="center"><em>3</em></td><td>the source path <code>$2</code> doesn't exist</td></tr>
         <tr>    <td align="center"><em>4</em></td><td>no read permission on source path <code>$2</code></td></tr>
@@ -253,15 +252,16 @@ These templates support 4 variable placeholders:
 - `%operation`: has the value *move* or *copy*
 
 The default message template are:
- Status | Template
-:------:| --------
-0 | `%source` moved to `%destination`\n
-1 | `%stderr_msg`\n
-2 | error: `%operation` failed, source path empty\n 
-3 | error: `%operation` from `%source` to `%destination` failed because `%source` doesn't exist\n
-4 | error: `%operation` from `%source` to `%destination` failed because there's no read permission on `%source`\n
-5 | error: `%operation` from `%source` to `%destination` failed because `%destination` exists (won't overwrite)\n
-6 | error: `%operation` from `%source` to `%destination` failed because there's no write permission on `%destination`\n
+
+| Status | Template
+|:------:| --------
+|0| `%source` moved to `%destination`\n
+|1| `%stderr_msg`\n
+|2| error: `%operation` failed, source path empty\n 
+|3| error: `%operation` from `%source` to `%destination` failed because `%source` doesn't exist\n
+|4| error: `%operation` from `%source` to `%destination` failed because there's no read permission on `%source`\n
+|5| error: `%operation` from `%source` to `%destination` failed because `%destination` exists (won't overwrite)\n
+|6| error: `%operation` from `%source` to `%destination` failed because there's no write permission on `%destination`\n
 
 <table>
 <tr><th>Status</th><th width="90%">Template</th></tr>
