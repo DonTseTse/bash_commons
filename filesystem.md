@@ -132,7 +132,14 @@ Examples:
 	create_directory "$1" "verbose"  "   "
 	``` 
 
-The supported variables are `%path` and `%err_msg`
+The supported variables are `%path` and `%stderr_msg`, 
+| Status | Template
+|:------:| --------
+|*0*| \n
+|*1*| \n
+|*2*| \n
+|*3*| \n
+|*4*| \n
 
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
@@ -169,17 +176,12 @@ Internal handler for file/folder copy/move, used by the wrapper functions <a hre
 <a href="#move_file">move_file()</a> and <a href="#move_folder">move_folder()</a>. See their documentation for details.
 <table>
         <tr><td rowspan="5"><b>Param.</b></td>
-                <td align="center"><code>$1</code></td><td width="90%">mode, possible values:
-		<ul>
-			<li><em>copy</em> or <em>cp</em></li>
-			<li><em>move</em> or <em>mv</em></li>
-		</ul>
-	</td></tr>
+                <td align="center"><code>$1</code></td><td width="90%">mode, possible values: <em>copy</em>, <em>cp</em>, <em>move</em> or <em>mv</em></td></tr>
                 <td align="center"><code>$2</code></td><td width="90%">source path</td></tr>
         <tr>    <td align="center"><code>$3</code></td><td>destination path</td></tr>
         <tr>    <td align="center">[<code>$4</code>]</td><td><code>stdout</code> configuration:
                 <ul>
-                        <li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
+                        <li>if omitted or an empty string, nothing is written on <code>stdout</code></li>
                         <li><em>status</em> or <em>$?</em>: <code>mv</code>/<code>cp</code> call's status code</li>
                         <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em>: <code>mv</code>/<code>cp</code> call's <code>stderr</code> output</li>
                         <li><em>verbose</em>: status specific message, see explanations in the wrapper functions</li>
@@ -187,92 +189,65 @@ Internal handler for file/folder copy/move, used by the wrapper functions <a hre
         </td></tr>
         <tr>    <td align="center">[<code>$5</code>]</td><td>if <code>$4</code> is set to <em>verbose</em>, the name of the array variable which contains the 
 		custom message patterns. If omitted, the default message patterns are used</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>:
-                <ul>
-                        <li>empty if <code>$4</code> omitted or set to an empty string
-                        <li>the status returned by the <code>mv</code>/<code>cp</code> call if <code>$4</code> is set to <em>status</em></li>
-                        <li>eventual <code>sterr</code> output of the <code>mv</code> respectively <code>cp</code> call if <code>$4</code> is set to <em>error_message</em></li>
-                        <li>the message if <code>$4</code> is set to <em>verbose</em></li>
-                </ul>
-        </td></tr>
-        <tr><td rowspan="8"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td><code>mv</code>/<code>cp</code> successful</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td><code>mv</code>/<code>cp</code> failure</td></tr>
-        <tr>    <td align="center"><em>2</em></td><td>the source path <code>$2</code> is empty</td></tr>
-        <tr>    <td align="center"><em>3</em></td><td>the source path <code>$2</code> doesn't exist</td></tr>
-        <tr>    <td align="center"><em>4</em></td><td>no read permission on source path <code>$2</code></td></tr>
-        <tr>    <td align="center"><em>5</em></td><td>the destination path <code>$3</code> exists</td></tr>
-        <tr>    <td align="center"><em>6</em></td><td>no write permission on destination path <code>$3</code></td></tr>
-        <tr>    <td align="center"><em>7</em></td><td>mode <code>$1</code> unknown</td></tr>
+	<tr><td colspan="3">Pipes and status are documented below for the wrapper functions. handle_cp_or_mv() has just one additional status which will 
+	never occur if the wrapper functions are used: status <em>7</em> to signal mode <code>$1</code> is unknown</td></tr>
 </table>
 
 <a name="copy_file"></a><a name="copy_folder"></a><a name="move_file"></a><a name="move_folder"></a>
 ### copy_file(), copy_folder(), move_file() and move_folder()
 `cp` and `mv` wrapper with:
-- several checks, f.ex. if source/destination exists or the required read/write permissions, which allow to get specific status codes for 
-  all these error types
+- several checks before the actual copy/move attempt which allow to get specific status codes for virtually any possible error type:
+	- if the source path is empty (status *2), doesn't exist (*3*) or if the user has no read permission (*4*)
+	- if the destination path exists (status *5*) or if the user has no write permission (*6*)
 - control over `stdout` and `stderr`: `mv` and `cp` write on `stderr` in case of failure. The functions allows to be sure:
-        - that `stdout` returns either nothing, the `mv`/`cp` status code or `stderr` message, or a custom message, depending on `$3`
-        - that `stderr` remains silent, even in case of `mv`/`cp` failure
-- the specific status codes and the stdout control allow to have a "verbose" mode with custom dynamic messages by status (i.e. templates 
-  for each state, with variable placeholders that allow to inject the runtime parameters in the message)
+	- that `stdout` either contains either nothing, the `mv`/`cp` status code or `stderr` message, or a custom message, depending on `$3`
+	- that `stderr` remains silent, even in case of `mv`/`cp` failure
+- the "verbose" mode provides an easy way to customize the messages, which are by status (i.e. one template by status, with variable 
+placeholders that allow to inject the runtime parameters in the message)
 
 **Stdout configuration**:
 - silent mode: `move_file "path/to/src" "path/to/dest"`
 - status code: `status=$(move_folder "/path/to/src" "/path/to/dest" "status")`
 - error message:
-        ```
-        err_msg=$(copy_file "/path/to/src" "/path/to/dest"  "error_message")
-        status=$?
-        ```
+```
+err_msg=$(copy_file "/path/to/src" "/path/to/dest"  "error_message")
+status=$?
+```
 - verbose mode: 
-	```
-        copy_file "/path/to/src" "/path/to/dest"  "verbose"
-        status=$?
-        ```
-
-	Depending on the outcome, it would print one the default message template (shown below) corresponding to the status. To overwrite these
-	templates create an array variable and pass it's name to the function as `$4`. If `$4` is defined, the function looks for an array element
-	with the index of the status. If that element is undefined, it reverts to the default template. This allows to overwrite only certain states,
-	f.ex. the success (0), as shown below:
-	```
-	my_msg_defs[0]="Success! %source copied to %destination"
-	copy_file "/path/to/src" "/path/to/dest"  "verbose" "my_msg_defs"
-	```
-
-	would print *Success! /path/to/src copied to /path/to/dest* in case of success. 
+```
+copy_file "/path/to/src" "/path/to/dest"  "verbose"
+status=$?
+```
+Depending on the outcome, it would print one the default message template (shown below) corresponding to the status. To overwrite these
+templates create an array variable and pass it's name to the function as `$4`. If `$4` is defined, the function looks for an array element
+with the index of the status. If that element is undefined, it reverts to the default template. This allows to overwrite only certain states,
+f.ex. the success (0), as shown below:
+```
+my_msg_defs[0]="Success! %source copied to %destination"
+copy_file "/path/to/src" "/path/to/dest"  "verbose" "my_msg_defs"
+```
+would print *Success! /path/to/src copied to /path/to/dest* in case of success. 
 
 **Verbose mode message templates**
 
 These templates support 4 variable placeholders: 
 
-- `%source`: `$2`
-- `%destination`: `$3`
+- `%src`: set to `$2`
+- `%dest`: set to `$3`
 - `%stderr_msg`: the `stderr` output of the `mv` or `cp` call. Only relevant for status *1*.
-- `%operation`: has the value *move* or *copy*
+- `%op`: has the value *move* or *copy*
 
-The default message template are:
+The default message templates are:
 
 | Status | Template
 |:------:| --------
-|0| `%source` moved to `%destination`\n
-|1| `%stderr_msg`\n
-|2| error: `%operation` failed, source path empty\n 
-|3| error: `%operation` from `%source` to `%destination` failed because `%source` doesn't exist\n
-|4| error: `%operation` from `%source` to `%destination` failed because there's no read permission on `%source`\n
-|5| error: `%operation` from `%source` to `%destination` failed because `%destination` exists (won't overwrite)\n
-|6| error: `%operation` from `%source` to `%destination` failed because there's no write permission on `%destination`\n
-
-<table>
-<tr><th>Status</th><th width="90%">Template</th></tr>
-<tr><td><em>0</em></td><td><code>%source</code> moved to <code>%destination</code>\n</td></tr>
-<tr><td><em>1</em></td><td><code>%stderr_msg</code>\n</td></tr>
-<tr><td><em>2</em></td><td>error: <code>%operation</code> failed, source path empty\n</td></tr>
-<tr><td><em>3</em></td><td>error: <code>%operation</code> from <code>%source</code> to <code>%destination</code> failed because <code>%source</code> doesn't exist\n</td></tr>
-<tr><td><em>4</em></td><td>error: <code>%operation</code> from <code>%source</code> to <code>%destination</code> failed because there's no read permission on <code>%source</code>\n</td></tr>
-<tr><td><em>5</em></td><td>error: <code>%operation</code> from <code>%source</code> to <code>%destination</code> failed because <code>%destination</code> exists (won't overwrite)\n</td></tr>
-<tr><td><em>6</em></td><td>error: <code>%operation</code> from <code>%source</code> to <code>%destination</code> failed because there's no write permission on <code>%destination</code>\n</td></tr>
-</table>
+|*0*| `%src` moved to `%dest`\n
+|*1*| `%stderr_msg`\n
+|*2*| error: `%op` failed, source path empty\n 
+|*3*| error: `%op` from `%src` to `%dest` failed because `%src` doesn't exist\n
+|*4*| error: `%op` from `%src` to `%dest` failed because there's no read permission on `%src`\n
+|*5*| error: `%op` from `%src` to `%dest` failed because `%dest` exists (won't overwrite)\n
+|*6*| error: `%op` from `%src` to `%dest` failed because there's no write permission on `%dest`\n
 
 <table>
         <tr><td rowspan="4"><b>Param.</b></td>
@@ -283,12 +258,12 @@ The default message template are:
                         <li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
                         <li><em>status</em> or <em>$?</em> for the <code>mv</code> call's status code</li>
                         <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em> for the <code>mv</code> call's <code>stderr</code> output</li>
-                        <li><em>verbose</em> calls <a href="#create_directory_verbose">create_directory_verbose()</a> internally</li>
+                        <li><em>verbose</em> to use custom message - see explanations above</li>
                 </ul>
         </td></tr>
         <tr>    <td align="center">[<code>$4</code>]</td><td>if <code>$3</code> is set to <em>verbose</em>, the name of the array variable which contains the
                 custom message patterns. If omitted, the default message patterns are used</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>
                 <ul>
                         <li>empty if <code>$3</code> omitted or set to an empty string
                         <li>the status returned by the <code>mv</code> call if <code>$3</code> is set to <em>status</em></li>
@@ -305,6 +280,25 @@ The default message template are:
         <tr>    <td align="center"><em>4</em></td><td>no read permission on source path <code>$2</code></td></tr>
         <tr>    <td align="center"><em>5</em></td><td>the destination path <code>$3</code> exists</td></tr>
         <tr>    <td align="center"><em>6</em></td><td>no write permission on destination path <code>$3</code></td></tr>
+	
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on <code>$3</code>:
+                <ul>
+                        <li>empty if <code>$4</code> omitted or set to an empty string
+                        <li>the status returned by the <code>mv</code>/<code>cp</code> call if <code>$4</code> is set to <em>status</em></li>
+                        <li>eventual <code>sterr</code> output of the <code>mv</code> respectively <code>cp</code> call if <code>$4</code> is set to <em>error_message</em></li>
+                        <li>the message if <code>$4</code> is set to <em>verbose</em></li>
+                </ul>
+        </td></tr>
+        <tr><td rowspan="8"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td><code>mv</code>/<code>cp</code> successful</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td><code>mv</code>/<code>cp</code> failure</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>the source path <code>$2</code> is empty</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td>the source path <code>$2</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>4</em></td><td>no read permission on source path <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>5</em></td><td>the destination path <code>$3</code> exists</td></tr>
+        <tr>    <td align="center"><em>6</em></td><td>no write permission on destination path <code>$3</code></td></tr>
+        <tr>    <td align="center"><em>7</em></td><td>mode <code>$1</code> unknown</td></tr>
+
 </table>
 
 ### load_configuration_file_value()
@@ -336,5 +330,5 @@ the operator and the value. Inline comments are not allowed, they should be on t
         <tr>    <td align="center"><em>2</em></td><td><code>$2</code> is empty</td></tr>
         <tr>    <td align="center"><em>3</em></td><td><code>$1</code> doesn't exist</td></tr>
         <tr>    <td align="center"><em>4</em></td><td>no read permission on <code>$1</code></td></tr>
-        <tr>    <td align="center"><em>5</em></td><td>a variable with name <code>$2</code> could not be found</td></tr>
+        <tr>    <td align="center"><em>5</em></td><td>a variable with name <code>$2</code> could not be found or its value is empty</td></tr>
 </table>
