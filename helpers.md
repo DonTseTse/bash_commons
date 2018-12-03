@@ -6,34 +6,46 @@ If the pipes are not documented, the default is:
 
 Parameters enclosed in brackets [ ] are optional.
 
+## Quick access
+- [calculate()](#calculate)
+- [capture()](#capture)
+- [conditional_exit()](#conditional_exit)
+- [get_array_element()](#get_array_element)
+- [get_random_string()](#get_random_string)
+- [get_piped_input()](#get_piped_input)
+- [is_function_defined()](#is_function_defined)
+- [is_globbing_enabled()](#is_globbing_enabled)
+- [set_global_variable()](#set_global_variable)
+
+## Function documentation
 ### capture()
 Collects `stdout`, `stderr` and the return status of a command and copies them into global variables.
 
-Example: `capture echo "Hello world"` defines the global variables `$return` which contains *0* and `$stdout` with the value 
-*Hello world*. To prefix the variable names in case confusion might arise, use the global variable `$PREFIX`.
-The easiest way is to set it in the call context (`$PREFIX` is only defined for that command):
+Example: `capture echo "Hello world"` defines the global variables `$return` set to *0* and `$stdout` with the value 
+*Hello world*. To get less generic variable names set the global variable `$PREFIX`, which will be prepended to these names. The easiest 
+way is to set it in the call context (`$PREFIX` is only defined for that command):
 
 	PREFIX="echo" capture echo "Hello world"
 defines the global variables `$echo_return` and `$echo_stdout` with the same values.
 
-To capture `stderr` use the global variable `$STDERR` and set it to *1*. Let's take an example where there's some `stderr` 
-for sure, f.ex. the attempt to create a folder inside `/proc` which is never writeable, not even to root:
+By default, `stderr` is ignored; to capture it, use the global variable `$STDERR` and set it to *1*. Let's take an example where there's 
+some `stderr` for sure, f.ex. the attempt to create a folder inside `/proc` which is never writeable, not even to root:
 
 	STDERR=1 capture mkdir /proc/test
 will define the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` error message). If `$PREFIX` is 
 defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="80%">call to capture (<code>$1</code> is the command)</td></tr>
+        <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="75%">call to capture (<code>$1</code> is the command)</td></tr>
         <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 	<tr><td rowspan="2"><b>Globals</b></td>
                 <td align="center">Input</td><td>
 			<ul>
 		                <li><code>$STDERR</code>: if it's set to <em>1</em>, <code>stderr</code> is captured</li>
-				<li><code>$PREFIX</code>: if it's a non empty-string, the capture variables names are prefixed</li>
+				<li><code>$PREFIX</code>: if it's a non empty-string, the capture variables names are prepended as shown below</li>
 			</ul>
 	</td></tr>
         <tr>    <td align="center">Output</td><td>
-		The captured status return, <code>stdout</code> and eventually <stderr> in variable called:
+		The captured status return, <code>stdout</code> and eventually <code>stderr</code>> are stored in variables called:
 		<ul>
 			<li>if <code>$PREFIX</code> is not defined or empty: <code>$return</code> and <code>$stdout</code></li>
 			<li>if <code>$PREFIX</code> is a non-empty string: <code>$PREFIX_return</code>, <code>$PREFIX_stdout</code></li>
@@ -43,7 +55,7 @@ defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 </table>
 
 ### is_function_defined()
-Meant to be used in instruction chains to avoid potential "command ... unknown" errors. Example:
+Meant to be used in instruction chains to avoid "command ... unknown" errors. Example:
 
 	is_function_defined "log" && log "..."
 will only call `log` if it's defined.
@@ -55,7 +67,7 @@ will only call `log` if it's defined.
 </table>
 
 ### set_global_variable()
-Sets the variable called `$1` with the value `$2` on global level (i.e. accessible everywhere in the execution context)
+Sets up a variable called `$1` with the value `$2`, on global level (i.e. accessible everywhere in the execution context)
 
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
@@ -67,7 +79,7 @@ Sets the variable called `$1` with the value `$2` on global level (i.e. accessib
 </table>
 
 ### get_array_element()
-The usual bash syntax to access array elements is ${<array_name>[<index>]} where index can be a variable, f.ex. `${my_array[$index]`. However
+The usual bash syntax to access array elements is `${<array_name>[<index>]}` where index can be a variable, f.ex. `${my_array[$index]`. However
 `<array_name>` can't be a variable, anything like `${$var_name[$index]}` fails. The variable name expansion syntax with `!` works but it expands 
 to the first and only the first array element, and all attemps to use both syntaxes combined don't seem to work, see []()
 
@@ -91,7 +103,7 @@ unsignificant decimals (trailing *0*s).
 
 The amount of decimals may be limited to a maximum using `$2` (defaults to *3*). `$2` is a maximum because
 unsignificant decimals are always removed, even if this implies that the number of decimals (if any) is below `$2`.
-If f.ex. `bc` returned  *3.000...* the function returns *3*, regardless of `$2`'s value. 
+If f.ex. `bc` returned  *3.00000* the function writes *3* on `stdout`, regardless of `$2`'s value. 
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">expression to compute, f.ex. <em>(2*2.25)/7</em></td></tr>

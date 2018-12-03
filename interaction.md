@@ -37,7 +37,7 @@ Yes/no type questions. Blocks waiting for user input, returns as soon as one cha
         <tr>    <td align="center"><code>stdout</code></td><td>a newline control sequence to reset the cursor which stands just after the user input</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>if the user entered <code>$1</code></td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>if the user enters something else</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>if the user entered something else</td></tr>
 </table>
 
 

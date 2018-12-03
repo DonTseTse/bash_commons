@@ -14,30 +14,27 @@ Logging helper with support for prefix-aware multi-line output and independent `
 **Important**: always call this function and `launch_logging()` directly on global level and not through `$(...)`, otherwise the global 
 variables don't work (a subshell receives a copy of the parent shell's variable set and has no access to the "original" ones). To suppress
 undesired `stdout` output set `stdout_log_level` to 0.
-
 <table>
-        <tr><td><b>Parametrization</b></td><td width="90%">
-		- <code>$1</code> message to log<br>
-		- <code>$2</code> <em>optional</em> log level - if omitted, defaults to 1<br>
-		- <code>$3</code> <em>optional</em> output restriction - if omitted, both output channels are addressed. Value can be <code>file</code>
-                  to avoid <code>stdout</code> write or <code>stdout</code> to avoid file logging. This configuration only selects the addressed output
-                  channel(s), it does not overwrite the configurations which define whether logging actually occurs (the logging levels of the channel(s) 
-                  and the message and for file logging, whether a filepath is set)
+        <tr><td rowspan="3"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">message to log</td></tr>
+        <tr>    <td align="center">[<code>$2</code>]</td><td>log level - if omitted, it defaults to <em>1</em></td></tr>
+        <tr>    <td align="center">[<code>$3</code>]</td><td>output channel restriction - if omitted, both `stdout` and file
+		channels are addressed. Value can be <em>file</em> to avoid <code>stdout</code> write or <em>stdout</em> to avoid file logging. 
+		This configuration only selects the addressed output channel(s), it does not overwrite the configurations which define whether logging 
+		actually occurs (the logging levels of the channel(s) and the message and for file logging, whether a filepath is set)
 	</td></tr>
-        <tr><td><b>Pipes</b></td><td>
-                - <code>stdin</code>: ignored<br>
-                - <code>stdout</code>: depending on configuration, the message for the console
-	</td></tr>
-        <tr><td><b>Status</b></td><td>0</td></tr>
-        <tr><td><b>Globals</b></td><td>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on the configuration, the message for the console</td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+        <tr><td><b>Globals</b></td><td align="center"></td><td>
 		- <code>$logging_available</code> (<em>optional</em>, defaults to 1/enabled internally if omitted)<br>
-		- <code>$stdout_log_level</code> (<em>optional</em>, if omitted, the system doesn't print on <code>stdout</code>)<br>
-		- <code>$stdout_log_pattern</code> (<em>optional</em>, defaults to <code>%s</code> ("just" the message))<br>
-		- <code>$log_filepath</code> (<em>optional</em>, if empty, no file logging occurs)<br>
-		- <code>$log_level</code> (<em>optional</em>, if it's not a numeric value, file logging is disabled)<br>
-		- <code>$log_pattern</code> (<em>optional</em>, defaults to <code>%s</code> ("just" the message"))<br>
-		- <code>$logging_backlog</code> array (<em>optional</em>, created internally)
-        </td></tr>
+                - <code>$stdout_log_level</code> (<em>optional</em>, if omitted, the system doesn't print on <code>stdout</code>)<br>
+                - <code>$stdout_log_pattern</code> (<em>optional</em>, defaults to <code>%s</code> ("just" the message))<br>
+                - <code>$log_filepath</code> (<em>optional</em>, if empty, no file logging occurs)<br>
+                - <code>$log_level</code> (<em>optional</em>, if it's not a numeric value, file logging is disabled)<br>
+                - <code>$log_pattern</code> (<em>optional</em>, defaults to <code>%s</code> ("just" the message"))<br>
+                - <code>$logging_backlog</code> array (<em>optional</em>, created internally)
+
+	</td></tr>	
 </table>
 
 ### launch_logging()
@@ -46,34 +43,27 @@ Processes the logging backlog and clears it
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td width="90%">if stdout logging is enabled, the logs for <code>stdout</code>, 
 	empty otherwise</td></tr>
 	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
-	<tr><td><b>Globals</b></td></tr>
-</table>
-
-<table>
-        <tr><td><b>Parametrization</b></td><td width="90%"><em>none</em></td></tr>
-        <tr><td><b>Pipes</b></td><td>
-                - <code>stdin</code>: ignored<br>
-                - <code>stdout</code>: if stdout logging is enabled, the logs for stdout, empty otherwise                                                                        
-	</td></tr>
-        <tr><td><b>Status</b></td><td>0</td></tr>
-        <tr><td><b>Globals</b></td><td>
+	<tr><td><b>Globals</b></td><td></td><td>
 		- <code>$logging_available</code><br>
-		- <code>$logging_backlog</code>
-        </td></tr>
+                - <code>$logging_backlog</code>
+	</td></tr>
 </table>
 
 ### prepare_secret_for_logging()
-Formats a secret for logging. The amount of characters can be configured through `$2` and an additional security factor (a value between 0 and 1) which 
-guarantees that the amount shown is at most <secret length> * <factor>. If `$2` is negative, the characters are shown from the end of the secret, if it's position, 
-from the beginning. The message pattern is *[Secret - begin with <chars>]* respectively *[Secret - ends with <chars>]*. Examples:
+Formats a secret for logging. The amount of characters can be configured through `$2` and the security factor `$3` (a value between 0 and 1) which 
+guarantees that the amount shown is at most `<secret length> * <factor>`. If `$2` is negative, the characters are shown from the end of the secret, if it's positive, 
+from the beginning. The message pattern is *[Secret - begins with <chars>]* respectively *[Secret - ends with <chars>]*. Examples:
 ```
 prepare_secret_for_logging "longer_secret" 5 "0.5"
 ```
-returns *[Secret - begins with 'longe']* since the secret has 13 characters => security factor: 0.5 * 13 = 6.5 => `$2` takes precedence, it's lower => 5 chars
+returns *[Secret - begins with 'longe']* (the secret has 13 characters => security factor: 0.5 * 13 = 6.5 => `$2` is lower => 5 chars shown). The default
+security factor is *0.25*. 
+
+Example with a negative `$2`:
 ```
 test prepare_secret_for_logging "longer_secret" -2
 ```
-returns *[Secret - ends with 'et']* since *-2* means "the last 2 characters" and it's below the default security factor *0.25*.
+returns *[Secret - ends with 'et']* (0.25 * 12 = 3.25 => abs(`$2`) is lower => secret's last 2 characters shown).
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">secret</td></tr>
