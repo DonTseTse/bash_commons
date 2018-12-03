@@ -23,7 +23,7 @@ for sure, f.ex. the attempt to create a folder inside `/proc` which is never wri
 will define the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` error message). If `$PREFIX` is 
 defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="70%">call to capture (<code>$1</code> is the command)</td></tr>
+        <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="80%">call to capture (<code>$1</code> is the command)</td></tr>
         <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 	<tr><td rowspan="2"><b>Globals</b></td>
                 <td align="center">Input</td><td>
@@ -122,9 +122,7 @@ f.ex. "run IDs" which may be used to distinguish interleaving log entries from s
 
 <table>
         <tr><td><b>Param.</b></td><td align="center">[<code>$1</code>]</td><td width="90%">length of the random string, defaults to <em>16</em> if omitted</td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>the random string</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the random string</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>success, the random string is on <code>stdout</code></td></tr>
         <tr>    <td align="center"><em>1</em></td><td><code>/dev/urandom</code> doesn't exist</td></tr>
@@ -161,6 +159,6 @@ If `important_fct_call` returns with a status code other than *0*, the script pr
                   the terminal)</td></tr>
 	<tr>	<td align="center">[<code>$3</code>]</td><td>exit code, defaults to <em>1</em></td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the exit is triggered, <code>$2</code> followed by a newline</td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
-        <tr><td><b>Exit</b></td><td align="center"><code>$3</code></td><td></td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>only applicable if exit is not triggered</td></tr>
+        <tr><td><b>Exit</b></td><td colspan="2"><code>$3</code>, defaults to <em>1</em> if omitted</td></tr>
 </table>

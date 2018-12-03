@@ -1,9 +1,13 @@
-Documentation for the functions in [logging.sh](logging.sh).
+Documentation for the functions in [logging.sh](logging.sh). A general overview is given in
+[the project documentation](https://github.com/DonTseTse/bash_commons#logging).
 
 If the pipes are not documented, the default is:
 - `stdin`: ignored
 - `stdout`: empty
 
+Parameters enclosed in brackets [ ] are optional.
+
+## Function documentation
 ### log()
 Logging helper with support for prefix-aware multi-line output and independent `stdout` and file output handling
 
@@ -39,10 +43,10 @@ undesired `stdout` output set `stdout_log_level` to 0.
 ### launch_logging()
 Processes the logging backlog and clears it
 <table>
-	<tr><td rowspan="2"><b>Pipes</b></td>
-		<td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-	<tr>    <td align="center"><code>stdout</code></td><td>the logs for <code>stdout</code>, empty otherwise</td></tr>
-	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>success</td></tr>
+	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td width="90%">if stdout logging is enabled, the logs for <code>stdout</code>, 
+	empty otherwise</td></tr>
+	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+	<tr><td><b>Globals</b></td></tr>
 </table>
 
 <table>
@@ -59,18 +63,25 @@ Processes the logging backlog and clears it
 </table>
 
 ### prepare_secret_for_logging()
-Formats a secret for logging.
-
+Formats a secret for logging. The amount of characters can be configured through `$2` and an additional security factor (a value between 0 and 1) which 
+guarantees that the amount shown is at most <secret length> * <factor>. If `$2` is negative, the characters are shown from the end of the secret, if it's position, 
+from the beginning. The message pattern is *[Secret - begin with <chars>]* respectively *[Secret - ends with <chars>]*. Examples:
+```
+prepare_secret_for_logging "longer_secret" 5 "0.5"
+```
+returns *[Secret - begins with 'longe']* since the secret has 13 characters => security factor: 0.5 * 13 = 6.5 => `$2` takes precedence, it's lower => 5 chars
+```
+test prepare_secret_for_logging "longer_secret" -2
+```
+returns *[Secret - ends with 'et']* since *-2* means "the last 2 characters" and it's below the default security factor *0.25*.
 <table>
-        <tr><td rowspan="2"><b>Param.</b></td>
+        <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">secret</td></tr>
         <tr>    <td align="center"><code>$2</code></td><td>amount of chars to show. If it's positive, the amount is shown from the beginning of the secret, if it's 
 		negative, from the end</td></tr>
-        <tr>    <td align="center"><code>$3</code></td><td>security factor - a decimal value between 0 and 1 which decides how much of the secret can be shown at most 
-		- overwrites <code>$2</code> if necessary</td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>the formatted secret suited for logging</td></tr>
+        <tr>    <td align="center">[<code>$3</code>]</td><td>security factor - a decimal value between 0 and 1 which decides how much of the secret can be shown at most 
+		- overwrites the value set via <code>$2</code> if necessary. Defaults to *0.25*</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the formatted secret suited for logging</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>success</td></tr>
         <tr>    <td align="center"><em>1</em></td><td><code>$1</code> undefined or empty</td></tr>

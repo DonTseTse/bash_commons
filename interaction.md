@@ -1,4 +1,5 @@
-Documentation for the functions in [interaction.sh](interaction.sh). A general overview is given in [the project documentation](README.md#interaction).
+Documentation for the functions in [interaction.sh](interaction.sh). A general overview is given in 
+[the project documentation](https://github.com/DonTseTse/bash_commons#interaction).
 
 If the pipes are not documented, the default is:
 - `stdin`: piped input ignored
@@ -6,6 +7,7 @@ If the pipes are not documented, the default is:
 
 Parameters enclosed in brackets [ ] are optional. 
 
+## Function documentation
 ### read_and_validate()
 Combined `read` and regex check.
 
@@ -20,8 +22,8 @@ Important `read` flags:
 		<td align="center"><code>stdin</code></td><td>piped input ignored; used via <code>read</code></td></tr>
 	<tr>	<td align="center"><code>stdout</code></td><td>the user input</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
-		<td align="center"><em>0</em></td><td>if the user entered a <code>$1</code> match</td></tr>
-	<tr>	<td align="center"><em>1</em></td><td>of the user input doesn't match <code>$1</code></td></tr>
+		<td align="center"><em>0</em></td><td>the user entered a <code>$1</code> match</td></tr>
+	<tr>	<td align="center"><em>1</em></td><td>the user input doesn't match <code>$1</code></td></tr>
 </table>
 
 
@@ -34,7 +36,7 @@ Yes/no type questions. Blocks waiting for user input, returns as soon as one cha
                 <td align="center"><code>stdin</code></td><td>piped input ignored; used via <a href="#read_and_validate">read_and_validate()</a></td></tr>
         <tr>    <td align="center"><code>stdout</code></td><td>a newline control sequence to reset the cursor which stands just after the user input</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>if the user enters <code>$1</code></td></tr>
+                <td align="center"><em>0</em></td><td>if the user entered <code>$1</code></td></tr>
         <tr>    <td align="center"><em>1</em></td><td>if the user enters something else</td></tr>
 </table>
 
@@ -53,7 +55,7 @@ Example: the user is offered 3 choices numbered 1 to 3, `$1` should be *^[1-3]$*
         <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">options regex</td></tr>
         <tr><td rowspan="2"><b>Pipes</b></td>
                 <td align="center"><code>stdin</code></td><td>piped input ignored; used via <a href="#read_and_validate">read_and_validate()</a></td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>the selection option</td></tr>
+        <tr>    <td align="center"><code>stdout</code></td><td>the selected option</td></tr>
         <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 

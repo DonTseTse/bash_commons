@@ -43,7 +43,7 @@ function launch_logging()
 		output_restriction="${logging_backlog[$idx]:${#backlog_entry}+1}"
 		backlog_entry="$(echo "$backlog_entry" | sed -e $(get_sed_extract_expression "|" "before" "last"))"
 		entry_log_level="${logging_backlog[$idx]:${#backlog_entry}+1:-${#output_restriction}-1}"
-		#>&2 echo "Backlog entry: ${logging_backlog[$idx]} - message: $backlog_entry - log level: $entry_log_level - output restriction: $output_restriction"
+		#DEBUG >&2 echo "Backlog entry: ${logging_backlog[$idx]} - message: $backlog_entry - log level: $entry_log_level - output restriction: $output_restriction"
 		log "$backlog_entry" "$entry_log_level" "$output_restriction"
 	done
 	logging_backlog=()
