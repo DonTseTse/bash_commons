@@ -255,32 +255,32 @@ configure_test 3 ""
 test try_filepath_deduction "$filepath_deduction_test_folder" "*.conf"
 
 ###
-echo "*** create_directory() ***"
+echo "*** create_folder() ***"
 configure_test 0 ""
-test create_directory "$test_base_folder/mkdir_test"
+test create_folder "$test_base_folder/mkdir_test"
 
 configure_test 2 ""
-test create_directory ""
+test create_folder ""
 
 configure_test 3 ""
-test create_directory "$filepath_deduction_test_folder"
+test create_folder "$filepath_deduction_test_folder"
 
 configure_test 0 "0"
-test create_directory "$test_base_folder/mkdir_test2" "status"
+test create_folder "$test_base_folder/mkdir_test2" "status"
 
 configure_test 0 "folder $test_base_folder/mkdir_test3 created\n"
-test create_directory "$test_base_folder/mkdir_test3" "verbose"
+test create_folder "$test_base_folder/mkdir_test3" "verbose"
 
-configure_test 3 "$test_base_folder/mkdir_test3 exists\n"
-test create_directory "$test_base_folder/mkdir_test3" "verbose"
+configure_test 3 "folder creation error: $test_base_folder/mkdir_test3 exists\n"
+test create_folder "$test_base_folder/mkdir_test3" "verbose"
 
 mkdir_msgs=("Success %path" "Error %err_msg")
 echo " - \$> mkdir_msgs=(\"Success %path\" \"Error %err_msg\")"
 
-test create_directory "$test_base_folder/mkdir_test3" "verbose" "mkdir_msgs"
+test create_folder "$test_base_folder/mkdir_test3" "verbose" "mkdir_msgs"
 
 configure_test 0 "Success $test_base_folder/mkdir_test4"
-test create_directory "$test_base_folder/mkdir_test4" "verbose" "mkdir_msgs"
+test create_folder "$test_base_folder/mkdir_test4" "verbose" "mkdir_msgs"
 
 return_val=4
 if [ "$UID" -eq 0 ]; then
@@ -290,11 +290,12 @@ if [ "$UID" -eq 0 ]; then
 	echo "   However, in directories like $not_writable_folder_path, the operation fails"
 fi
 configure_test $return_val "$mkdir_err_msg"
-test create_directory "$not_writable_folder_path/mkdir_test" "error_message"
+test create_folder "$not_writable_folder_path/mkdir_test" "error_message"
 
 configure_test $return_val ""
-test create_directory "$not_writable_folder_path/mkdir_test"
+test create_folder "$not_writable_folder_path/mkdir_test"
 
+###
 echo "*** move_file() / move_folder() ***"
 echo ' - touch "$test_base_folder/a'
 mkdir "$test_base_folder/folder_to_move" "$test_base_folder/folder_to_copy"
@@ -331,11 +332,12 @@ test move_file "$test_base_folder/b" "$test_base_folder/a" "verbose" "msg_defs"
 configure_test 0 ""
 test move_folder "$test_base_folder/folder_to_move" "$test_base_folder/moved_folder"
 
+###
 echo "*** copy_file() / copy_folder() ***"
 touch "$test_base_folder/c"
 echo ' - touch "$test_base_folder/c"'
 
-configure_test 5 "error: copy from $test_base_folder/a to $test_base_folder/c failed because $test_base_folder/c exists (won't overwrite)\n"
+configure_test 5 "copy error: $test_base_folder/a -> $test_base_folder/c failed because destination path exists (won't overwrite)\n"
 test copy_file "$test_base_folder/a" "$test_base_folder/c" "verbose"
 
 configure_test 0 "$test_base_folder/folder_to_copy copied to $test_base_folder/copied_folder\n"
@@ -350,6 +352,25 @@ test copy_folder "" "" "verbose" "msg_defs"
 
 configure_test 3 "Source $not_existing_file_path doesn't exist"
 test copy_file "$not_existing_file_path" "$test_base_folder/shouldntexist" "verbose" "msg_defs"
+
+###
+echo "*** remove_file() / remove_folder() ***"
+configure_test 0 ""
+test remove_file "$test_base_folder/c"
+
+configure_test 2 ""
+test remove_folder
+
+configure_test 3 "removal error: $not_existing_file_path doesn't exist\n"
+test remove_file "$not_existing_file_path" "verbose"
+
+if [ "$UID" -ne 0 ]; then
+	mkdir "$test_base_folder/non_writable_dir" && chmod -w "$test_base_folder/non_writable_dir"
+	configure_test 4 "custom msg - removal error: no write permission on $test_base_folder/non_writable_dir"
+	removal_msg_defs[4]="custom msg - removal error: no write permission on %path"
+	test remove_folder "$test_base_folder/non_writable_dir" "verbose" "removal_msg_defs"
+fi
+
 ###
 test_file_path="$test_root_path/cfg_testfile"
 cat > "$test_file_path"  << EOF
