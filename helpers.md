@@ -7,14 +7,14 @@ If the pipes are not documented, the default is:
 Parameters enclosed in brackets [ ] are optional.
 
 ### capture()
-Collects `stdout`, `stderr` (if global `$STDERR` is set to *1*) and the return status of a command and copies them into global variables.
+Collects `stdout`, `stderr` and the return status of a command and copies them into global variables.
 
-Example: `capture echo "Hello world"` defines the global variables `return` which contains *0* and `stdout` with the value 
+Example: `capture echo "Hello world"` defines the global variables `$return` which contains *0* and `$stdout` with the value 
 *Hello world*. To prefix the variable names in case confusion might arise, use the global variable `$PREFIX`.
 The easiest way is to set it in the call context (`$PREFIX` is only defined for that command):
 
 	PREFIX="echo" capture echo "Hello world"
-defines the global variables `echo_return` and `echo_stdout` with the same values.
+defines the global variables `$echo_return` and `$echo_stdout` with the same values.
 
 To capture `stderr` use the global variable `$STDERR` and set it to *1*. Let's take an example where there's some `stderr` 
 for sure, f.ex. the attempt to create a folder inside `/proc` which is never writeable, not even to root:
@@ -23,13 +23,13 @@ for sure, f.ex. the attempt to create a folder inside `/proc` which is never wri
 will define the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` error message). If `$PREFIX` is 
 defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="90%">call to capture (<code>$1</code> is the command)</td></tr>
+        <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="70%">call to capture (<code>$1</code> is the command)</td></tr>
         <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 	<tr><td rowspan="2"><b>Globals</b></td>
                 <td align="center">Input</td><td>
 			<ul>
-		                <li><code>$STDERR</code> if it's set to <em>1</em>, <code>stderr</code> is captured</li>
-				<li><code>$PREFIX</code> if it's a non empty-string, the capture variables names are prefixed</li>
+		                <li><code>$STDERR</code>: if it's set to <em>1</em>, <code>stderr</code> is captured</li>
+				<li><code>$PREFIX</code>: if it's a non empty-string, the capture variables names are prefixed</li>
 			</ul>
 	</td></tr>
         <tr>    <td align="center">Output</td><td>
@@ -37,7 +37,7 @@ defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 		<ul>
 			<li>if <code>$PREFIX</code> is not defined or empty: <code>$return</code> and <code>$stdout</code></li>
 			<li>if <code>$PREFIX</code> is a non-empty string: <code>$PREFIX_return</code>, <code>$PREFIX_stdout</code></li>
-			<li>if <code>$STDERR</code> is set to <em>1</em>, <code>$stderr</code> respectively <code>$PREFIX_stderr</code> in addition</li>
+			<li>if <code>$STDERR</code> is set to <em>1</em>, <code>$stderr</code> respectively <code>$PREFIX_stderr</code> on top</li>
 		</ul>
 	</td></tr>
 </table>
@@ -97,10 +97,8 @@ If f.ex. `bc` returned  *3.000...* the function returns *3*, regardless of `$2`'
                 <td align="center"><code>$1</code></td><td width="90%">expression to compute, f.ex. <em>(2*2.25)/7</em></td></tr>
         <tr>    <td align="center">[<code>$2</code>]</td><td>maximal amount of decimals in the result. Defaults to <em>3</em> if omitted. 
 		Use <em>0</em> or <em>int</em> to get an integer</td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>if the <code>bc</code> execution was successful (status code <em>0</em>), the calculus 
-		result with at most <code>$2</code> decimals. Empty if <code>bc</code> failed</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the <code>bc</code> execution was successful (status code <em>0</em>),
+	 the calculus result with at most <code>$2</code> decimals. Empty if <code>bc</code> failed</td></tr>
         <tr><td><b>Status</b></td><td colspan="2">the status returned by the <code>bc</code> call</td></tr>
 </table>
 
@@ -117,7 +115,7 @@ Allows to capture piped `stdin` input to a variable, here f.ex. to `$input`
 </table>
 
 ### get_random_string()
-Gets a alphanumeric string of length `$1` from `/dev/urandom`. 
+Provides a string composed of `$1` alphanumeric characters taken from `/dev/urandom`. 
 
 **Important: it's not suited for critical security applications like cryptography**. However, it's useful to get unique strings for non-critical usecases, 
 f.ex. "run IDs" which may be used to distinguish interleaving log entries from several instances of the same script running in parallel. 
@@ -144,7 +142,7 @@ Another is to check whether globbing needs to be turned off before an instructio
 
 <table>
         <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>globbing is enabled</td></tr>
+                <td align="center"><em>0</em></td><td width="90%">globbing is enabled</td></tr>
         <tr>    <td align="center"><em>1</em></td><td>globbing is disabled</td></tr>
 </table>
 
@@ -162,9 +160,7 @@ If `important_fct_call` returns with a status code other than *0*, the script pr
 	<tr>	<td align="center">[<code>$2</code>]</td><td>exit message, defaults to a empty string if omitted (it still prints a newline to reset
                   the terminal)</td></tr>
 	<tr>	<td align="center">[<code>$3</code>]</td><td>exit code, defaults to <em>1</em></td></tr>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td>piped input ignored</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>if the exit is triggered, <code>$2</code> followed by a newline</td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td><code></td></tr>
-        <tr><td><b>Exit</b></td><td align="center"><code>$3</code></td><td><code></td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the exit is triggered, <code>$2</code> followed by a newline</td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+        <tr><td><b>Exit</b></td><td align="center"><code>$3</code></td><td></td></tr>
 </table>

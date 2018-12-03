@@ -227,7 +227,6 @@ test get_existing_path_part "$not_existing_root_folder"
 
 ###
 echo "*** try_filepath_deduction() ***"
-
 # preparation
 filepath_deduction_test_folder="$test_base_folder/fp_infer"
 mkdir "$filepath_deduction_test_folder"
@@ -324,8 +323,8 @@ test move_file "$test_base_folder/b" "$not_writable_folder_path/a" 'status'
 configure_test $return_val "$mv_err_msg"
 test move_file "$test_base_folder/b" "$not_writable_folder_path/a" "stderr"
 
-echo ' - $> msg_defs=("My success message: moved %source to %destination")'
-msg_defs=("My success message: moved %source to %destination")
+echo ' - $> msg_defs=("My success message: moved %src to %dest")'
+msg_defs=("My success message: moved %src to %dest")
 configure_test 0 "My success message: moved $test_base_folder/b to $test_base_folder/a"
 test move_file "$test_base_folder/b" "$test_base_folder/a" "verbose" "msg_defs"
 
@@ -346,7 +345,7 @@ test copy_folder "$test_base_folder/folder_to_copy" "$test_base_folder/copied_fo
 configure_test 0 "0"
 test copy_folder "$test_base_folder/folder_to_copy" "$test_base_folder/copied folder" "status"
 
-msg_defs=("My success message: moved %source to %destination" "%err_msg" "Source empty" "Source %source doesn't exist")
+msg_defs=("My success message: moved %src to %dest" "%stderr_msg" "Source empty" "Source %src doesn't exist")
 configure_test 2 "Source empty"
 test copy_folder "" "" "verbose" "msg_defs"
 

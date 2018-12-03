@@ -7,7 +7,7 @@
 # Dependencies: awk, basename, cd, dirname, echo, grep, printf, pwd, readlink, sed
 
 ##### Commons dependencies
-. "$commons_path/helpers.sh"           		# for get_array_element()
+. "$commons_path/helpers.sh"           		# for get_array_element(), is_globbing_enabled()
 . "$commons_path/string_handling.sh"  		# for sanitize_variable_quotes()
 
 ##### Functions
@@ -71,17 +71,19 @@ function get_existing_path_part
 function try_filepath_deduction()
 {
 	[ ! -d "$1" ] && return 1
+	is_globbing_enabled || set +f && local disable_globbing=1
 	local pattern="${2:-*}" file_cnt=0 filepath
 	for filepath in "$1/"$pattern; do
 		if [ -f "$filepath" ]; then
 			((file_cnt++))
-			[ $file_cnt -eq 2  ] && return 3
+			[ $file_cnt -eq 2  ] && break	# not return here to be able to handle disable_globbing
 		fi
 	done
+	[ -n $disable_globbing ] && set -f
+	[ $file_cnt -eq 2  ] && return 3
 	[ $file_cnt -eq 0 ] && return 2
 	[ $file_cnt -eq 1 ] && echo "$filepath" && return
 }
-
 
 ########### Filesystem operations
 # - status & verbose modes are handled with recursion to be able to cope with all the returns statuses
@@ -98,10 +100,11 @@ function create_folder()
 		default_msg_defs[2]="folder creation error: no path provided\n"
 		default_msg_defs[3]="folder creation error: %path exists\n"
 		default_msg_defs[4]="folder creation error: no write permission for %path\n"
-		local err_msg="$(create_folder "$1" "stderr")" status=$? msg_def
+		local stderr_msg="$(create_folder "$1" "stderr")" status=$? msg_def
 		[ -n "$3" ] && msg_def="$(get_array_element "$3" $status)"
 		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
-		printf '%s' "$(echo "$msg_def" | sed -e "s^%path^$1^g" -e "s^%stderr_msg^$err_msg^g")"
+		local path_exp="$(get_sed_replace_expression "%path" "$1")" stderr_msg_exp="$(get_sed_replace_expression "%stderr_msg" "$stderr_msg")"
+		printf '%s' "$(echo "$msg_def" | sed -e "$path_exp" -e "$stderr_msg_exp")"
 		return $status
 	fi
 	[ -z "$1" ] && return 2
@@ -122,19 +125,21 @@ function handle_cp_or_mv()
 	# recursion for status and verbose modes: see dev note at the beginning of the "filesystem operations" section
 	[ "$4" = '$?' ] || [ "$4" = "status" ] && local status="$(handle_cp_or_mv "$1" "$2" "$3"; echo $?)" && echo "$status" && return $status
 	if [ "$4" = "verbose" ]; then
-		local default_msg_defs[0]="%source moved to %destination\n"
-		[ "$1" = "cp" ] || [ "$1" = "copy" ] && default_msg_defs[0]="%source copied to %destination\n"
+		local default_msg_defs[0]="%src moved to %dest\n"
+		[ "$1" = "cp" ] || [ "$1" = "copy" ] && default_msg_defs[0]="%src copied to %dest\n"
 		default_msg_defs[1]="%stderr_msg\n"
-		default_msg_defs[2]="%operation error: source path empty\n"
-		default_msg_defs[3]="%operation error: %source -> %destination failed because source path doesn't exist\n"
-		default_msg_defs[4]="%operation error: %source -> %destination failed because of a lack of read permission on the source path\n"
-		default_msg_defs[5]="%operation error: %source -> %destination failed because destination path exists (won't overwrite)\n"
-		default_msg_defs[6]="%operation error: %source -> %destination failed because of a lack of write permission on the destination path\n"
+		default_msg_defs[2]="%op error: source path empty\n"
+		default_msg_defs[3]="%op error: %src -> %dest failed because source path doesn't exist\n"
+		default_msg_defs[4]="%op error: %src -> %dest failed because of a lack of read permission on the source path\n"
+		default_msg_defs[5]="%op error: %src -> %dest failed because destination path exists (won't overwrite)\n"
+		default_msg_defs[6]="%op error: %src -> %dest failed because of a lack of write permission on the destination path\n"
 		default_msg_defs[7]="handle_cp_or_mv error: mode '$1' unknown\n"
 		local stderr_msg="$(handle_cp_or_mv "$1" "$2" "$3" "stderr")" status=$? msg_def
 		[ -n "$5" ] && local msg_def="$(get_array_element "$5" $status)"
 		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
-		printf '%s' "$(echo "$msg_def" | sed -e "s^%source^$2^g" -e "s^%destination^$3^g" -e "s^%stderr_msg^$stderr_msg^g" -e "s^%operation^$1^g")"
+		local op_exp="$(get_sed_replace_expression "%op" "$1")" src_exp="$(get_sed_replace_expression "%src" "$2")" \
+		dest_exp="$(get_sed_replace_expression "%dest" $3)" stderr_exp="$(get_sed_replace_expression "%stderr" "$stderr_msg")"
+		printf '%s' "$(echo "$msg_def" | sed -e "$op_exp" -e "$src_exp" -e "$dest_exp" -e "$stderr_exp")"
 		return $status
 	fi
 	[ "$1" = "mv" ] || [ "$1" = "move" ] && local operation="mv -n"	# mv with -n forbids overwrites
@@ -189,7 +194,8 @@ function handle_rm()
 		local stderr_msg="$(handle_rm "$1" "stderr")" status=$? msg_def
 		[ -n "$3" ] && local msg_def="$(get_array_element "$3" $status)"
 		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
-		printf '%s' "$(echo "$msg_def" | sed -e "s^%path^$1^g" -e "s^%stderr_msg^$stderr_msg^g")"
+		local path_exp="$(get_sed_replace_expression "%path" "$1")" stderr_msg_exp="$(get_sed_replace_expression "%stderr_msg" "$stderr_msg")"
+		printf '%s' "$(echo "$msg_def" | sed -e "$path_exp" -e "$stderr_msg_exp")"
 		return $status
 	fi
 	[ -z "$1" ] && return 2

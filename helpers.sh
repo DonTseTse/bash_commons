@@ -4,7 +4,7 @@
 #
 # Author: DonTseTse
 # Documentation https://github.com/DonTseTse/bash_commons/blob/master/helpers.md
-# Dependencies: mktemp, rm, type, echo, bc, printf, cat, grep, head, tr
+# Dependencies: mktemp, rm, type, echo, bc, printf, cat, grep, head, tr, eval
 
 ##### Commons dependencies
 # None
