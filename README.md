@@ -13,10 +13,13 @@ to create a clean repository to add tests and documentation.
 
 ### Filesystem
 The filesystem collection provides: 
-- wrappers for `mkdir` and `mv`, [create_directory()](filesystem.md#create_directory) and 
-  [move()](filesystem.md#move), which include permission checks, provide detailed status output and have verbose variants 
-  with configurable message patterns ([create_directory_verbose()](filesystem.md#create_directory_verbose) and 
-  [move_verbose()](filesystem.md#move_verbose)).
+- wrappers for `mkdir`, `mv`/`cp` and `rm` which include preparatory checks and detailed error status codes as well as a *`stdout`
+  configuration* which controls the function's stdout behavior. It includes a verbose mode with a configurable message template system
+  including runtime variable injection:
+	- [create_folder()](filesystem.md#create_folder)
+	- [move_file()](filesystem.md#move_file) and [move_folder()](filesystem.md#move_folder)
+	- [copy_file()](filesystem.md#copy_file) and [copy_folder()](filesystem.md#copy_folder)
+	- [remove_file()](filesystem.md#remove_file) and [remove_folder()](filesystem.md#remove_folder)
 - [get_real_path()](filesystem.md#get_real_path) and its special application [get_script_path()](filesystem.md#get_script_path) 
   which return "clean" paths. For files or folder to create it provides the complementary 
   [get_existing_path_part()](filesystem.md#get_existing_path_part) and [get_new_path_part()](filesystem.md#get_new_path_part)

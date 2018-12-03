@@ -34,7 +34,7 @@ for paths that don't exist.
 	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">path to resolve and clean</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the "real" path of <code>$1</code>, empty otherwise</td></tr>
 	<tr><td rowspan="2"><b>Status</b></td>
-		<td align="center"><em>0</em></td><td>success</td></tr>
+		<td align="center"><em>0</em></td><td>success, "real" path written on <code>stdout</code></td></tr>
 	<tr>    <td align="center"><em>1</em></td><td><code>$1</code> doesn't exist</td></tr>
 </table>
 
@@ -126,53 +126,57 @@ If there's only a single file (match) in the folder `$1`, returns its path
 ### create_folder()
 `mkdir` wrapper with:
 - several checks before the actual creation attempt which allow to get specific status codes for any possible error type:
-  if the path is empty (status *2*), exist already (*3*) or if the user has no write permission (*4*)
+  if the path is empty (status *2*), exists (*3*) or if the user has no write permission (*4*)
 - control over `stdout` and `stderr`: `mkdir` writes on `stderr` in case of failure. This functions allows to be sure:
-	- that `stdout` either contains either nothing, the `mkdir` status code or `stderr` message, or a custom message, depending on `$2`
+	- that `stdout` contains either nothing, the `mkdir` status code or `stderr` message, or a custom message, depending on the 
+	  the **stdout configuration** `$2`
 	- that `stderr` remains silent, even in case of `mkdir` failure
-- a "verbose" mode which provides an easy way to customize the messages, which are by status (i.e. one template by status, with variable 
-  placeholders that allow to inject the runtime parameters in the message)
+- a system for the message customization: one template by status, with variable placeholders to inject the runtime parameters
 
-Examples:
-- silent mode: `create_folder "path/to/new/dir"`
+**Stdout configuration**:
+- silent: `create_folder "path/to/new/dir"`
 - status code: `status=$(create_folder "/path/to/my_new_dir" "status")`
-- error message: `err_msg=$(create_folder "/path/to/my_new_dir" "error_message")`
-- verbose mode: 
-	```
-	msg_defs[0]="Success! %path created\n"
-	create_folder "$1" "verbose"  "msg_defs"
-	``` 
-	
-	The supported variables are `%path` and `%stderr_msg`.
+- `mkdir` error message: `err_msg=$(create_folder "/path/to/my_new_dir" "error_message")`
+- verbose: prints a status specific message where the variable placeholders `%path` and `%stderr_msg` are replaced by the path `$1` and
+	the `mkdir` error message (only relevant if status is *1*, otherwise it should be empty). The default message templates are:
 
 	| Status | Template
-	|:------:| --------
-	|*0*| folder `%path` created\n
-	|*1*| `%stderr_msg`\n
-	|*2*| folder creation error: no path provided\n
-	|*3*| folder creation error: `%path` exists\n
-	|*4*| folder creation error: no write permission for `%path`\n
+        |:------:| --------
+        |*0*| folder `%path` created\n
+        |*1*| `%stderr_msg`\n
+        |*2*| folder creation error: no path provided\n
+        |*3*| folder creation error: `%path` exists\n
+        |*4*| folder creation error: no write permission for `%path`\n
+
+	`create_folder "/new/folder/path" "verbose"` would hence print *folder /new/folder/path created\n* in case of success. These message can
+	be customized by creating a array variable with elements that have the status as index. The name of the array variable has to be provided
+	as 3rd paramter. In the example below, the success message template is overwritten:
+
+	```
+	msg_defs[0]="Success! %path created\n"
+	create_folder "new/folder/path" "verbose"  "msg_defs"
+	``` 
+	would print *Success! /new/folder/path/ created\n* in case of success.
 
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
         <tr>    <td align="center">[<code>$2</code>]</td><td><code>stdout</code> configuration:
                 <ul>
-                        <li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
-			<li><em>status</em> or <em>$?</em>: <code>mkdir</code> call status code</li>
+                        <li>if omitted or an empty string, nothing is written on <code>stdout</code></li>
+			<li><em>status</em> or <em>$?</em>: status code</li>
                         <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em>: <code>mkdir</code> call <code>stderr</code> output</li>
                         <li><em>verbose</em>: status specific message, see explanations above</li>
                 </ul>
         </td></tr>
         <tr>    <td align="center">[<code>$3</code>]</td><td>if <code>$2</code> is set to <em>verbose</em>, the name of the array variable which contains
-	the custom message templates - if omitted, the default message patterns are used; see explanations above</td></tr>
+	the custom message templates - if omitted, the default templates are used; see explanations above</td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>
                 <ul>
 			<li>empty if <code>$2</code> omitted or set to an empty string
                         <li>the status returned by the <code>mkdir</code> call if <code>$2</code> is set to <em>status</em></li>
                         <li>eventual <code>sterr</code> output of the <code>mkdir</code> call if <code>$2</code> is set to <em>error_message</em></li>
-                        <li>the status sppecific message if <code>$2</code> is set to <em>verbose</em></li>
-
+                        <li>the status specific message if <code>$2</code> is set to <em>verbose</em></li>
                 </ul>
         </td></tr>
         <tr><td rowspan="5"><b>Status</b></td>
@@ -195,13 +199,13 @@ Internal handler for file/folder copy/move, used by the wrapper functions <a hre
         <tr>    <td align="center">[<code>$4</code>]</td><td><code>stdout</code> configuration:
                 <ul>
                         <li>if omitted or an empty string, nothing is written on <code>stdout</code></li>
-                        <li><em>status</em> or <em>$?</em>: <code>mv</code>/<code>cp</code> call's status code</li>
-                        <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em>: <code>mv</code>/<code>cp</code> call's <code>stderr</code> output</li>
+                        <li><em>status</em> or <em>$?</em>: the status code</li>
+                        <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em>: <code>mv</code>/<code>cp</code> call <code>stderr</code> output</li>
                         <li><em>verbose</em>: status specific message, see explanations in the wrapper functions</li>
                 </ul>
         </td></tr>
         <tr>    <td align="center">[<code>$5</code>]</td><td>if <code>$4</code> is set to <em>verbose</em>, the name of the array variable which contains the 
-		custom message patterns. If omitted, the default message patterns are used</td></tr>
+		custom message templates - if omitted, the default templates are used, see exaplanation in the wrapper functions</td></tr>
 	<tr><td colspan="3">Pipes and status are documented below for the wrapper functions. handle_cp_or_mv() has just one additional status which will 
 	never occur if the wrapper functions are used: status <em>7</em> to signal mode <code>$1</code> is unknown</td></tr>
 </table>
