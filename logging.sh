@@ -56,7 +56,7 @@ function prepare_secret_for_logging()
         local secret_size=${#1} secret_size_factor="${3:-0.25}" secret_size_limit nb_chars=$2 from_end=0 secret_hint
         secret_size_limit=$(calculate "$secret_size * $secret_size_factor" "int")
         [ -z "$2" ] && nb_chars=$secret_size_limit
-        [[ "$2" =~ ^-[1-9]+$ ]] && nb_chars=$((nb_chars * -1)) && from_end=1
+        [[ "$2" =~ ^-[0-9]+$ ]] && nb_chars=$((nb_chars * -1)) && from_end=1
         [ $nb_chars -gt $secret_size_limit ] && nb_chars=$secret_size_limit
         [ $nb_chars -gt 0 ] && [ $from_end -eq 0 ] && secret_hint=" - begins with '${1:0:$nb_chars}'"
         [ $nb_chars -gt 0 ] && [ $from_end -eq 1 ] && secret_hint=" - ends with '${1: -$nb_chars}'"

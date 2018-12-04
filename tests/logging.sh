@@ -29,6 +29,9 @@ check_test_results "prepare_secret_for_logging \"longer_secret\" 5 \"0.5\""  $? 
 configure_test 0 "[Secret - ends with 'et']"
 test prepare_secret_for_logging "longer_secret" -2
 
+configure_test 0 "[Secret - ends with 'ret']"
+test prepare_secret_for_logging "longer_secret" -10
+
 echo "*** log() + launch_logging() ***"
 configure_test 0 ""
 test log "log message"
