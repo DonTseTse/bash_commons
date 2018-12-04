@@ -81,9 +81,9 @@ that switches to status *0* (= writeable).
                   permission - see explanations above
 	</td></tr>
         <tr><td rowspan="4"><b>Status</b></td>
-                <td align="center"><em>0</em> path <code>$1</code> can be written</</td></tr>
-	<tr>	<td align="center"><em>1</em> there's no write permission on path <code>$1</code></td></tr>
-	<tr>	<td align="center"><em>2</em> the direct parent folder of path <code>$1</code> doesn't exist (can only happen if <code>$2</code> is omitted or set to <em>0</em>)</li>
+                <td align="center"><em>0</em></td><td>path <code>$1</code> can be written</</td></tr>
+	<tr>	<td align="center"><em>1</em></td><td>there's no write permission on path <code>$1</code></td></tr>
+	<tr>	<td align="center"><em>2</em></td><td>the direct parent folder of path <code>$1</code> doesn't exist (can only happen if <code>$2</code> is omitted or set to <em>0</em>)</li>
         <tr>    <td align="center"><em>3</em></td><td>if <code>$1</code> is empty</td></tr>
 </table>
 
@@ -127,9 +127,9 @@ If there's only a single file (match) in the folder `$1`, returns its path
 	- that `stderr` remains silent, even in case of `mkdir` failure
 - a system for the message customization: one template by status, with variable placeholders to inject the runtime parameters
 
-Verbose mode / message customization:
+<u>Verbose mode / message customization</u>:
 
-The variable placeholders `%path` and `%stderr_msg` are replaced by the path `$1` and the `mkdir` error message. Letter is only relevant if 
+The variable placeholders `%path` and `%stderr_msg` are replaced by the path `$1` and the `mkdir` error message. Latter is only relevant if 
 status is *1* (`mkdir` error), otherwise it should be empty. The default message templates are:
 
 | Status | Template
@@ -142,15 +142,15 @@ status is *1* (`mkdir` error), otherwise it should be empty. The default message
 
 `create_folder "/new/folder/path" "verbose"` would hence print *folder /new/folder/path created\n* in case of success. These message can
 be customized by creating a array variable with elements that have the status as index. The name of the array variable has to be provided
-as 3rd paramter. In the example below, the success message template is overwritten:
+as 3rd parameter. In the example below, the success message template is overwritten:
 
 ```
-msg_defs[0]="Success! %path created\n"
-create_folder "new/folder/path" "verbose"  "msg_defs"
+msg_defs[0]="Haha! %path created\n"
+create_folder "new/folder/path" "verbose" "msg_defs"
 ``` 
-would print *Success! /new/folder/path/ created\n* in case of success.
+would print *Haha! /new/folder/path/ created\n* in case of success.
 
-Examples:
+<u>Examples</u>:
 
 - `stdout`silent: `create_folder "path/to/new/dir"`
 - `stdout` with status code: `status=$(create_folder "/path/to/my_new_dir" "status")`

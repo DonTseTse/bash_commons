@@ -44,7 +44,8 @@ If a string contains a value enclosed in quotes (the quotes are part of string),
 
 Examples: 
 - Input as parameter: `sanitize_variable_quotes "'quoted value'"` 
-- Piped input $(echo "'quoted value'" | sanitize_variable_quotes)
+- Piped input `$(echo "'quoted value'" | sanitize_variable_quotes)`
+
 print *quoted value*
 <table>
 	<tr><td><b>Param.</b></td><td align="center">[<code>$1</code>]</td><td width="90%">string to sanitize, if omitted or empty <code>stdin</code> is read</td></tr>
@@ -74,10 +75,11 @@ Inspired by this [StackOverflow thread](https://stackoverflow.com/questions/5031
 	<tr><td rowspan="3"><b>Param.</b></td>
 		<td align="center"><code>$1</code></td><td width="90%">string to search in</td></tr>
 	<tr>    <td align="center"><code>$2</code></td><td>character/string to find - exact matching is used (bash's matching special characters are disabled)</td></tr>
-	<tr>    <td align="center">[<code>$3</code>]</td><td>search start position inside <code>$1</code> - if it's omitted, search start at the beginning</td></tr>
+	<tr>    <td align="center">[<code>$3</code>]</td><td>search start position inside <code>$1</code> - if it's omitted, search starts at the beginning</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>
 		<ul>
-			<li>the position of the first character of the first occurence of <code>$2</code> in <code>$1</code></li>
+			<li>the position of the first character of the first occurence of <code>$2</code> in the considered part of <code>$1</code>. 
+			It's always the index of the character in the complete string, even if a <code>$3</code> search offset was configured</li>
 			<li><em>-1</em> if <code>$2</code> is not found in <code>$1</code></li>
 		</ul>
 	</td></tr>
@@ -108,14 +110,14 @@ Checks if string `$1` is of a certain type `$2`:
        <tr><td><em>integer</em></td><td>checks <code>$1</code> only contains numbers</td></tr>
 </table>
 
-The type may be inverted if it's preceeded by a *!*, f.ex. *!absolute_filepath* for a relative filepath. **Warning**: be careful with 
-inverted checks especially if `$1` can be empty. One might consider that
+The type may be inverted if it's preceeded by a *!*, f.ex. *!absolute_filepath* for a relative filepath. 
+
+**Warning**: be careful with inverted checks especially if `$1` can be empty. One might consider that
 
 	is_string_a "" "!absolute_filepath"
-should return status *0* (= success) since an empty string is not an absolute filepath but the function returns with status *2* 
-because `$1` is empty
+should return status *0* (= success) since an empty string is not an absolute filepath but the function returns with status *2*
 
-Examples: 
+Example: 
 
 	is_string_a "$potential_int" "integer" && echo "This is a integer: $potential_int"
 
@@ -125,16 +127,16 @@ Examples:
 	<tr>    <td align="center"><code>$2</code></td><td>test type, see table above; can be inverted with a leading <em>!</em>, f.ex. <em>!integer</em></td></tr>
 	<tr><td rowspan="5"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>the test was executed and succeeded</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td><code>the test was executed, but failed</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>the test was executed, but failed</td></tr>
         <tr>    <td align="center"><em>2</em></td><td><code>$1</code> is empty</td></tr>
         <tr>    <td align="center"><em>3</em></td><td><code>$2</code> is empty</td></tr>
         <tr>    <td align="center"><em>4</em></td><td><code>$2</code> is unknown</td></tr>
 </table>
 
 ### get_string_bytelength()
-Gives the byte length of `$1`. Characters which are part of ASCII set are encoded on 1 byte, hence, for strings which contain only
-ASCII characters, the bytelength is also the string length. Characters from other sets like f.ex. é, à, å, etc. require 2 or more
-bytes - strings which contain such characters have a higher bytelength than string length
+Gives the byte length of `$1`. Characters which are part of the ASCII set are encoded on 1 byte, hence, for strings which contain only
+ASCII characters, the byte length is also the string length. Characters from other sets like f.ex. é, à, å, etc. require 2 or more
+bytes and lead to higher bytelength than string length. Uses the *C* locale internally.
 <table>
 	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to get the bytelength of</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the bytelength of <code>$1</code></td></tr>
@@ -142,8 +144,8 @@ bytes - strings which contain such characters have a higher bytelength than stri
 </table>
 
 ### get_string_bytes()
-Computes the byte representation of a string. Non-ascii chars like à,é,å,ê,etc. are transformed to their character code,
-é f.ex. is \303\251
+Computes the byte representation of a string. Non-ASCII chars like à,é,å,ê,etc. are transformed to their character code,
+é f.ex. is \303\251. Uses the *C* locale internally. 
 
 <table>
 	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to get the byte representation of</td></tr>
@@ -152,7 +154,11 @@ Computes the byte representation of a string. Non-ascii chars like à,é,å,ê,e
 </table>
 
 ### get_sed_extract_expression()
-Compute sed string extraction expression
+Generates `sed` string extraction expression.
+Example:
+
+        echo "first|second|third" | sed -e $(get_sed_extract_expression "|" "before" "first")
+The expression is <em>s/|.*//g</em> and the command prints *first*
 <table>
 	<tr><td rowspan="3"><b>Param.</b></td>
 		<td align="center"><code>$1</code></td><td width="90%">marker</td></tr>
@@ -167,7 +173,7 @@ Compute sed string extraction expression
 </table>
 
 ### get_sed_replace_expression()
-Computes sed string replacement expression
+Generates `sed` string replacement expression.
 
 Example: 
 
@@ -192,7 +198,7 @@ The expression is *s/some/awesome/g* and the command prints *awesome string*
 </table>
 
 ### find_sed_operation_separator()
-Provides a sed separator character which doesn't occur in `$1` and `$2`
+Provides a sed separator character which doesn't occur in `$1` and `$2`.
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">sed match regex/string</td></tr>
@@ -204,7 +210,9 @@ Provides a sed separator character which doesn't occur in `$1` and `$2`
 </table>
 
 ### escape_sed_special_characters()
-Adds a backslash to every occurence of a character which has a special signification in sed expressions: `. + ? * [ ] ^ $`
+Adds a backslash to every occurence of a character which has a special signification in sed expressions: 
+
+	`. + ? * [ ] ^ $`
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to escape</td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>escaped <code>$1</code></td></tr>

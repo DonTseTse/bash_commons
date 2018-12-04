@@ -1,13 +1,13 @@
 # Bash commons (bash_commons)
-Library of bash functions organized in several thematic collections; each collection is one source file. 
+Library of bash functions organized in several thematic collections; each is one source file. 
 
 ## Collections:
-- Filesystem: [code](filesystem.sh) | [documentation](filesystem.md) | [tests](tests/filesystem.sh)
-- String handling: [code](string_handling.sh) | [documentation](string_handling.md) | [tests](tests/string_handling.sh)
-- Logging: [code](logging.sh) | [documentation](logging.md) | [tests](tests/logging.sh)
-- Interaction: [code](interaction.sh) | [documentation](interaction.md)
-- Helpers: [code](helpers.sh) | [documentation](helpers.md) | [tests](tests/helpers.sh)
-- Testing: [code](testing.sh) | [documentation](testing.md)
+| Filesystem | [code](filesystem.sh) | [documentation](filesystem.md) | [tests](tests/filesystem.sh)
+| String handling | [code](string_handling.sh) | [documentation](string_handling.md) | [tests](tests/string_handling.sh)
+| Logging | [code](logging.sh) | [documentation](logging.md) | [tests](tests/logging.sh)
+| Interaction | [code](interaction.sh) | [documentation](interaction.md)
+| Helpers | [code](helpers.sh) | [documentation](helpers.md) | [tests](tests/helpers.sh)
+| Testing |[code](testing.sh) | [documentation](testing.md)
 
 ### Filesystem
 The filesystem collection provides: 
@@ -21,27 +21,26 @@ The filesystem collection provides:
 - [get_real_path()](filesystem.md#get_real_path) and the special application [get_script_path()](filesystem.md#get_script_path) 
   which return "clean" paths. Further path utilities include the complementary 
   [get_existing_path_part()](filesystem.md#get_existing_path_part) and [get_new_path_part()](filesystem.md#get_new_path_part)
-- [is_writeable()](filesystem.md#is_writeable) which, beside the classic write permission check, is able to check permissions 
-  for filesystem operations involving nested folders, like `mkdir` with the `-p` flag
-- the [try_filepath_deduction()](filesystem.md#try_filepath_deduction) utility which provides a "if there's only one file
-  matching, take that" logic
+- [is_writeable()](filesystem.md#is_writeable) which, on top of the classic write permission check, is able to handle permission 
+  checks for filesystem operations involving nested folders, like `mkdir` with the `-p` flag
+- [try_filepath_deduction()](filesystem.md#try_filepath_deduction) for a "if there's only one file matching, take that" logic
 - [load_configuration_file_value()](filesystem.md#load_configuration_file_value) which allows to load values from files instead of
   sourcing them
 
 ### String handling
+The string handling collections includes functions to modify strings and control certain properties as well as `sed` helpers:
 - [escape()](string_handling.md#escape) adds backslashes to certain characters on a string provided as piped input
 - [trim()](string_handling.md#trim) removes leading or trailing whitespaces
 - [find_substring()](string_handling.md#find_substring) returns the position of the first match of a string inside of another string, 
   if there's any
 - [sanitize_variable_quotes()](string_handling.md#sanitize_variable_quotes) allows to remove enclosing quotes in a string
-- [is_string_a()](string_handling.md#is_string_a) is a utility function which checks whether a string complies to a certain type, 
-  f.ex. "absolute filepath" or "email"
-- [get_absolute_path()](string_handling.md#get_absolute_path) is a simple utility to prepend relative paths with a root directory
+- [is_string_a()](string_handling.md#is_string_a) check  whether a string complies to a certain type, f.ex. "absolute filepath" or "email"
+- [get_absolute_path()](string_handling.md#get_absolute_path) is a helper to prepend relative paths with a root directory
 - [get_string_bytes()](string_handling.md#get_string_bytes) and [get_string_bytelength()](string_handling.md#get_string_bytelength) 
-  help with the handling of strings that contain non-ASCII characters
+  allow to work with strings that contain non-ASCII characters
 - `sed` helpers: [get_sed_replace_expression()](string_handling.md#get_sed_replace_expression) and 
-  [get_sed_extract_expression()](string_handling.md#get_sed_extract_expression) help generate expressions that can be directly
-  passed to `sed` - they take care to select a collision-free separator character using 
+  [get_sed_extract_expression()](string_handling.md#get_sed_extract_expression) return "expressions" that can be directly
+  passed to `sed` - the functions take care to select a collision-free separator character using 
   [find_sed_operation_separator()](string_handling.md#find_sed_operation_separator) and escape characters with special signification 
   using [escape_sed_special_characters()](string_handling.md#escape_sed_special_characters). 
 
@@ -53,7 +52,7 @@ The interaction collection provides the basic building blocks for interactive sc
 
 ### Logging
 The logging collection's functions work together as one module which provides several features:
-- distinct output chanels for `stdout` and file logging, each with their own logging level and message pattern
+- distinct output channels for `stdout` and file logging, each with their own logging level and message pattern
 - a log message buffer which allows to use [log()](logging.md#log) before the logger is configured. Applications can start logging
   from the very beginning with logging "disabled" - in fact, messages go into the buffer, nothing is actually logged. Once the configuration
   is known (usually, when the script parameters were processed - typically to handle that `-v` flag that enables `stdout` logging), the
@@ -65,7 +64,7 @@ The logging collection's functions work together as one module which provides se
 Testing is based on "sessions" which are sequences of test operations. A session begins with [initialize_test_session()](testing.md#initialize_test_session)
 and ends with [conclude_test_session()](testing.md#conclude_test_session). Each test follows the scheme:
 
-1. set the expected result in terms of status code, `stdout` content and `stderr` content with [configure_test()](testing.md#configure_test)
+1. set the expected result in terms of status code and `stdout` content with [configure_test()](testing.md#configure_test)
 2. run the command capturing these values with [test()](testing.md#test)
 
 In some cases, f.ex. if the command uses piped input, it's not possible to use [test()](testing.md#test), the command has to be run in the testing script
@@ -83,6 +82,7 @@ Used by the other modules. Function index:
 - [get_array_element()](helpers.md#get_array_element)
 - [get_random_string()](helpers.md#get_random_string)
 - [get_piped_input()](helpers.md#get_piped_input)
+- [is_command_defined()](helpers.md#is_command_defined)
 - [is_function_defined()](helpers.md#is_function_defined)
 - [is_globbing_enabled()](helpers.md#is_globbing_enabled)
 - [set_global_variable()](helpers.md#set_global_variable)

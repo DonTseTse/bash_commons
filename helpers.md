@@ -1,11 +1,5 @@
 Documentation for the functions in [helpers.sh](helpers.sh).
 
-If the pipes are not documented, the default is:
-- `stdin`: ignored
-- `stdout`: empty
-
-Parameters enclosed in brackets [ ] are optional.
-
 ## Quick access
 - [calculate()](#calculate)
 - [capture()](#capture)
@@ -19,6 +13,12 @@ Parameters enclosed in brackets [ ] are optional.
 - [set_global_variable()](#set_global_variable)
 
 ## Function documentation
+If the pipes are not documented, the default is:
+- `stdin`: ignored
+- `stdout`: empty
+
+Parameters enclosed in brackets [ ] are optional.
+
 ### capture()
 Collects `stdout`, `stderr` and the return status of a command and copies them into global variables.
 
@@ -59,14 +59,14 @@ defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 
 ### is_command_defined()
 Returns with status *0* if the shell has a command definition for `$1`, regardless what type it is (function, builtin, file, etc.)
-Unlike `which` it can be used for sourced functions. 
+It's similar to `which` but may also be used for bash functions. That's useful to avoid "command ... unknown" errors. 
 
-Useful to avoid "command ... unknown" errors. May be used in instruction chains:
+It may be used in instruction chains:
 
         is_command_defined "tail" && tail "..."
 will only call `tail` if it's defined. The example shows an essential difference with 
-<a href="#is_function_defined">is_function_defined()</a> which will always return status *1* for `tail` because it has the type
-*file*, not *function*. 
+<a href="#is_function_defined">is_function_defined()</a> which will always return status *1* (not defined) for `tail` because it 
+has the type *file*, not *function*. 
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">name of the function</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
@@ -75,11 +75,15 @@ will only call `tail` if it's defined. The example shows an essential difference
 </table>
 
 ### is_function_defined()
-Returns with status *0* if a function with the name `$1` exists. Useful to avoid "command ... unknown" errors. May be used in instruction chains:
+Returns with status *0* if a bash function with the name `$1` exists. Useful to avoid "command ... unknown" errors.
+
+**Important**: use this helper only for bash functions because it checks that `type` returns *function* but valid commands can have other types, 
+f.ex. `echo` which is of type *builtin*, or `tail`, of type *file*. Check these with <a href="#is_command_defined">is_command_defined()</a>.
+
+Example of the use in an instruction chain:
 
 	is_function_defined "log" && log "..."
-will only call `log` if it's defined. **Important**: this function checks that `type` returns *function* but some commands have other types, 
-f.ex. `echo` which is of type *builtin*, or `tail`, of type *file*. Check these with <a href="#is_command_defined">is_command_defined</a>.
+will only call `log` if it's defined. 
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">name of the function</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
@@ -166,7 +170,7 @@ f.ex. "run IDs" which may be used to distinguish interleaving log entries from s
 Returns with status *0* if bash globbing is enabled. One typical usecase is to "protect" an instruction which relies on globbing:
 
 	is_globbing_enabled && command_which_requires_globbing
-Another is to check whether globbing needs to be turned off before an instruction where it is not desired
+Another is to check whether globbing needs to be turned off before an instruction where it is not desired:
 
 	is_globbing_enabled && set -f
 `set -f` disables bash globbing; it sets its `no_glob` option to true. To (re)enable globbing, use `set +f`
@@ -188,10 +192,10 @@ If `important_fct_call` returns with a status code other than *0*, the script pr
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
 		<td align="center"><code>$1</code></td><td width="90%">condition, if it's different than <em>0</em>, the exit is triggered</td></tr>
-	<tr>	<td align="center">[<code>$2</code>]</td><td>exit message, defaults to a empty string if omitted (it still prints a newline to reset
+	<tr>	<td align="center">[<code>$2</code>]</td><td>exit message, defaults to a empty string if omitted (it always prints a newline to reset
                   the terminal)</td></tr>
 	<tr>	<td align="center">[<code>$3</code>]</td><td>exit code, defaults to <em>1</em></td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the exit is triggered, <code>$2</code> followed by a newline</td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>only applicable if exit is not triggered</td></tr>
-        <tr><td><b>Exit</b></td><td colspan="2"><code>$3</code>, defaults to <em>1</em> if omitted</td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>obviously only applicable if the exit is not triggered</td></tr>
+        <tr><td><b>Exit</b></td><td colspan="2"><code>$3</code> - defaults to <em>1</em> if <code>$3</code> omitted, empty or non numeric</td></tr>
 </table>

@@ -49,8 +49,8 @@ Sets up the expected test result values
 </table>
 
 ### test()
-Runs the specified command and calls [check_test_results()](#check_test_results) with the captured status return and
-`stdout` output. 
+Checks that the specified command exists, executes it using <a href="helpers.md#capture">capture()</a> and calls [check_test_results()](#check_test_results) with 
+the captured status return and `stdout` output. 
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1 ...</code></td><td width="90%">command to test (<code>$1</code> is the command)</td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>test results messages from <a href="#check_test_results">check_test_results()</a></td></tr>
@@ -60,7 +60,7 @@ Runs the specified command and calls [check_test_results()](#check_test_results)
 
 ### check_test_results()
 Checks if `$2` corresponds to `$expected_status` and `$3` to `$expect_stdout` and writes a message on `stdout`. Increments 
-`$test_counter` and, if a check failed, `$test_error_count`. 
+`$test_counter` and, if the check failed, `$test_error_count`. 
 
 <table>
 	<tr><td rowspan="3"><b>Param.</b></td>

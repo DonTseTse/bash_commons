@@ -3,24 +3,27 @@ Documentation for the functions in [logging.sh](logging.sh). A general overview 
 
 ## Module documentation
 The logging module provides `stdout` and file logging at once, each with a individual pattern and log level. These levels follow a verbosity logic 
-where a message with a lower level should be more important than a message with a higher level. Through a configuration flag, the logger may be
-put in a "delayed logging" mode where the messages go into a buffer for a processing later on. That's useful f.ex. when application start up and
+where a message with a lower level should be more important than one with a higher level. Through a configuration flag, the logger may be
+put in a "delayed logging" mode where the messages go into a buffer a processing later on. That's useful f.ex. when application starts up and
 the actual logging configuration is not yet fully determined. 
 
 Since all these configurations have to persist between the [log()](#log) calls, the module relies on global variables:
-- `$logging_available`: defines whether [log()](#log) copies messages to `$logging_backlog` (value *0*, aka "delayed logging") instead of actually 
-   logging them (*1*). If the variable is undefined, [log()](#log) processes the messages immediately
-- `$stdout_log_level`: defines the maximal level of messages written on `stdout`, those with a higher level are discarded.  If the variable is 
-   undefined, not numeric or *0*, nothing is written
-- `$stdout_log_pattern`: pattern of the message, where a single `%s` represents the message. If the variable is undefined, *%s* is used ("just the
-   message")
+- `$logging_available`: the "delayed logging" flag
+	- if it's defined and set to *0*, [log()](#log) copies messages to `$logging_backlog`, the buffer
+	- if it's undefined or set to *1*, [log()](#log) processes the messages immediately
+- `$stdout_log_level`: defines the maximal level of message written on `stdout` can have, those with a higher level are discarded.  If the variable 
+   is undefined, not numeric or *0*, nothing is written
+- `$stdout_log_pattern`: pattern of the message written on `stdout`, where a single `%s` represents the message. If the variable is undefined, *%s* is 
+   used (i.e. "just the message")
 - `$log_filepath`: absolute path of the logfile. If the variable is undefined or empty, no file logging occurs
-- `$log_level`: defines the maximal level of messages written in the logfile, those with a higher level are discarded.  If the variable is 
-   undefined, not numeric or *0*, nothing is written
-- `$log_pattern`: pattern of the message, where a single `%s` represents the message. If the variable is undefined, *%s* is used ("just the
-   message")
+- `$log_level`: defines the maximal level of messages written in the logfile can have, those with a higher level are discarded.  If the variable is 
+   undefined, not numeric or *0*, no file logging occurs
+- `$log_pattern`: pattern of the message written to the logfile, where a single `%s` represents the message. If the variable is undefined, *%s* is used 
+   (i.e. "just the message")
 - `$logging_backlog` array: buffer for messages when `$logging_available` is set to *0*. Handled internally between [log()](#log) and 
   [launch_logging()](#launch_logging)
+
+To see an example which takes advantages of most of the features, check out [sendmail2mailgun](https://github.com/DonTseTse/sendmail2mailgun/blob/master/emulator.sh)
 
 ## Function documentation
 If the pipes are not documented, the default is:
@@ -30,11 +33,11 @@ If the pipes are not documented, the default is:
 Parameters enclosed in brackets [ ] are optional.
 
 ### log()
-Central piece of the logging module. Supports prefix-aware multi-line output and independent `stdout` and file output handling
+Central piece of the logging module. Supports prefix-aware multi-line output and independent `stdout` and file output handling. Copies messages
+to `$logging_backlog` as long as `$logging_available` is set to *0*. See the [module documentation](#module-documentation) for details.
 
 **Important**: always call this function and `launch_logging()` directly on global level and not through `$(...)`, otherwise the global 
-variables don't work (a subshell receives a copy of the parent shell's variable set and has no access to the "original" ones). To suppress
-undesired `stdout` output set `stdout_log_level` to 0.
+variables don't work (a subshell receives a copy of the parent shell's variable set and has no access to the "original" ones).
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">message to log</td></tr>
@@ -46,11 +49,11 @@ undesired `stdout` output set `stdout_log_level` to 0.
 				<li><em>stdout</em> for `stdout` logging only</li>
 			</ul>
 		This configuration selects the addressed output channel(s) but it does not overwrite the configurations which define whether logging 
-		actually occurs (see [module documentation](#module-documentation)) 
+		actually occurs (see <a href="#module-documentation">module documentation</a>) 
 	</td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>depending on the configuration, the message for the console</td></tr>
         <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
-        <tr><td><b>Globals</b></td><td align="center"></td><td>All globals listed in the [module documentation](#module_documentation)</td></tr>	
+        <tr><td><b>Globals</b></td><td align="center"></td><td>all globals listed in the <a href="#module-documentation">module documentation</a></td></tr>	
 </table>
 
 ### launch_logging()
