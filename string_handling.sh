@@ -11,8 +11,6 @@
 # - substring extraction: no specific functions for this since everything can be done with properly parametered variable expansion,
 #                         see [TODO: fill URL]
 #
-# TODO: several distributed throughout the file
-#
 # Commons dependencies
 . "$commons_path/helpers.sh" 		# for get_piped_input()
 
@@ -56,16 +54,21 @@ function trim()
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#find_substring
 function find_substring()
 {
+	[ -z "$1" ] && return 1
+        [ -z "$2" ] && return 2
 	# escape bash's string expansion pattern special chars to get "normal" matching
-	match="$(echo "$2" | escape '*' '?')"
+	local match="$(echo "$2" | escape '*' '?' )" search_string="$1" offset="${3:-0}"
 	#DEBUG >&2 printf 'input: %s - match: %s - pattern: ${1%%%%%s*}\n' "$1" "$match" "$match"
-	local substr="${1%%$match*}"
-	[ ${#substr} -eq ${#1} ] && echo "-1" || echo ${#substr}
+	#local substr="${1%%$match*}"
+	#[ ${#substr} -eq ${#1} ] && echo "-1" || echo ${#substr}
+	[[ "$offset" =~ ^[0-9]+$ ]] && [ "$offset" -gt 0 ] && [ "$offset" -lt ${#1} ] && search_string="${1:$offset}"
+	local substr="${search_string%%$match*}"
+	[ ${#substr} -eq ${#search_string} ] && echo "-1" || echo "$(calculate "$offset + ${#substr}" "int")"
 }
 
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_absolute_path
-# Dev note: that's the reason why this function is in string_handling.sh and not filesystem.sh
+# Dev note: this function is here and not in the filesystem collection because it doesn't require the provided paths to exist
 function get_absolute_path()
 {
         [ -z "$1" ] && return 1
@@ -75,83 +78,29 @@ function get_absolute_path()
 }
 
 ########### String property utilities
-### is_string_a
-# Checks string format
-#
-# The function is able to work in 2 modes depending on $3:
-# - in "status" mode it may be used easily in instruction chains (see examples below); all that matters is that it
-#   returns with status code 0 in case of success and a positive value in case of error. The error types "$1 empty"
-#   "test type unknown" and "check failed" all have the same status code (1) and may hence not be distinguished by
-#   the caller
-# - in "stdout" mode the status code indicates only the execution success/error state, the result of the operation is
-#   on stdout. There's hence no ambiguity on the status code signification
-#
-# Warning: be careful with inverted checks in combination with an empty $1. One might consider that
-#                 is_string_a "" "!absolute_filepath"
-#          should return success since an empty string is indeed not an absolute filepath, but because of the
-#          protections it returns 1/error
-#
-# Usage examples: the status mode allows to use it in statement chains easily
-#                       is_string_a "$potential_int" "integer" && echo "This is a integer: $potential_int"
-#                 whereas the stdout mode gives a better control, adapted if $1 can't be trusted
-#                       is_int=$(is_string_a "$unknown" "integer")
-#			[ $? -eq 0 ] && [ $is_int -eq 1 ] && echo "This is a integer: $unknown"
-#
-# Parametrization:
-#  $1 string to check
-#  $2 check type: can be
-#                 - 'absolute_filepath': checks if the first non-whitespace character of $1 is a '/'
-#                                        No filesystem check is done. Works with inexistant filepaths
-#                 - 'integer': checks if the string only contains numbers
-#                 - TODO email etc
-#                 Checks can be inverted using a prefixed ! => f.ex. to check for relative filepath,
-#                 use '!absolute_filepath'
-#  $3 output mode: - if omitted, set to an empty string or anything else than 1, the function is in "status mode"
-#                    warning: use with care especially with inverted types! See the explanations above for details
-#                  - 1 the function is in "stdout mode"
-# Pipes: - stdin: ignored
-#        - stdout: - empty in status mode
-#                  - in stdout mode: the result of the check, if status is 0
-#                    0 if the test type $2 failed on $1
-#                    1 if the test type $2 passed for $1
-# Status: - in status mode: 0 if the test type $2 passed for $1
-#                           1 used in 3 situations
-#                             - if the test type $2 failed on $1
-#                             - if $1 empty
-#                             - if $2 is unknown
-#                           2 if $2 is empty
-#         - in stdout mode: 0 if the check was performed (result is on stdout)
-#                           1 if $1 is empty
-#                           2 if $2 is empty
-#                           3 if $2 is unknown
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#is_string_a
 function is_string_a()
 {
-	[ -z "$1" ] && return 1
-	[ -z "$2" ] && return 2
-	local true_output=1 false_output=0 test_type="$2" test_exists=0
-	# handle test inversion
-	if [ "${test_type:0:1}" = "!" ]; then
-		true_output=0 false_output=1
-		test_type="${test_type:1}"
-	fi
-	local test_status=$true_output
-	#  at this stage the value table is
-	#                   |   true_output | false_output | return status (test_status)
-	# non-inverted test |       1       |       0      | 1, becomes 0 if test passes
-	#     inverted test |       0       |       1      | 0, becomes 1 if test passes
-
-	# tests
-	[ "$test_type" = "absolute_filepath" ] && test_exists=1 && [ -n "$(echo "$1" | grep "^\s*/")" ] && test_status=$false_output
-	[ "$test_type" = "integer" ] && test_exists=1 && [[ "$1" =~ ^[0-9]*$ ]] && test_status=$false_output
-	# TODO email etc
-
-	# handle status based return
-	[ -z "$3" ] || [ "$3" -ne "1" ] && return $test_status
-	# not as status => verbose output. test succeeded?
-	[ $test_status -eq $false_output ] && echo $true_output && return
-	# reaching here = test failed or wrong test type
-	[ $test_exists -eq 1 ] && echo $false_output && return
-	[ $test_exists -eq 0 ] && return 3
+	[ -z "$1" ] && return 2
+        [ -z "$2" ] && return 3
+	local type="$2" exists=0 passed=0 inversion=0
+	if [ "${type:0:1}" = "!" ]; then
+                inversion=1
+                type="${type:1}"
+        fi
+	[ "$type" = "absolute_filepath" ] && exists=1 && [ -n "$(echo "$1" | grep "^\s*/")" ] && passed=1
+        [ "$type" = "integer" ] && exists=1 && [[ "$1" =~ ^[0-9]*$ ]] && passed=1
+        [ "$type" = "email" ] && exists=1 && [[ "$1" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]] && passed=1      	# Credit: https://stackoverflow.com/questions/32291127/bash-regex-email
+	local url_regex='^\s*(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]\s*$'				# Credit: https://stackoverflow.com/questions/3183444/check-for-valid-link-url
+	[ "$type" = "url" ] && exists=1 && [[ "$1" =~ $url_regex ]] && passed=1
+	[ $exists -eq 0 ] && return 4
+	# inversion | test_passed | desired return status + explanation
+ 	#     0     |     0       | 1 | the test failed => error
+	#     0     |     1       | 0 | the test succeeded => success
+	#     1     |     0       | 0 | the test failed but that's the desired result => success
+	#     1     |     1       | 1 | the test succeeded but since the opposite is desired => failure
+	# this logic table corresponds to:
+	[ $passed -ne $inversion ]
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_string_bytelength
@@ -172,18 +121,10 @@ function get_string_bytes()
 }
 
 ########### sed helpers
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#escape_sed_special_characters
-function escape_sed_special_characters()
-{
-	echo "$1" | sed -e 's/\./\\\./' -e 's/\+/\\\+/' -e 's/\?/\\\?/' -e 's/\*/\\\*/' -e 's/\[/\\\[/' -e 's/\]/\\\]/' -e 's/\^/\\\^/' -e 's/\$/\\\$/'
-}
-
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_sed_extract_expression
 function get_sed_extract_expression()
 {
-	local sep=$(find_sed_operation_separator "$1")
-	#local marker="$(echo "$1" | escape '/' '.' '?' '[' ']')"
-	local marker="$1"
+	local sep=$(find_sed_operation_separator "$1") marker="$1"
         [ -z "$sep" ] && return 1
 	[ "$2" = "before" ] && [ "$3" = "first" ] && echo "s${sep}${marker}.*${sep}${sep}" && return
 	[ "$2" = "before" ] && [ "$3" = "last" ] && echo "s${sep}\\(.*\\)${marker}.*${sep}\\1${sep}" && return
@@ -199,20 +140,11 @@ function get_sed_replace_expression()
 	[ -z "$sep" ] && return 1
         [ -z "$3" ] && echo "s${sep}${1}${sep}${2}${sep}g" && return		# returning here to make sure status is 0
         [ "$3" = "first" ] && echo "s${sep}${1}${sep}${2}${sep}" && return
-	# TODO implement other regexes
+        [ "$3" = "last" ] && echo "s${sep}\\(.*\\)${1}${sep}\1${2}${sep}" && return
 	return 2
 }
 
-### find_sed_operation_separator
-# Returns a separator character which is not in $1 and $2
-#
-# Parametrization:
-#  $1 sed match pattern/string
-#  $2 sed replace string
-# Pipes: - stdin: ignored
-#        - stdout: separator character if status is 0, empty otherwise
-# Status: 0 found a separator character adapted to $1 and $2 found, returned on stdout
-#         1 if none of the 23 characters available is suited
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#find_sed_operation_separator
 function find_sed_operation_separator()
 {
         # eliminated alternatives: ` because of bash signification
@@ -226,4 +158,10 @@ function find_sed_operation_separator()
 		[ $sep_alt_idx -eq ${#sep_alternatives[@]} ] && return 1
         done
         echo "$sep"
+}
+
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#escape_sed_special_characters
+function escape_sed_special_characters()
+{
+        echo "$1" | sed -e 's/\./\\\./' -e 's/\+/\\\+/' -e 's/\?/\\\?/' -e 's/\*/\\\*/' -e 's/\[/\\\[/' -e 's/\]/\\\]/' -e 's/\^/\\\^/' -e 's/\$/\\\$/'
 }

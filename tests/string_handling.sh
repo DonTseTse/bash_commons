@@ -69,6 +69,13 @@ configure_test 0 "more many many!"
 regex_res="$(echo "many many many!" | sed -e "$stdout")"
 check_test_results "\$(echo \"many many many\" | sed -e \"$stdout\")" $? "$regex_res"
 
+configure_test 0 "s/\(.*\)many/\1more/"
+test get_sed_replace_expression "many" "more" "last"
+
+configure_test 0 "many many more!"
+regex_res="$(echo "many many many!" | sed -e "$stdout")"
+check_test_results "\$(echo \"many many many\" | sed -e \"$stdout\")" $? "$regex_res"
+
 configure_test 0 "s/, others are removed//g"
 test get_sed_replace_expression ", others are removed" ""
 
@@ -148,6 +155,12 @@ test find_substring "2227" "."
 configure_test 0 "2"
 test find_substring "22[27" "["
 
+configure_test 0 "3"
+test find_substring "22[[27" "[" "3"
+
+configure_test 0 "-1"
+test find_substring "22[[27" "[" "4"
+
 ###
 echo " *** get_absolute_path() ***"
 relative_filepath="relative"
@@ -168,42 +181,57 @@ test get_absolute_path
 
 ###
 echo "*** is_string_a() ***"
-configure_test 0 "0"
-test is_string_a "$relative_filepath" "absolute_filepath" 1
+configure_test 1 ""
+test is_string_a "$relative_filepath" "absolute_filepath"
 
-configure_test 0 "1"
-test is_string_a "$relative_filepath" "!absolute_filepath" 1
+configure_test 0 ""
+test is_string_a "$relative_filepath" "!absolute_filepath"
 
-configure_test 0 "1"
-test is_string_a "$absolute_filepath" "absolute_filepath" 1
+configure_test 0 ""
+test is_string_a "$absolute_filepath" "absolute_filepath"
 
-configure_test 0 "1"
-test is_string_a "    $absolute_filepath" "absolute_filepath" 1
+configure_test 0 ""
+test is_string_a "    $absolute_filepath" "absolute_filepath"
 
-configure_test 0 "1"
-test is_string_a "1" "integer" 1
-
-configure_test 0 "0"
-test is_string_a "1.2" "integer" 1
-
-configure_test 0 "1"
-test is_string_a "1.2" "!integer" 1
-
-configure_test 0 "0"
-test is_string_a "string" "integer" 1
-
-configure_test 0 "0"
-test is_string_a " 1" "integer" 1
+configure_test 0 ""
+test is_string_a "1" "integer"
 
 configure_test 1 ""
-test is_string_a
+test is_string_a "1.2" "integer"
+
+configure_test 0 ""
+test is_string_a "1.2" "!integer"
+
+configure_test 1 ""
+test is_string_a "string" "integer"
+
+configure_test 1 ""
+test is_string_a " 1" "integer"
+
+configure_test 0 ""
+test is_string_a "test@example.com" "email"
+
+configure_test 1 ""
+test is_string_a "wrong @example.com" "email"
+
+configure_test 0 ""
+test is_string_a "http://google.com" "url"
+
+configure_test 1 ""
+test is_string_a "http:/google.com" "url"
+
+configure_test 0 ""
+test is_string_a "   https://google.com/a   " "url"
 
 configure_test 2 ""
+test is_string_a
+
+configure_test 3 ""
 stdout="$(is_string_a "input" && echo "Never reached")"
 check_test_results "\$(is_string_a \"input\" && echo \"Never reached\")" $? "$stdout"
 
-configure_test 3 ""
-test is_string_a "$relative_filepath" "unknown_test" 1
+configure_test 4 ""
+test is_string_a "$relative_filepath" "unknown_test"
 
 configure_test 0 "This is a integer: 2"
 stdout="$(is_string_a "2" "integer" && echo "This is a integer: 2")"
@@ -301,5 +329,9 @@ check_test_results "\$(echo '' | escape '/')" $? "$stdout"
 configure_test 0 "   "
 stdout="$(echo '   ' | escape '/')"
 check_test_results "\$(echo '   ' | escape '/')" $? "$stdout"
+
+configure_test 0 "test"
+stdout="$(echo 'test' | escape)"
+check_test_results "\$(echo 'test' | escape)" $? "$stdout"
 
 conclude_test_session
