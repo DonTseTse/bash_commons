@@ -1,13 +1,13 @@
 Documentation for the functions in [interaction.sh](interaction.sh). A general overview is given in 
 [the project documentation](https://github.com/DonTseTse/bash_commons#interaction).
 
+## Function documentation
 If the pipes are not documented, the default is:
 - `stdin`: piped input ignored
 - `stdout`: empty
 
 Parameters enclosed in brackets [ ] are optional. 
 
-## Function documentation
 ### read_and_validate()
 Combined `read` and regex check.
 
@@ -21,9 +21,10 @@ Important `read` flags:
         <tr><td rowspan="2"><b>Pipes</b></td>
 		<td align="center"><code>stdin</code></td><td>piped input ignored; used via <code>read</code></td></tr>
 	<tr>	<td align="center"><code>stdout</code></td><td>the user input</td></tr>
-        <tr><td rowspan="2"><b>Status</b></td>
+        <tr><td rowspan="3"><b>Status</b></td>
 		<td align="center"><em>0</em></td><td>the user entered a <code>$1</code> match</td></tr>
 	<tr>	<td align="center"><em>1</em></td><td>the user input doesn't match <code>$1</code></td></tr>
+	<tr>	<td align="center"><em>2</em></td><td>if <code>$1</code> is empty</td></tr>
 </table>
 
 

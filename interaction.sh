@@ -4,7 +4,7 @@
 #
 # Author: DonTseTse
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/interaction.md
-# Dependancies: echo printf
+# Dependancies: echo printf read
 
 ##### Commons dependencies
 # None
@@ -14,6 +14,7 @@
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/interaction.md#read_and_validate
 function read_and_validate()
 {
+	[ -z "$1" ] && return 2
 	local answer read_flag="$2"
 	read $read_flag answer
 	echo "$answer"
@@ -35,7 +36,7 @@ function get_user_choice()
 {
 	local answer
 	(exit 1)
-	while [ $? -ne 0 ]; do
+	while [ $? -eq 1 ]; do  # checking -eq 1 and not -ne 0 because if $1 is empty => $? == 2 => perpetual loop
 		answer=$(read_and_validate "$1" "-n 1 -s")
 	done
 	echo "$answer"
