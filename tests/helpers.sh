@@ -42,6 +42,12 @@ test is_function_defined "unknown"
 configure_test 1 ""
 test is_function_defined ""
 
+configure_test 1 ""
+test is_function_defined "tail"
+
+configure_test 0 ""
+test is_command_defined "tail"
+
 ###
 echo "*** set_global_variable() ***"
 echo "set_global_variable() is used in capture(), just checking the error case here"
@@ -92,6 +98,9 @@ test calculate "(250 * 2 + 0.22278999921) / 100" 0
 
 configure_test 0 "5"
 test calculate "(250 * 2 + 0.22278999921) / 100" "int"
+
+configure_test 0 "0.000"
+test calculate ""
 
 ###
 echo "*** get_piped_input() ***"
