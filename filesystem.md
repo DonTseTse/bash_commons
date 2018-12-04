@@ -1,11 +1,5 @@
 Documentation for the functions in [filesystem.sh](filesystem.sh). A general overview is given in [the project documentation](README.md#filesystem).
 
-If the pipes are not documented, the default is:
-- `stdin`: ignored
-- `stdout`: empty
-
-Parameters enclosed in brackets [ ] are optional.
-
 ## Quick access
 - [get_real_path()](#get_real_path)
 - [get_script_path()](#get_script_path)
@@ -19,7 +13,13 @@ Parameters enclosed in brackets [ ] are optional.
 - [remove_file()](#remove_file) and [remove_folder()](#remove_folder) (+ the internal handler - [handle_rm()](#handle_rm))
 - [load_configuration_file_value()](#load_configuration_file_value)
 
-## Function reference
+## Function documentation
+If the pipes are not documented, the default is:
+- `stdin`: ignored
+- `stdout`: empty
+
+Parameters enclosed in brackets [ ] are optional.
+
 ### get_real_path()
 The function processes the path `$1` in 4 ways:
 - if it's a relative path, it's transformed to the absolute equivalent
