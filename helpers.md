@@ -13,6 +13,7 @@ Parameters enclosed in brackets [ ] are optional.
 - [get_array_element()](#get_array_element)
 - [get_random_string()](#get_random_string)
 - [get_piped_input()](#get_piped_input)
+- [is_command_defined()](#is_command_defined)
 - [is_function_defined()](#is_function_defined)
 - [is_globbing_enabled()](#is_globbing_enabled)
 - [set_global_variable()](#set_global_variable)
@@ -22,21 +23,23 @@ Parameters enclosed in brackets [ ] are optional.
 Collects `stdout`, `stderr` and the return status of a command and copies them into global variables.
 
 Example: `capture echo "Hello world"` defines the global variables `$return` set to *0* and `$stdout` with the value 
-*Hello world*. To get less generic variable names set the global variable `$PREFIX`, which will be prepended to these names. The easiest 
-way is to set it in the call context (`$PREFIX` is only defined for that command):
+*Hello world*. To get less generic variable names set up the global variable `$PREFIX`; its value will be prepended to the variable names. 
+The easiest way is to set it in the call context (`$PREFIX` is only defined for that command):
 
 	PREFIX="echo" capture echo "Hello world"
-defines the global variables `$echo_return` and `$echo_stdout` with the same values.
+defines the global variables `$echo_return` and `$echo_stdout` with the same values as `$return` and `$stdout` above.
 
 By default, `stderr` is ignored; to capture it, use the global variable `$STDERR` and set it to *1*. Let's take an example where there's 
 some `stderr` for sure, f.ex. the attempt to create a folder inside `/proc` which is never writeable, not even to root:
 
 	STDERR=1 capture mkdir /proc/test
-will define the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` error message). If `$PREFIX` is 
+defines the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` error message). If `$PREFIX` is 
 defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="75%">call to capture (<code>$1</code> is the command)</td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+		<td align="center"><em>0</em></td><td>success</td></tr>
+	<tr>	<td align="center"><em>1</em></td><td><code>$1</code> undefined or empty</td></tr>
 	<tr><td rowspan="2"><b>Globals</b></td>
                 <td align="center">Input</td><td>
 			<ul>
@@ -54,11 +57,29 @@ defined the `stderr` capture variable has the name `$PREFIX_stderr`.
 	</td></tr>
 </table>
 
+### is_command_defined()
+Returns with status *0* if the shell has a command definition for `$1`, regardless what type it is (function, builtin, file, etc.)
+Unlike `which` it can be used for sourced functions. 
+
+Useful to avoid "command ... unknown" errors. May be used in instruction chains:
+
+        is_command_defined "tail" && tail "..."
+will only call `tail` if it's defined. The example shows an essential difference with 
+<a href="#is_function_defined">is_function_defined()</a> which will always return status *1* for `tail` because it has the type
+*file*, not *function*. 
+<table>
+        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">name of the function</td></tr>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>function <code>$1</code> is defined</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>function <code>$1</code> is not defined</td></tr>
+</table>
+
 ### is_function_defined()
-Meant to be used in instruction chains to avoid "command ... unknown" errors. Example:
+Returns with status *0* if a function with the name `$1` exists. Useful to avoid "command ... unknown" errors. May be used in instruction chains:
 
 	is_function_defined "log" && log "..."
-will only call `log` if it's defined.
+will only call `log` if it's defined. **Important**: this function checks that `type` returns *function* but some commands have other types, 
+f.ex. `echo` which is of type *builtin*, or `tail`, of type *file*. Check these with <a href="#is_command_defined">is_command_defined</a>.
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">name of the function</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
@@ -79,9 +100,9 @@ Sets up a variable called `$1` with the value `$2`, on global level (i.e. access
 </table>
 
 ### get_array_element()
-The usual bash syntax to access array elements is `${<array_name>[<index>]}` where index can be a variable, f.ex. `${my_array[$index]`. However
-`<array_name>` can't be a variable, anything like `${$var_name[$index]}` fails. The variable name expansion syntax with `!` works but it expands 
-to the first and only the first array element, and all attemps to use both syntaxes combined don't seem to work, see []()
+The usual bash syntax to access array elements is `${<array_name>[<index>]}` where index can be a variable, however, if `<array_name>` is a variable, 
+things get complex, a syntax like `${$var_name[$index]}` fails. The variable name expansion syntax with `!` works but it expands to the first and only 
+the first array element, and all attemps to use both syntaxes combined don't seem to work, see []()
 
 This function uses `printf` to "inject" the variable name and index into a code snippet which is then eval'd, this works, at least for numeric
 indizes. **Warning**: for associative arrays (string indizes) it misbehaves if the element with the required index doesn't exist - it will not 
@@ -91,9 +112,10 @@ return an empty string, but the value of the first element in the array.
                 <td align="center"><code>$1</code></td><td width="90%">array variable name</td></tr>
         <tr>    <td align="center"><code>$2</code></td><td>index</td></tr>
 	<tr><td><b>Pipes</b></td><td><code>stdout</code></td><td>the value at index <code>$2</code> in the array with the name <code>$1</code></td></tr>
-	<tr><td rowspan="2"><b>Status</b></td>
+	<tr><td rowspan="3"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>success, value is written on <code>stdout</code></td></tr>
-		<td align="center"><em>1</em></td><td><code>${$1[$2]}</code> is undefined or empty</td></tr>
+		<td align="center"><em>1</em></td><td><code>$1</code> is undefined or empty</td></tr>
+		<td align="center"><em>2</em></td><td><code>$2</code> is undefined or empty</td></tr>
         <tr>
 </table>
 
@@ -115,7 +137,7 @@ If f.ex. `bc` returned  *3.00000* the function writes *3* on `stdout`, regardles
 </table>
 
 ### get_piped_input()
-Allows to capture piped `stdin` input to a variable, here f.ex. to `$input`
+Returns the piped `stdin` content on `stdout`, which allows to capture it into a variable, here f.ex. to `$input`
 
 	input="$(get_piped_input)"
 
@@ -141,7 +163,6 @@ f.ex. "run IDs" which may be used to distinguish interleaving log entries from s
 </table>
 
 ### is_globbing_enabled()
-
 Returns with status *0* if bash globbing is enabled. One typical usecase is to "protect" an instruction which relies on globbing:
 
 	is_globbing_enabled && command_which_requires_globbing

@@ -13,6 +13,7 @@
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#capture
 function capture()
 {
+	[ -z "$1" ] && return 1
 	local status_capture stdout_capture stderr_capture_file prefix param_array=("$@")
 	[ -n "$PREFIX" ] && prefix="${PREFIX}_" # interesting: $PREFIX has to be disambiguated with ${} in the assignment,
                                                 # otherwise bash apparently thinks the variable continues because of the _
@@ -31,7 +32,10 @@ function capture()
 	#DEBUG >&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 
-
+function is_command_defined()
+{
+	[ -n "$(type -t $1)" ]
+}
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#is_function_defined
 function is_function_defined()
@@ -40,12 +44,11 @@ function is_function_defined()
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#set_global_variable
+# Dev note: used to be done with $> IFS="" read $1 <<< "$2"  <$ but this created problems for multi-line $2 
+#           see https://stackoverflow.com/questions/9871458/declaring-global-variable-inside-a-function for details about this method
 function set_global_variable()
 {
 	[ -z "$1" ] && return 1
-	# This bit weird cmd is required to force the creation of a global variable, not a local one (like "declare") 
-	# See https://stackoverflow.com/questions/9871458/declaring-global-variable-inside-a-function
-	#IFS="" read $1 <<< "$2"
 	printf -v $1 %s "$2"
 }
 
@@ -102,6 +105,7 @@ function conditional_exit()
         if [[ ! "$1" =~ ^[0-1]$ ]] || [ $1 -ne 0 ]; then
                 local msg="${2:-\n}" code="${3:-1}"
                 printf "$msg\n"
+		[[ ! "$code" =~ ^[0-9]*$ ]] && code=1	# if code is non-numeric, exit complains
                 exit $code
         fi
 }
