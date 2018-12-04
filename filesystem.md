@@ -71,8 +71,8 @@ This function is able to cover both constellations:
 - if the flag is raised (`$2` set to *1*), it does what its name indicates: it walks up the path until it finds an existing directory and checks the write permission on 
   that directory.
 
-In the `mkdir` example above, `is_writeable /test/folder/subfolder` would return `stdout` *2* (= not writeable, parent missing); with the flag, 
-`is_writeable /test/folder/subfolder 1`, `stdout` would be *1* (= writeable).
+In the `mkdir` example above, `is_writeable /test/folder/subfolder` would return status *2* (= not writeable, parent missing); with the flag (`$2` set to *1*), 
+that switches to status *0* (= writeable).
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
@@ -80,16 +80,11 @@ In the `mkdir` example above, `is_writeable /test/folder/subfolder` would return
                   configures whether the function fails or if it walks up <code>$1</code> until it finds an existing folder on which it checks the write
                   permission - see explanations above
 	</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>
-		<ul>
-			<li><em>0</em> if there's no write permission on path <code>$1</code></li>
-                        <li><em>1</em> if path <code>$1</code> can be written</li>
-                        <li><em>2</em> if the direct parent folder of path <code>$1</code> doesn't exist (can only happen if <code>$2</code> is omitted or set to <em>0</em>)</li>
-		</ul>
-	</td></tr>
-        <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>success, result written on <code>stdout</code></td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>if <code>$1</code> is empty</td></tr>
+        <tr><td rowspan="4"><b>Status</b></td>
+                <td align="center"><em>0</em> path <code>$1</code> can be written</</td></tr>
+	<tr>	<td align="center"><em>1</em> there's no write permission on path <code>$1</code></td></tr>
+	<tr>	<td align="center"><em>2</em> the direct parent folder of path <code>$1</code> doesn't exist (can only happen if <code>$2</code> is omitted or set to <em>0</em>)</li>
+        <tr>    <td align="center"><em>3</em></td><td>if <code>$1</code> is empty</td></tr>
 </table>
 
 ### get_new_path_part()

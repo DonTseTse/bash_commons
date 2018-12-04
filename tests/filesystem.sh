@@ -177,33 +177,33 @@ echo " - \$> cd $test_base_folder"
 
 ###
 echo "*** is_writeable() ***"
-configure_test 0 "1"
+configure_test 0 ""
 test is_writeable "$test_base_folder"
 
-configure_test 0 "1"
+configure_test 0 ""
 test is_writeable "$not_existing_file_path"
 
-configure_test 0 "2"
+configure_test 2 ""
 test is_writeable "$multilevel_not_existing_path"
 
-configure_test 0 "1"
+configure_test 0 ""
 test is_writeable "$multilevel_not_existing_path" 1
 
-return_val=0
-[ "$UID" -eq 0 ] && return_val=1 && echo " - is_writeable() can't be properly tested as root user because by default it has the write permission absolutely everywhere"
-configure_test 0 "$return_val"
+return_val=1
+[ "$UID" -eq 0 ] && return_val=0 && echo " - is_writeable() can't be properly tested as root user because by default it has the write permission absolutely everywhere"
+configure_test $return_val ""
 test is_writeable "$not_writable_folder_path"
 
-configure_test 0 "$return_val"
+configure_test $return_val ""
 test is_writeable "$not_writable_folder_path/$default_file_name"
 
-configure_test 0 "2"
+configure_test 2 ""
 test is_writeable "$not_writable_folder_path/test/$default_file_name"
 
-configure_test 0 "$return_val"
+configure_test $return_val ""
 test is_writeable "$not_writable_folder_path/test/$default_file_name" 1
 
-configure_test 1 ""
+configure_test 3 ""
 test is_writeable
 
 ###

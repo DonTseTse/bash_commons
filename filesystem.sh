@@ -35,16 +35,28 @@ function get_script_path()
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#is_writeable
+#function is_writeable()
+#{
+#	[ -z "$1" ] && return 1
+#	local check_on_existing_path_part="${2:-0}" path_to_check
+#	[ -e "$1" ] && [ ! -w "$1" ] && echo 0 && return
+#	[ -e "$1" ] && [ -w "$1" ] && echo 1 && return
+#	[ $check_on_existing_path_part -eq 0 ] && path_to_check="$(dirname "$1")"
+#	[ $check_on_existing_path_part -eq 0 ] && [ ! -d "$path_to_check" ] && echo 2 && return
+#	[ $check_on_existing_path_part -eq 1 ] && path_to_check="$(get_existing_path_part "$1")"
+#	[ -w "$path_to_check" ] && echo 1 || echo 0
+#}
+
 function is_writeable()
 {
-	[ -z "$1" ] && return 1
-	local check_on_existing_path_part="${2:-0}" path_to_check
-	[ -e "$1" ] && [ ! -w "$1" ] && echo 0 && return
-	[ -e "$1" ] && [ -w "$1" ] && echo 1 && return
+	[ -z "$1" ] && return 3
+	local check_on_existing_path_part=0 path_to_check
+	[ "$2" = "1" ] && check_on_existing_path_part=1		# make sure to have a numeric value for the -eq later
+	[ -e "$1" ] && [ -w "$1" ] && return
 	[ $check_on_existing_path_part -eq 0 ] && path_to_check="$(dirname "$1")"
-	[ $check_on_existing_path_part -eq 0 ] && [ ! -d "$path_to_check" ] && echo 2 && return
-	[ $check_on_existing_path_part -eq 1 ] && path_to_check="$(get_existing_path_part "$1")"
-	[ -w "$path_to_check" ] && echo 1 || echo 0
+        [ $check_on_existing_path_part -eq 0 ] && [ ! -d "$path_to_check" ] && return 2
+        [ $check_on_existing_path_part -eq 1 ] && path_to_check="$(get_existing_path_part "$1")"
+	[ -w "$path_to_check" ]
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#get_new_path_part
