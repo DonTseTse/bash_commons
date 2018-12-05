@@ -11,19 +11,19 @@ Since all these configurations have to persist between the [log()](#log) calls, 
 - `$logging_available`: the "delayed logging" flag
 	- if it's defined and set to *0*, [log()](#log) copies messages to `$logging_backlog`, the buffer
 	- if it's undefined or set to *1*, [log()](#log) processes the messages immediately
-- `$stdout_log_level`: defines the maximal level of message written on `stdout` can have, those with a higher level are discarded.  If the variable 
+- `$stdout_log_level`: defines the stdout channel verbosity filter threshold. Messages with a level above the threshold are discarded. If the variable 
    is undefined, not numeric or *0*, nothing is written
 - `$stdout_log_pattern`: pattern of the message written on `stdout`, where a single `%s` represents the message. If the variable is undefined, *%s* is 
    used (i.e. "just the message")
 - `$log_filepath`: absolute path of the logfile. If the variable is undefined or empty, no file logging occurs
-- `$log_level`: defines the maximal level of messages written in the logfile can have, those with a higher level are discarded.  If the variable is 
+- `$log_level`: defines the file logging channel verbosity filter threshold. Messages with a level above the threshold are discarded. If the variable is 
    undefined, not numeric or *0*, no file logging occurs
 - `$log_pattern`: pattern of the message written to the logfile, where a single `%s` represents the message. If the variable is undefined, *%s* is used 
    (i.e. "just the message")
 - `$logging_backlog` array: buffer for messages when `$logging_available` is set to *0*. Handled internally between [log()](#log) and 
   [launch_logging()](#launch_logging)
 
-To see an example which takes advantages of most of the features, check out [sendmail2mailgun](https://github.com/DonTseTse/sendmail2mailgun/blob/master/emulator.sh)
+Example: [sendmail2mailgun](https://github.com/DonTseTse/sendmail2mailgun/blob/master/emulator.sh#L265) uses all module features
 
 ## Function documentation
 If the pipes are not documented, the default is:
@@ -44,9 +44,9 @@ variables don't work (a subshell receives a copy of the parent shell's variable 
         <tr>    <td align="center">[<code>$2</code>]</td><td>log level - if omitted, it defaults to <em>1</em></td></tr>
         <tr>    <td align="center">[<code>$3</code>]</td><td>output channel restriction:
 			<ul>
-				<li>if omitted, both `stdout` and file logging are addressed</li>
-				<li><em>file</em> for file logging only</li>
-				<li><em>stdout</em> for `stdout` logging only</li>
+				<li>if omitted, both stdout and file logging are addressed</li>
+				<li><em>file</em>: file logging only</li>
+				<li><em>stdout</em>: stdout logging only</li>
 			</ul>
 		This configuration selects the addressed output channel(s) but it does not overwrite the configurations which define whether logging 
 		actually occurs (see <a href="#module-documentation">module documentation</a>) 
@@ -80,16 +80,17 @@ security factor is *0.25*. Example with a negative `$2`:
 ```
 test prepare_secret_for_logging "longer_secret" -5
 ```
-writes *[Secret - ends with 'ret']* on `stdout`. Here the security factor kicks in because 0.25 * 13 = 3.25, that's lower than the *5* requested.
+writes *[Secret - ends with 'ret']* on `stdout`. It contains only 3 instead of the *5* characters requested because the default security factor sets the  
+limit to 13*0.25=3.25.
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">secret</td></tr>
         <tr>    <td align="center"><code>[$2]</code></td><td>amount of chars to show. If it's positive, the amount is shown from the beginning of the secret, if it's 
-		negative, from the end. If it's omitted, one fourth of the secret will be shown.</td></tr>
+		negative, from the end. If it's omitted, the first fourth of the secret will be shown.</td></tr>
         <tr>    <td align="center">[<code>$3</code>]</td><td>security factor: a value between 0 and 1 which configures how much of the secret can be shown at most.
-                Defaults to <em>0.25</em>, which means that by default at most one fourth of the secret's characters will be shown. Overwrites the value set via 
-                <code>$2</code> if necessary</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the formatted secret suited for logging</td></tr>
+                Defaults to <em>0.25</em>, which means that by default at most one fourth of the secret's characters will be shown. It's enforced as limit for the amount
+                of characters which can be requested via <code>$2</code></td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, a representation of the secret suited for logging, empty otherwise</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>success, the formatted secret was written on `stdout`</td></tr>
         <tr>    <td align="center"><em>1</em></td><td><code>$1</code> undefined or empty</td></tr>

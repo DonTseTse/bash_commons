@@ -2,6 +2,8 @@
 Library of bash functions organized in several thematic collections; each is one source file. 
 
 ## Collections:
+| Name | | | &nbsp;
+| --- | --- | --- | ---
 | Filesystem | [code](filesystem.sh) | [documentation](filesystem.md) | [tests](tests/filesystem.sh)
 | String handling | [code](string_handling.sh) | [documentation](string_handling.md) | [tests](tests/string_handling.sh)
 | Logging | [code](logging.sh) | [documentation](logging.md) | [tests](tests/logging.sh)

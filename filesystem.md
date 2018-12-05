@@ -54,7 +54,7 @@ entry  only contains that relative filepath and if the current directory changes
 ### is_writeable()
 Helper to avoid write permission errors. Example:
 
-	[ "$(is_writeable <path>)" -eq 1 ] && ... do something with <path> ...
+	is_writeable <path> && ... do something with <path> ...
 
 The function has a "check on existing path part" flag  which configures the behavior for filepaths that don't exist on the system (yet). In 
 these cases the answer whether a write will succeed or not depends on the type of operation and whether it requires the direct parent folder to 
@@ -65,7 +65,7 @@ the path `/test/folder/subfolder`:
 - `mkdir -p /test/folder/subfolder` works because the `-p` tells `mkdir` it's allowed to create multiple nested directories and since writing to 
    `/test` is permitted, the operation is successful
 
-This function is able to cover both constellations: 
+This function is able to take this into account: 
 
 - if the "check on existing path part" flag `$2` is not raised it fails if the direct parent folder doesn't exist
 - if the flag is raised (`$2` set to *1*), it does what its name indicates: it walks up the path until it finds an existing directory and checks the write permission on 
@@ -121,13 +121,13 @@ If there's only a single file (match) in the folder `$1`, returns its path
 `mkdir` wrapper with:
 - several checks before the actual creation attempt which allow to get specific status codes for any possible error type:
   if the path is empty (status *2*), exists (*3*) or if the user has no write permission (*4*)
-- control over `stdout` and `stderr`: `mkdir` writes on `stderr` in case of failure. This functions allows to be sure:
+- control over `stdout` and `stderr`: `mkdir` writes on `stderr` in case of failure. This function allows to be sure:
 	- that `stdout` contains either nothing, the `mkdir` status code or `stderr` message, or a custom message, depending on the 
 	  the stdout configuration `$2`
 	- that `stderr` remains silent, even in case of `mkdir` failure
 - a system for the message customization: one template by status, with variable placeholders to inject the runtime parameters
 
-<u>Verbose mode / message customization</u>:
+**Verbose mode / message customization**:
 
 The variable placeholders `%path` and `%stderr_msg` are replaced by the path `$1` and the `mkdir` error message. Latter is only relevant if 
 status is *1* (`mkdir` error), otherwise it should be empty. The default message templates are:
@@ -140,21 +140,26 @@ status is *1* (`mkdir` error), otherwise it should be empty. The default message
 |*3*| folder creation error: `%path` exists\n
 |*4*| folder creation error: no write permission for `%path`\n
 
-`create_folder "/new/folder/path" "verbose"` would hence print *folder /new/folder/path created\n* in case of success. These message can
-be customized by creating a array variable with elements that have the status as index. The name of the array variable has to be provided
-as 3rd parameter. In the example below, the success message template is overwritten:
+`create_folder "/new/folder/path" "verbose"` prints *folder /new/folder/path created\n* in case of success. These messages can
+be customized by setting up an array variable with elements that have as index the value of the status they document (i.e. the success message
+template is at index *0*, etc.). The name of the array variable - and not the variable itself - has to be provided as 3rd call parameter.
+It's perfectly valid to customize a subset of states/templates, the function falls back to the default templates where it can't find a
+customization.
 
+Example: `create_folder "/new/folder/path" "verbose"` would print *folder /new/folder/path created\n* in case of success. These messages can
+be customized by creating an array variable with elements that have the status as index. The name of the array variable has to be provided
+as 3rd call parameter. In the next example, the success message template is overwritten:
 ```
-msg_defs[0]="Haha! %path created\n"
+msg_defs[0]="custom message: folder %path created\n"
 create_folder "new/folder/path" "verbose" "msg_defs"
 ``` 
-would print *Haha! /new/folder/path/ created\n* in case of success.
+prints *custom message: folder /new/folder/path/ created\n* if it's successful.
 
-<u>Examples</u>:
+**Examples**:
 
-- `stdout`silent: `create_folder "path/to/new/dir"`
-- `stdout` with status code: `status=$(create_folder "/path/to/my_new_dir" "status")`
-- `mkdir` error message: `error_msg=$(create_folder "/path/to/my_new_dir" "error_message")`
+- `stdout` silent: `create_folder "path/to/new/dir"`
+- status code captured to variable: `status=$(create_folder "/path/to/my_new_dir" "status")`
+- `mkdir` error message captured to variable: `error_msg=$(create_folder "/path/to/my_new_dir" "error_message")`
 
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
@@ -211,7 +216,7 @@ Internal handler for file/folder copy/move, used by the wrapper functions <a hre
 <a name="copy_file"></a><a name="copy_folder"></a><a name="move_file"></a><a name="move_folder"></a>
 ### copy_file(), copy_folder(), move_file() and move_folder()
 `cp` and `mv` wrapper with:
-- several checks before the actual copy/move attempt which allow to get specific status codes for virtually any possible error type:
+- several checks before the actual copy/move attempt which allow to get specific status codes for any possible error type:
 	- if the source path is empty (status *2*), doesn't exist (*3*) or if the user has no read permission (*4*)
 	- if the destination path exists (status *5*) or if the user has no write permission (*6*)
 - control over `stdout` and `stderr`: `mv` and `cp` write on `stderr` in case of failure. The functions allows to be sure:
@@ -220,49 +225,49 @@ Internal handler for file/folder copy/move, used by the wrapper functions <a hre
 	- that `stderr` remains silent, even in case of `mv`/`cp` failure
 - a system for the message customization: one template by status, with variable placeholders to inject the runtime parameters
 
-**Stdout configuration**:
-- silent mode: `move_file "path/to/src" "path/to/dest"`
-- status code: `status=$(move_folder "/path/to/src" "/path/to/dest" "status")`
-- error message: `err_msg=$(copy_file "/path/to/src" "/path/to/dest"  "error_message")`
-- verbose mode: `copy_file "/path/to/src" "/path/to/dest"  "verbose"`
-  Depending on the outcome, it would print an instance of a default message template (shown below) corresponding to the status. To overwrite these
-  templates create an array variable and pass its name to the function as 4th parameter `$4`. If `$4` is defined, the function looks for an array element
-  with the index of the status. If that element is undefined, it reverts to the default template. This allows to overwrite only certain states,
-  f.ex. the success (0), as shown below:
-  ```
-  my_msg_defs[0]="Success! %source copied to %destination"
-  copy_file "/path/to/src" "/path/to/dest"  "verbose" "my_msg_defs"
-  ```
-  would print *Success! /path/to/src copied to /path/to/dest* in case of success. 
+**Verbose mode / message customization**:
+The templates support 4 variable placeholders:
 
-  **Verbose mode message templates**
+- `%src`: set to `$2`
+- `%dest`: set to `$3`
+- `%stderr_msg`: the `stderr` output of the `mv` or `cp` call. Only relevant for status *1*.
+- `%op`: has the value *move* or *copy*
 
-  The templates support 4 variable placeholders: 
+The default message templates are:
 
-	- `%src`: set to `$2`
-	- `%dest`: set to `$3`
-	- `%stderr_msg`: the `stderr` output of the `mv` or `cp` call. Only relevant for status *1*.
-	- `%op`: has the value *move* or *copy*
+| Status | `%op` | Template
+|:------:| ----- | --------
+|*0*|*move*/*mv*|`%src` moved to `%dest`\n 
+|*0*|*copy*/*cp*|`%src` copied to `%dest`\n
+|*1*|all|`%stderr_msg`\n
+|*2*|all|error: `%op` failed, source path empty\n
+|*3*|all|error: `%op` from `%src` to `%dest` failed because `%src` doesn't exist\n
+|*4*|all|error: `%op` from `%src` to `%dest` failed because there's no read permission on `%src`\n
+|*5*|all|error: `%op` from `%src` to `%dest` failed because `%dest` exists (won't overwrite)\n
+|*6*|all|error: `%op` from `%src` to `%dest` failed because there's no write permission on `%dest`\n
 
-  The default message templates are:
+`copy_file "/path/to/src" "path/to/dest" "verbose"` prints */path/to/src copied to /path/to/dest\n* in case of success. These messages can
+be customized by setting up an array variable with elements that have as index the value of the status they document (i.e. the success message 
+template is at index *0*, etc.). The name of the array variable - and not the variable itself - has to be provided as 4th call parameter.
+It's perfectly valid to customize a subset of states/templates, the function falls back to the default templates where it can't find a
+customization.
+```
+msg_defs[0]="custom message: %source copied to %destination"
+copy_file "/path/to/src" "/path/to/dest"  "verbose" "msg_defs"
+```
+prints *custom message: /path/to/src copied to /path/to/dest* if it's successful.
 
-  | Status | Template
-  |:------:| --------
-  |*0*| `%src` moved to `%dest`\n
-  |*1*| `%stderr_msg`\n
-  |*2*| error: `%op` failed, source path empty\n 
-  |*3*| error: `%op` from `%src` to `%dest` failed because `%src` doesn't exist\n
-  |*4*| error: `%op` from `%src` to `%dest` failed because there's no read permission on `%src`\n
-  |*5*| error: `%op` from `%src` to `%dest` failed because `%dest` exists (won't overwrite)\n
-  |*6*| error: `%op` from `%src` to `%dest` failed because there's no write permission on `%dest`\n
-
+**Examples**:
+- `stdout` silent: `move_file "path/to/src" "path/to/dest"`
+- status code captured to variable: `status=$(move_folder "/path/to/src" "/path/to/dest" "status")`
+- `cp` error message captured to variable: `err_msg=$(copy_file "/path/to/src" "/path/to/dest"  "error_message")`
 <table>
         <tr><td rowspan="4"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">source path</td></tr>
         <tr>    <td align="center"><code>$2</code></td><td>destination path</td></tr>
         <tr>    <td align="center">[<code>$3</code>]</td><td><code>stdout</code> configuration:
                 <ul>
-                        <li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
+                        <li>if omitted or an empty string, nothing is written on <code>stdout</code></li>
                         <li><em>status</em> or <em>$?</em>: <code>mv</code> respectively <code>cp</code> call status code</li>
                         <li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em>: the <code>mv</code> respectively <code>cp</code> call <code>stderr</code> output</li>
                         <li><em>verbose</em>: status specific message - see explanations above</li>
@@ -295,14 +300,14 @@ see their documentation for details.
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
-        <tr>	<td align="center">[<code>$2</code>]</td><td width="90%">
+        <tr>	<td align="center">[<code>$2</code>]</td><td> <code>stdout</code> configuration:
 			<ul>
 				<li>if omitted or an empty string, nothing is written on <code>stdout</code></li>
-				<li><em>status</em> or <em>$?</em>: <code>rm</code> call's status code</li>
-				<li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em>: <code>rm</code> call's <code>stderr</code> output</li>
+				<li><em>status</em> or <em>$?</em>: <code>rm</code> call status code</li>
+				<li><em>error_message</em> or <em>err_msg</em> or <em>stderr</em>: <code>rm</code> call <code>stderr</code> output</li>
 				<li><em>verbose</em>: status specific message, see explanations in the wrapper functions</li>
 			</ul>
-		</td><tr>
+		</td></tr>
         <tr>    <td align="center">[<code>$3</code>]</td><td>if <code>$2</code> is set to <em>verbose</em>, the name of the array variable which contains the
                 custom message patterns. If omitted, the default message patterns are used</td></tr>
         <tr><td colspan="3">Pipes and status are documented below for the wrapper functions.</td></tr>
@@ -319,16 +324,9 @@ see their documentation for details.
         - that `stderr` remains silent, even in case of `rm` failure
 - a system for the message customization: one template by status, with variable placeholders to inject the runtime parameters
 
-Examples:
-- silent mode: `remove_folder "path/to/new/dir"`
-- status code: `status=$(remove_file "/path/to/file_to_remove" "status")`
-- error message: `err_msg=$(remove_folder "/path/to/my_new_dir" "error_message")`
-- verbose mode:
-  ```
-  msg_def[0]="Success! %path created\n"
-  create_folder "$1" "verbose"  "msg_defs"
-  ```
-  The supported variables are `%path` and `%stderr_msg`.
+**Verbose mode / message customization**:
+The variable placeholders `%path` and `%stderr_msg` are replaced by the path `$1` and the `mkdir` error message. Latter is only relevant if
+status is *1* (`mkdir` error), otherwise it should be empty. The default message templates are:
 
   | Status | Template
   |:------:| --------
@@ -338,6 +336,22 @@ Examples:
   |*3*| removal error: `%path` doesn't exist\n
   |*4*| emoval error: no write permission on `%path`\n
 
+`remove_file "/path/to/remove" "verbose"` prints */path/to/remove removed\n* in case of success. These messages can
+be customized by setting up an array variable with elements that have as index the value of the status they document (i.e. the success message 
+template is at index *0*, etc.). The name of the array variable - and not the variable itself - has to be provided as 3rd call parameter. 
+It's perfectly valid to customize a subset of states/templates, the function falls back to the default templates where it can't find a 
+customization. 
+```
+msg_defs[0]="custom message: %path removed\n"
+remove_folder "/path/to/remove" "verbose"  "msg_defs"
+```
+prints *custom message: /path/to/remove removed* if it's successful.  
+
+**Examples**:
+
+- `stdout` silent: `remove_folder "path/to/new/dir"`
+- status code captured to a variable: `status=$(remove_file "/path/to/file_to_remove" "status")`
+- `rm` error message captured to a variable: `err_msg=$(remove_folder "/path/to/my_new_dir" "error_message")`
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path</td></tr>

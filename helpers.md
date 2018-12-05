@@ -23,18 +23,16 @@ Parameters enclosed in brackets [ ] are optional.
 Collects `stdout`, `stderr` and the return status of a command and copies them into global variables.
 
 Example: `capture echo "Hello world"` defines the global variables `$return` set to *0* and `$stdout` with the value 
-*Hello world*. To get less generic variable names set up the global variable `$PREFIX`; its value will be prepended to the variable names. 
-The easiest way is to set it in the call context (`$PREFIX` is only defined for that command):
+*Hello world*. The global variable `$VARNAME` allows to obtain less generic variable names:
 
-	PREFIX="echo" capture echo "Hello world"
-defines the global variables `$echo_return` and `$echo_stdout` with the same values as `$return` and `$stdout` above.
+	VARNAME="echo" capture echo "Hello world"
+makes capture define the global variables `$echo_return` and `$echo_stdout` with the same values as `$return` and `$stdout` above.
 
-By default, `stderr` is ignored; to capture it, use the global variable `$STDERR` and set it to *1*. Let's take an example where there's 
-some `stderr` for sure, f.ex. the attempt to create a folder inside `/proc` which is never writeable, not even to root:
+To enable the capture of `stderr` which is disabled by default, use the global variable `$STDERR` and set it to *1*: 
 
 	STDERR=1 capture mkdir /proc/test
-defines the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` error message). If `$PREFIX` is 
-defined the `stderr` capture variable has the name `$PREFIX_stderr`.
+defines the global variables `$return`, `$stdout` and `$stderr` (with the `mkdir` call `stderr` output). If `$VARNAME` is 
+defined the `stderr` capture variable has the name `$VARNAME_stderr`.
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1 ... n</code></td><td width="75%">call to capture (<code>$1</code> is the command)</td></tr>
         <tr><td rowspan="2"><b>Status</b></td>
@@ -44,27 +42,26 @@ defined the `stderr` capture variable has the name `$PREFIX_stderr`.
                 <td align="center">Input</td><td>
 			<ul>
 		                <li><code>$STDERR</code>: if it's set to <em>1</em>, <code>stderr</code> is captured</li>
-				<li><code>$PREFIX</code>: if it's a non empty-string, the capture variables names are prepended as shown below</li>
+				<li><code>$VARNAME</code>: if it's a non empty-string, the capture variables names are prepended as shown below</li>
 			</ul>
 	</td></tr>
         <tr>    <td align="center">Output</td><td>
 		The captured status return, <code>stdout</code> and eventually <code>stderr</code>> are stored in variables called:
 		<ul>
-			<li>if <code>$PREFIX</code> is not defined or empty: <code>$return</code> and <code>$stdout</code></li>
-			<li>if <code>$PREFIX</code> is a non-empty string: <code>$PREFIX_return</code>, <code>$PREFIX_stdout</code></li>
-			<li>if <code>$STDERR</code> is set to <em>1</em>, <code>$stderr</code> respectively <code>$PREFIX_stderr</code> on top</li>
+			<li>if <code>$VARNAME</code> is not defined or empty: <code>$return</code> and <code>$stdout</code></li>
+			<li>if <code>$VARNAME</code> is a non-empty string: <code>$VARNAME_return</code>, <code>$VARNAME_stdout</code></li>
+			<li>if <code>$STDERR</code> is set to <em>1</em>, <code>$stderr</code> respectively <code>$VARNAME_stderr</code> on top</li>
 		</ul>
 	</td></tr>
 </table>
 
 ### is_command_defined()
-Returns with status *0* if the shell has a command definition for `$1`, regardless what type it is (function, builtin, file, etc.)
-It's similar to `which` but may also be used for bash functions. That's useful to avoid "command ... unknown" errors. 
-
-It may be used in instruction chains:
+Returns with status *0* if the shell has a "definition" for the command `$1`, regardless what type it is (function, built-in, 
+file, etc.). It's similar to `which` but may also be used for bash functions and helps avoid "command ... unknown" errors. It 
+may be used in instruction chains:
 
         is_command_defined "tail" && tail "..."
-will only call `tail` if it's defined. The example shows an essential difference with 
+will only call `tail` if it's defined (aka installed). The example shows an essential difference with 
 <a href="#is_function_defined">is_function_defined()</a> which will always return status *1* (not defined) for `tail` because it 
 has the type *file*, not *function*. 
 <table>
@@ -77,8 +74,9 @@ has the type *file*, not *function*.
 ### is_function_defined()
 Returns with status *0* if a bash function with the name `$1` exists. Useful to avoid "command ... unknown" errors.
 
-**Important**: use this helper only for bash functions because it checks that `type` returns *function* but valid commands can have other types, 
-f.ex. `echo` which is of type *builtin*, or `tail`, of type *file*. Check these with <a href="#is_command_defined">is_command_defined()</a>.
+**Important**: do not use this function to check for the availability of standard shell utilities like `echo` or `tail` f.ex. - these
+are not considered functions by bash (types *builtin* and *file*, respectively). Even if they are defined, this function returns 
+status *1* (not defined) - use <a href="#is_command_defined">is_command_defined()</a> instead.
 
 Example of the use in an instruction chain:
 
@@ -141,10 +139,9 @@ If f.ex. `bc` returned  *3.00000* the function writes *3* on `stdout`, regardles
 </table>
 
 ### get_piped_input()
-Returns the piped `stdin` content on `stdout`, which allows to capture it into a variable, here f.ex. to `$input`
+Returns the piped `stdin` content on `stdout`, which allows to capture it into a variable, here f.ex. to `$input`:
 
 	input="$(get_piped_input)"
-
 <table>
         <tr><td rowspan="2"><b>Pipes</b></td>
                 <td align="center"><code>stdin</code></td><td width="90%">read completely</td></tr>
@@ -196,6 +193,6 @@ If `important_fct_call` returns with a status code other than *0*, the script pr
                   the terminal)</td></tr>
 	<tr>	<td align="center">[<code>$3</code>]</td><td>exit code, defaults to <em>1</em></td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the exit is triggered, <code>$2</code> followed by a newline</td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>obviously only applicable if the exit is not triggered</td></tr>
-        <tr><td><b>Exit</b></td><td colspan="2"><code>$3</code> - defaults to <em>1</em> if <code>$3</code> omitted, empty or non numeric</td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>only applicable if the exit is not triggered</td></tr>
+        <tr><td><b>Exit</b></td><td colspan="2"><code>$3</code> - defaults to <em>1</em> if <code>$3</code> is omitted, empty or non numeric</td></tr>
 </table>

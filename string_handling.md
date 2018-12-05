@@ -46,7 +46,7 @@ Examples:
 - Input as parameter: `sanitize_variable_quotes "'quoted value'"` 
 - Piped input `$(echo "'quoted value'" | sanitize_variable_quotes)`
 
-print *quoted value*
+both print *quoted value*
 <table>
 	<tr><td><b>Param.</b></td><td align="center">[<code>$1</code>]</td><td width="90%">string to sanitize, if omitted or empty <code>stdin</code> is read</td></tr>
 	<tr><td rowspan="2"><b>Pipes</b></td><td align="center"><code>stdin</code></td><td>if <code>$1</code> is undefined or empty, read completely</td></tr>
@@ -68,7 +68,7 @@ Examples:
 </table>
 
 ### find_substring()
-Finds the position of the first match of `$2` in `$1`. If `$3` is not set the search begins at the beginning, otherwise at positon `$3`
+Finds the position of the first instance of `$2` in `$1`. If `$3` is omitted the search begins at the beginning of `$1`, otherwise it begins after `$3` characters. 
 
 Inspired by this [StackOverflow thread](https://stackoverflow.com/questions/5031764/position-of-a-string-within-a-string-using-linux-shell-script)
 <table>
@@ -78,8 +78,7 @@ Inspired by this [StackOverflow thread](https://stackoverflow.com/questions/5031
 	<tr>    <td align="center">[<code>$3</code>]</td><td>search start position inside <code>$1</code> - if it's omitted, search starts at the beginning</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>
 		<ul>
-			<li>the position of the first character of the first occurence of <code>$2</code> in the considered part of <code>$1</code>. 
-			It's always the index of the character in the complete string, even if a <code>$3</code> search offset was configured</li>
+			<li>the position of the first character of the first occurence of <code>$2</code> in the considered part of <code>$1</code></li>
 			<li><em>-1</em> if <code>$2</code> is not found in <code>$1</code></li>
 		</ul>
 	</td></tr>
@@ -91,9 +90,9 @@ Inspired by this [StackOverflow thread](https://stackoverflow.com/questions/5031
 
 
 ### get_absolute_path()
-Transforms `$1` in a absolute filepath if it's relative. Uses `$2` as directory if defined, the current working directory otherwise. 
+Transforms `$1` in a absolute filepath if it's relative. Uses `$2` as base directory if it's defined, the current working directory otherwise. 
 
-The path `$1` and the directory `$2` don't have to exist
+The path `$1` and the directory `$2` don't have to exist.
 <table>
 	<tr><td rowspan="2"><b>Param.</b></td>
 		<td align="center"><code>$1</code></td><td width="90%">path to "absolutify" if necessary</td></tr>
@@ -105,22 +104,16 @@ The path `$1` and the directory `$2` don't have to exist
 ### is_string_a()
 Checks if string `$1` is of a certain type `$2`:
 <table>
-       <tr><th>Type</th><th>Description</th></tr>
-       <tr><td><em>absolute_filepath</em></td><td>checks if the first non-whitespace character of <code>$1</code> is a <em>/</em></td></tr>
-       <tr><td><em>integer</em></td><td>checks <code>$1</code> only contains numbers</td></tr>
+       <tr><th>Type</th><th>Test condition</th></tr>
+       <tr><td><em>absolute_filepath</em></td><td>the first non-whitespace character of <code>$1</code> is a <em>/</em></td></tr>
+       <tr><td><em>integer</em></td><td><code>$1</code> contains only numbers</td></tr>
 </table>
 
-The type may be inverted if it's preceeded by a *!*, f.ex. *!absolute_filepath* for a relative filepath. 
-
-**Warning**: be careful with inverted checks especially if `$1` can be empty. One might consider that
-
-	is_string_a "" "!absolute_filepath"
-should return status *0* (= success) since an empty string is not an absolute filepath but the function returns with status *2*
+The test may be inverted if the type is prepended with a *!*, f.ex. *!absolute_filepath*. 
 
 Example: 
 
 	is_string_a "$potential_int" "integer" && echo "This is a integer: $potential_int"
-
 <table>
 	<tr><td rowspan="2"><b>Param.</b></td>
 	<td align="center"><code>$1</code></td><td width="90%">string to check</td></tr>
@@ -135,8 +128,8 @@ Example:
 
 ### get_string_bytelength()
 Gives the byte length of `$1`. Characters which are part of the ASCII set are encoded on 1 byte, hence, for strings which contain only
-ASCII characters, the byte length is also the string length. Characters from other sets like f.ex. é, à, å, etc. require 2 or more
-bytes and lead to higher bytelength than string length. Uses the *C* locale internally.
+ASCII characters, the byte length and the string length correspond. Characters from other sets like f.ex. é, à, å, etc. require 2 or more
+bytes and lead to a higher byte length than string length. Uses the *C* locale internally.
 <table>
 	<tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to get the bytelength of</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the bytelength of <code>$1</code></td></tr>
@@ -158,7 +151,7 @@ Generates `sed` string extraction expression.
 Example:
 
         echo "first|second|third" | sed -e $(get_sed_extract_expression "|" "before" "first")
-The expression is <em>s/|.*//g</em> and the command prints *first*
+prints *first* (the `sed` expression is <em>s/|.*//g</em>).
 <table>
 	<tr><td rowspan="3"><b>Param.</b></td>
 		<td align="center"><code>$1</code></td><td width="90%">marker</td></tr>
@@ -178,7 +171,7 @@ Generates `sed` string replacement expression.
 Example: 
 
 	echo "some string" | sed -e $(get_sed_replace_expression "some" "awesome")
-The expression is *s/some/awesome/g* and the command prints *awesome string*
+print *awesome string* (the `sed` expression is *s/some/awesome/g*).
 <table>
 	<tr><td rowspan="3"><b>Param.</b></td>
 		<td align="center"><code>$1</code></td><td width="90%">sed match regex/string</td></tr>
@@ -212,7 +205,7 @@ Provides a sed separator character which doesn't occur in `$1` and `$2`.
 ### escape_sed_special_characters()
 Adds a backslash to every occurence of a character which has a special signification in sed expressions: 
 
-	`. + ? * [ ] ^ $`
+	. + ? * [ ] ^ $
 <table>
         <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">string to escape</td></tr>
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>escaped <code>$1</code></td></tr>

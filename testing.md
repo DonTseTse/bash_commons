@@ -5,12 +5,11 @@ Documentation for the functions in [testing.sh](testing.sh). A general overview 
 The module maintains a range of global variables to keep track of a test session in between function calls:
 - `$test_counter` and `$test_error_count` are initialized to *0* by [initialize_test_session()](#initialize_test_session)
   and incremented for every test respectively every failed test by [check_test_results()](check_test_results#), which
-  uses them inside its testing result messages as well
+  uses them inside its test result messages as well
 - the expected results of a test are kept in `$expected_return` and `$expected_stdout`. They are set via 
   [configure_test()](#configure_test) and compared to the actual test outcome in 
   [check_test_results()](#check_test_results)
-- a test session can have a name which is kept in `$test_session_name` and is used in the introduction and conclusion 
-  messages
+- `$test_session_name` stores the session name; it's used in the introduction and conclusion messages
 
 ## Function documentation
 If the pipes are not documented, the default is:
