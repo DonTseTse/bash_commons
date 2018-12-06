@@ -1,15 +1,35 @@
 # Bash commons (bash_commons)
 Library of bash functions organized in several thematic collections; each is one source file. 
 
+## How to:
+- Clone this repository
+- Set up a global variable `$commons_path` set to the absolute path of the folder with the cloned code. The collections use it to load
+their internal dependancies, most will complain if it's not set
+- Source the collection file which contains the desired functions
+
+Example:
+```bash
+commons_path="/path/to/bash_commons"
+. "$commons_path/filesystem.sh"
+# from here on, all functions from filesystem.sh can be used
+```
+
+The **tests** can be found in `/tests`. 
+
 ## Collections:
-| Name | | | &nbsp;
-| --- | --- | --- | ---
-| Filesystem | [code](filesystem.sh) | [documentation](filesystem.md) | [tests](tests/filesystem.sh)
-| String handling | [code](string_handling.sh) | [documentation](string_handling.md) | [tests](tests/string_handling.sh)
-| Logging | [code](logging.sh) | [documentation](logging.md) | [tests](tests/logging.sh)
-| Interaction | [code](interaction.sh) | [documentation](interaction.md)
-| Helpers | [code](helpers.sh) | [documentation](helpers.md) | [tests](tests/helpers.sh)
-| Testing |[code](testing.sh) | [documentation](testing.md)
+<table>
+<tr><td><b>Filesystem</b></td><td><a href="#filesystem">Overview</a></td><td><a href="filesystem.md">Documentation</a></td><td><a href="filesystem.sh">Code</a></td>
+	<td><a href="tests/filesystem.sh">Tests</a></td></tr>
+<tr><td><b>String handling</b></td><td><a href="#string-handling">Overview</a></td><td><a href="string_handling.md">Documentation</a></td>
+	<td><a href="string_handling.sh">Code</a></td><td><a href="tests/string_handling.sh">Tests</a></td></tr>
+<tr><td><b>Logging</b></td><td><a href="#logging">Overview</a></td><td><a href="logging.md">Documentation</a></td>
+	<td><a href="logging.sh">Code</a></td><td><a href="tests/logging.sh">Tests</a></td></tr>
+<tr><td><b>Interaction</b></td><td><a href="#interaction">Overview</a></td><td><a href="interaction.md">Documentation</a></td><td><a href="interaction.sh">Code</a></td>
+	<td></td></tr>
+<tr><td><b>Helpers</b></td><td><a href="#helpers">Function index</a></td><td><a href="helpers.md">Documentation</a></td><td><a href="helpers.sh">Code</a></td>
+	<td><a href="tests/helpers.sh">Tests</a></td></tr>
+<tr><td><b>Testing</b></td><td><a href="#testing">Overview</a></td><td><a href="testing.md">Documentation</a></td><td><a href="testing.sh">Code</a></td>
+	<td></td></tr>
 
 ### Filesystem
 The filesystem collection provides: 
@@ -88,18 +108,6 @@ Used by the other modules. Function index:
 - [is_function_defined()](helpers.md#is_function_defined)
 - [is_globbing_enabled()](helpers.md#is_globbing_enabled)
 - [set_global_variable()](helpers.md#set_global_variable)
-
-# Snippets
-
-Simplified script directory resolution (f.ex. in an installer before `bash_commons` are available)
-```bash
-# Exit with error message on file symlinks, set $script_folder to the directory in which the script is located (folder symlinks resolved)
-symlink_error_msg="Error: Please don't call ... through file symlinks, this confuses the script about its own location. Call it directly. Aborting..."
-if [ -h "${BASH_SOURCE[0]}" ]; then echo "$symlink_error_msg"; exit 1; fi
-script_folder="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-```
-**Important**: this code has to run before files are sourced, subshells are launched etc. because such operations affect `$BASH_SOURCE` (`get_script_path()` 
-               from [filesystem.sh](filesystem.sh) is able to cope with that and file symlinks)
 
 # TODO
 - helpers/get_array_element() doc: add links to problem explanations

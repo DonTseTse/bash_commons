@@ -140,8 +140,10 @@ status is *1* (`mkdir` error), otherwise it should be empty. The default message
 |*3*| folder creation error: `%path` exists\n
 |*4*| folder creation error: no write permission for `%path`\n
 
-`create_folder "/new/folder/path" "verbose"` prints *folder /new/folder/path created\n* in case of success. These messages can
-be customized by setting up an array variable with elements that have as index the value of the status they document (i.e. the success message
+`%stderr_msg` is empty if status is not *1*.
+
+`create_folder "/new/folder/path" "verbose"` prints *folder /new/folder/path created\n* in case of success. The messages can
+be customized by setting up an array variable where the indizes are the states and the values the corresponding templates (i.e. the success message
 template is at index *0*, etc.). The name of the array variable - and not the variable itself - has to be provided as 3rd call parameter.
 It's perfectly valid to customize a subset of states/templates, the function falls back to the default templates where it can't find a
 customization.
@@ -226,6 +228,7 @@ Internal handler for file/folder copy/move, used by the wrapper functions <a hre
 - a system for the message customization: one template by status, with variable placeholders to inject the runtime parameters
 
 **Verbose mode / message customization**:
+
 The templates support 4 variable placeholders:
 
 - `%src`: set to `$2`
@@ -235,23 +238,22 @@ The templates support 4 variable placeholders:
 
 The default message templates are:
 
-| Status | `%op` | Template
-|:------:| ----- | --------
-|*0*|*move*/*mv*|`%src` moved to `%dest`\n 
-|*0*|*copy*/*cp*|`%src` copied to `%dest`\n
-|*1*|all|`%stderr_msg`\n
-|*2*|all|error: `%op` failed, source path empty\n
-|*3*|all|error: `%op` from `%src` to `%dest` failed because `%src` doesn't exist\n
-|*4*|all|error: `%op` from `%src` to `%dest` failed because there's no read permission on `%src`\n
-|*5*|all|error: `%op` from `%src` to `%dest` failed because `%dest` exists (won't overwrite)\n
-|*6*|all|error: `%op` from `%src` to `%dest` failed because there's no write permission on `%dest`\n
+| Status | Template
+|:------:| --------
+|*0*|- `%src` moved to `%dest`\n (for *move*/*mv*)<br>- `%src` copied to `%dest`\n (for *copy*/*cp*) 
+|*1*|`%stderr_msg`\n
+|*2*|error: `%op` failed, source path empty\n
+|*3*|error: `%op` from `%src` to `%dest` failed because `%src` doesn't exist\n
+|*4*|error: `%op` from `%src` to `%dest` failed because there's no read permission on `%src`\n
+|*5*|error: `%op` from `%src` to `%dest` failed because `%dest` exists (won't overwrite)\n
+|*6*|error: `%op` from `%src` to `%dest` failed because there's no write permission on `%dest`\n
 
-`copy_file "/path/to/src" "path/to/dest" "verbose"` prints */path/to/src copied to /path/to/dest\n* in case of success. These messages can
-be customized by setting up an array variable with elements that have as index the value of the status they document (i.e. the success message 
+`copy_file "/path/to/src" "path/to/dest" "verbose"` prints */path/to/src copied to /path/to/dest\n* in case of success. The messages can
+be customized by setting up an array variable where the indizes are the states and the values the corresponding templates (i.e. the success message
 template is at index *0*, etc.). The name of the array variable - and not the variable itself - has to be provided as 4th call parameter.
 It's perfectly valid to customize a subset of states/templates, the function falls back to the default templates where it can't find a
-customization.
-```
+customization. In the next example, the success message template is overwritten:
+```bash
 msg_defs[0]="custom message: %source copied to %destination"
 copy_file "/path/to/src" "/path/to/dest"  "verbose" "msg_defs"
 ```
@@ -319,14 +321,14 @@ see their documentation for details.
 - several checks before the actual removal attempt which allow to get specific status codes for any possible error type:
   if the path is empty (status *2*), doesn't exist (*3*) or if the user has no write permission (*4*)
 - control over `stdout` and `stderr`: `rm` writes on `stderr` in case of failure. This functions allows to be sure:
-        - that `stdout` either contains nothing, the `rm` status code or `stderr` message, or a custom message, depending on the `stdout`
+	- that `stdout` either contains nothing, the `rm` status code or `stderr` message, or a custom message, depending on the `stdout`
 	  configuration `$2`
-        - that `stderr` remains silent, even in case of `rm` failure
+	- that `stderr` remains silent, even in case of `rm` failure
 - a system for the message customization: one template by status, with variable placeholders to inject the runtime parameters
 
 **Verbose mode / message customization**:
-The variable placeholders `%path` and `%stderr_msg` are replaced by the path `$1` and the `mkdir` error message. Latter is only relevant if
-status is *1* (`mkdir` error), otherwise it should be empty. The default message templates are:
+
+The variable placeholders `%path` and `%stderr_msg` are replaced by the path `$1` and the `mkdir` error message. The default message templates are:
 
   | Status | Template
   |:------:| --------
@@ -336,12 +338,14 @@ status is *1* (`mkdir` error), otherwise it should be empty. The default message
   |*3*| removal error: `%path` doesn't exist\n
   |*4*| emoval error: no write permission on `%path`\n
 
-`remove_file "/path/to/remove" "verbose"` prints */path/to/remove removed\n* in case of success. These messages can
-be customized by setting up an array variable with elements that have as index the value of the status they document (i.e. the success message 
+`%stderr_msg` is empty if status is not *1*.
+
+`remove_file "/path/to/remove" "verbose"` prints */path/to/remove removed\n* in case of success. The messages can
+be customized by setting up an array variable where the indizes are the states and the values the corresponding templates (i.e. the success message
 template is at index *0*, etc.). The name of the array variable - and not the variable itself - has to be provided as 3rd call parameter. 
 It's perfectly valid to customize a subset of states/templates, the function falls back to the default templates where it can't find a 
-customization. 
-```
+customization. In the next example, the success message template is overwritten:
+```bash
 msg_defs[0]="custom message: %path removed\n"
 remove_folder "/path/to/remove" "verbose"  "msg_defs"
 ```
@@ -351,7 +355,10 @@ prints *custom message: /path/to/remove removed* if it's successful.
 
 - `stdout` silent: `remove_folder "path/to/new/dir"`
 - status code captured to a variable: `status=$(remove_file "/path/to/file_to_remove" "status")`
-- `rm` error message captured to a variable: `err_msg=$(remove_folder "/path/to/my_new_dir" "error_message")`
+- `rm` error message captured to a variable: 
+```bash
+err_msg=$(remove_folder "/path/to/my_new_dir" "error_message")
+```
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
