@@ -14,21 +14,21 @@
 function capture()
 {
 	[ -z "$1" ] && return 1
-	local status_capture stdout_capture stderr_capture_file prefix param_array=("$@")
-	[ -n "$PREFIX" ] && prefix="${PREFIX}_" # interesting: $PREFIX has to be disambiguated with ${} in the assignment,
-                                                # otherwise bash apparently thinks the variable continues because of the _
+	local status_capture stdout_capture stderr_capture_file varname_prefix param_array=("$@")
+	[ -n "$VARNAME" ] && varname_prefix="${VARNAME}_" # interesting: $PREFIX has to be disambiguated with ${} in the assignment,
+                                                	  # otherwise bash apparently thinks the variable continues because of the _
 	if [ -n "$STDERR" ] && [ "$STDERR" = "1" ]; then
 		stderr_capture_filepath=$(mktemp)
 		stdout_capture="$(2>$stderr_capture_filepath "${param_array[@]}")"
 		status_capture=$?
-		set_global_variable "${prefix}stderr" "$(< $stderr_capture_filepath)"
+		set_global_variable "${varname_prefix}stderr" "$(< $stderr_capture_filepath)"
 		rm "$stderr_capture_filepath"
 	else
 		stdout_capture="$("${param_array[@]}")"
 		status_capture=$?
 	fi
-	set_global_variable "${prefix}return" "$status_capture"
-	set_global_variable "${prefix}stdout" "$stdout_capture"
+	set_global_variable "${varname_prefix}return" "$status_capture"
+	set_global_variable "${varname_prefix}stdout" "$stdout_capture"
 	#DEBUG >&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 
