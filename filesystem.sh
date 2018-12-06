@@ -7,7 +7,10 @@
 # Dependencies: awk, basename, cd, dirname, echo, grep, printf, pwd, readlink, sed
 
 ##### Commons dependencies
+[ -z "$commons_path" ] && echo "Bash commons - Filesystem: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
+[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - Filesystem: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
 . "$commons_path/helpers.sh"           		# for get_array_element(), is_globbing_enabled()
+[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Filesystem: unable to source string handling function at '$commons_path/string_handling.sh' - aborting..." && exit 1
 . "$commons_path/string_handling.sh"  		# for sanitize_variable_quotes()
 
 ##### Functions
@@ -121,9 +124,8 @@ function create_folder()
 	fi
 	[ -z "$1" ] && return 2
 	[ -d "$1" ] && return 3
-	# $1 is not empty => is_writeable will always return status 0, no need to check
 	# is_writeable() is configured to check on the highest level *existing* directory (since it's mkdir with -p)
-	[ "$(is_writeable "$1" 1)" -ne 1 ] && return 4
+	! is_writeable "$1" 1 && return 4
 	# when mkdir fails, it prints on stderr, captured here
 	local err_msg="$(2>&1 mkdir -p "$1")" status=$?
 	[ "$2" = "stderr" ] || [ "$2" = "err_msg" ] || [ "$2" = "error_message" ] && echo "$err_msg"
@@ -161,9 +163,8 @@ function handle_cp_or_mv()
 	[ ! -e "$2" ] && return 3
 	[ ! -r "$2" ] && return 4
 	[ -e "$3" ] && return 5
-	# at this stage it's sure $3 is not empty => is_writeable() will always return status 0, no need to check
 	# cp and mv for both files and folder always need the direct parent folder of the the destination path to exist => is_writeable() configured to check that
-	[ "$(is_writeable "$3")" -ne 1 ] && return 6
+	! is_writeable "$3" && return 6
 	# when mv/cp fails, it prints on stderr, captured here
 	local err_msg="$(2>&1 $operation "$2" "$3")" status=$?
 	[ "$4" = "stderr" ] || [ "$4" = "err_msg" ] || [ "$4" = "error_message" ] && echo "$err_msg"

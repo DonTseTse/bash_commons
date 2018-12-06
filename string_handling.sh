@@ -12,6 +12,8 @@
 #                         see [TODO: fill URL]
 #
 # Commons dependencies
+[ -z "$commons_path" ] && echo "Bash commons - String handling: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
+[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - String handling: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
 . "$commons_path/helpers.sh" 		# for get_piped_input()
 
 ########### String transformation utilities

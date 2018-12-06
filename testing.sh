@@ -7,7 +7,10 @@
 # Dependencies: echo, printf
 
 ##### Commons dependencies
+[ -z "$commons_path" ] && echo "Bash commons - Testing: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
+[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - Testing: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
 . "$commons_path/helpers.sh"    	# for capture()
+[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Testing: unable to source string handling function at '$commons_path/string_handling.sh' - aborting..." && exit 1
 . "$commons_path/string_handling.sh"    # for is_string_a()
 
 ##### Functions

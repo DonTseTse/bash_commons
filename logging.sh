@@ -7,6 +7,8 @@
 # Dependencies: read, printf, echo, sed
 
 ##### Commons dependencies
+[ -z "$commons_path" ] && echo "Bash commons - Logging: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
+[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Logging: unable to source string handling function at '$commons_path/string_handling.sh' - aborting..." && exit 1
 . "$commons_path/string_handling.sh"    # for calculate()
 
 ##### Functions
