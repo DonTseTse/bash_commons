@@ -1,16 +1,19 @@
 #! /bin/bash
-# Written in 2018 by DonTseTse
+# Helper function tests
+#
+# Author: DonTseTse
 
 ############# Configuration
+#
 
 ############# Preparation
 # Refuse symlinks and get the absolute path of the commons directory (this file lies in ./tests/.), load dependancies
 if [ -h "${BASH_SOURCE[0]}" ]; then echo "Error: called through symlink. Please call directly. Aborting..."; exit 1; fi
 commons_path="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && dirname "$(pwd)")"
-
+set -e
 . "$commons_path/testing.sh"
 . "$commons_path/helpers.sh"
-
+set +e
 initialize_test_session "helpers.sh functions"
 
 ############# Tests
@@ -26,7 +29,7 @@ configure_test 0 ""
 check_test_results "[ \"\$stderr\" = \"mkdir: cannot create directory ‘/proc/test’: No such file or directory\" ]" $? ""
 
 echo "Test capture() variable name prefixes - running $> PREFIX=\"echo\" capture echo \"test\""
-PREFIX="echo" capture echo "test"
+VARNAME="echo" capture echo "test"
 configure_test 0 "test"
 check_test_results "#Checking \$echo_return and \$echo_stdout"  "$echo_return" "$echo_stdout"
 

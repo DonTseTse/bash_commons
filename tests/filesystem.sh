@@ -1,21 +1,23 @@
 #! /bin/bash
+# Filesystem function tests
+#
+# Author: DonTseTse
 
-### Configuration
+############# Configuration
 # test_root_path: absolute path to the root directory of the filesystem tests
 test_root_path="/tmp"
-#
+# not_existing_file_name: name of a file which will not to exist
 not_existing_file_name="unexistant.file"
+# not_existing_folder_name: name of folder which will not exist
 not_existing_folder_name="unexistant_folder"
+# default_file_name: generic test file name
 default_file_name="test.file"
-
-# 
+# link_tests_folder_name: name of the folder used for the symlink tests
 link_tests_folder_name="link_tests"
-# at least for non root users
+# path of a folder where the user has no write permission ( at least non root users)
 not_writable_folder_path="/proc"
-#su -c "commons_path=$commons_path; . \"$commons_path/filesystem.sh\"; . \"$commons_path/testing.sh\"; test is_writeable \"/proc/file\"" -s /bin/bash man
 
-
-### Preparation
+############# Preparation
 # Refuse symlinks and get the absolute path of the commons directory (this file lies in ./tests/.), load dependancies
 set -e
 [ -h "${BASH_SOURCE[0]}" ] && echo "Error: called through symlink. Please call directly. Aborting..." && exit 1

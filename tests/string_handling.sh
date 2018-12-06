@@ -1,16 +1,19 @@
 #! /bin/bash
-# Written in 2018 by DonTseTse
+# Filesystem function tests
+#
+# Author: DonTseTse
 
 ############# Configuration
+#
 
 ############# Preparation
 # Refuse symlinks and get the absolute path of the commons directory (this file lies in ./tests/.), load dependancies
+set -e
 [ -h "${BASH_SOURCE[0]}" ] && echo "Error: called through symlink. Please call directly. Aborting..." && exit 1
 commons_path="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && dirname "$(pwd)")"
-
 . "$commons_path/testing.sh"
 . "$commons_path/string_handling.sh"
-
+set +e
 initialize_test_session "string_handling.sh functions"
 
 ############# Tests
