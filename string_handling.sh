@@ -167,3 +167,12 @@ function escape_sed_special_characters()
 {
         echo "$1" | sed -e 's/\./\\\./' -e 's/\+/\\\+/' -e 's/\?/\\\?/' -e 's/\*/\\\*/' -e 's/\[/\\\[/' -e 's/\]/\\\]/' -e 's/\^/\\\^/' -e 's/\$/\\\$/'
 }
+
+########### misc
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_random_string
+function get_random_string()
+{
+        [ ! -c "/dev/urandom" ] && return 1
+        local length="${1:-16}"
+        echo "$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c $length)"
+}

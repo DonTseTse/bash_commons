@@ -149,20 +149,6 @@ Returns the piped `stdin` content on `stdout`, which allows to capture it into a
         <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 
-### get_random_string()
-Provides a string composed of `$1` alphanumeric characters taken from `/dev/urandom`. 
-
-**Important: it's not suited for critical security applications like cryptography**. However, it's useful to get unique strings for non-critical usecases, 
-f.ex. "run IDs" which may be used to distinguish interleaving log entries from several instances of the same script running in parallel. 
-
-<table>
-        <tr><td><b>Param.</b></td><td align="center">[<code>$1</code>]</td><td width="90%">length of the random string, defaults to <em>16</em> if omitted</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the random string</td></tr>
-        <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>success, the random string is on <code>stdout</code></td></tr>
-        <tr>    <td align="center"><em>1</em></td><td><code>/dev/urandom</code> doesn't exist</td></tr>
-</table>
-
 ### is_globbing_enabled()
 Returns with status *0* if bash globbing is enabled. One typical usecase is to "protect" an instruction which relies on globbing:
 

@@ -337,4 +337,25 @@ configure_test 0 "test"
 stdout="$(echo 'test' | escape)"
 check_test_results "\$(echo 'test' | escape)" $? "$stdout"
 
+###
+echo "*** get_random_string() ***"
+if [ -c /dev/urandom ]; then
+        echo "/dev/urandom exists and is used. On machines without urandom get_random_string() should return status: 1, stdout: \"\" but this can't be tested here"
+        # we have to cheat here, since it's random and hence unknown in advance
+        stdout="$(get_random_string 30)"
+        configure_test 0 "$stdout"
+        [ ${#stdout} -eq 30 ]
+        check_test_results "get_random_string 30" $? "$stdout"
+
+        echo "If a length is not specified, get_random_string() defaults to 16"
+        stdout="$(get_random_string)"
+        configure_test 0 "$stdout"
+        [ ${#stdout} -eq 16 ]
+        check_test_results "get_random_string" $? "$stdout"
+else
+        echo "/dev/urandom not found, get_random_string() should always return status: 1, stdout: \"\". No need to test the other cases, they'd fail anyway."
+        configure_test 1 ""
+        test get_random_string
+fi
+
 conclude_test_session

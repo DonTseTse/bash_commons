@@ -33,6 +33,20 @@ VARNAME="echo" capture echo "test"
 configure_test 0 "test"
 check_test_results "#Checking \$echo_return and \$echo_stdout"  "$echo_return" "$echo_stdout"
 
+echo "*** execute_working_directory_dependant_command() ***"
+configure_test 0 "/tmp"
+test execute_working_directory_dependant_command "/tmp" "pwd"
+
+configure_test 1 ""
+test execute_working_directory_dependant_command "/unexistant" "pwd"
+
+configure_test 127 ""
+test execute_working_directory_dependant_command "/tmp" "unknown"
+
+echo ""
+stdout="$(conditional_exit 1 "Dead!" 22)"
+check_test_results "\$(conditional_exit 1 \"Dead!\" 22)" 22 "$stdout"
+
 ###
 echo "*** is_function_defined() ***"
 echo "The function test() is defined in the testing commons"
@@ -48,8 +62,31 @@ test is_function_defined ""
 configure_test 1 ""
 test is_function_defined "tail"
 
+echo "*** is_command_defined() ***"
 configure_test 0 ""
 test is_command_defined "tail"
+
+configure_test 1 ""
+test is_command_defined "unknown"
+
+###
+echo "*** is_globbing_enabled() ***"
+[ -z "$(echo $- | grep f)" ]
+prev_glob_status=$?
+
+set -f
+echo " - Globbing disabled"
+configure_test 1 ""
+test is_globbing_enabled
+
+set +f
+echo " - Globbing enabled"
+configure_test 0 ""
+test is_globbing_enabled
+
+[ $prev_glob_status -eq 1 ] && set -f
+echo " - Globbing reset"
+
 
 ###
 echo "*** set_global_variable() ***"
@@ -114,44 +151,5 @@ check_test_results "\$(echo \"test piped input\" | get_piped_input)" $? "$stdout
 configure_test 0 ""
 stdout="$(echo "" | get_piped_input)"
 check_test_results "\$(echo \"\" | get_piped_input)" $? "$stdout"
-
-###
-echo "*** get_random_string() ***"
-if [ -c /dev/urandom ]; then
-	echo "/dev/urandom exists and is used. On machines without urandom get_random_string() should return status: 1, stdout: \"\" but this can't be tested here"
-	# we have to cheat here, since it's random and hence unknown in advance
-	stdout="$(get_random_string 30)"
-	configure_test 0 "$stdout"
-	[ ${#stdout} -eq 30 ]
-	check_test_results "get_random_string 30" $? "$stdout"
-
-	echo "If a length is not specified, get_random_string() defaults to 16"
-	stdout="$(get_random_string)"
-	configure_test 0 "$stdout"
-	[ ${#stdout} -eq 16 ]
-	check_test_results "get_random_string" $? "$stdout"
-else
-	echo "/dev/urandom not found, get_random_string() should always return status: 1, stdout: \"\". No need to test the other cases, they'd fail anyway."
-	configure_test 1 ""
-	test get_random_string
-fi
-
-###
-echo "*** is_globbing_enabled() ***"
-[ -z "$(echo $- | grep f)" ]
-prev_glob_status=$?
-
-set -f
-echo " - Globbing disabled"
-configure_test 1 ""
-test is_globbing_enabled
-
-set +f
-echo " - Globbing enabled"
-configure_test 0 ""
-test is_globbing_enabled
-
-[ $prev_glob_status -eq 1 ] && set -f
-echo " - Globbing reset"
 
 conclude_test_session
