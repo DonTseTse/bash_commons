@@ -30,6 +30,7 @@ The **tests** can be found in `/tests`.
 	<td><a href="tests/helpers.sh">Tests</a></td></tr>
 <tr><td><b>Testing</b></td><td><a href="#testing">Overview</a></td><td><a href="testing.md">Documentation</a></td><td><a href="testing.sh">Code</a></td>
 	<td></td></tr>
+</table>
 
 ### Filesystem
 The filesystem collection provides: 
