@@ -1,17 +1,19 @@
 Documentation for the functions in [filesystem.sh](filesystem.sh). A general overview is given in [the project documentation](README.md#filesystem).
 
 ## Quick access
-- [get_real_path()](#get_real_path)
-- [get_script_path()](#get_script_path)
-- [is_writeable()](#is_writeable)
-- [get_new_path_part()](#get_new_path_part)
-- [get_existing_path_part()](#get_existing_path_part)
-- [try_filepath_deduction()](#try_filepath_deduction)
+- [copy_file()](#copy_file), [copy_folder()](#copy_folder) (+ the internal handler [handle_cp_or_mv()](#handle_cp_or_mv))
 - [create_folder()](#create_folder)
-- [copy_file()](#copy_file), [copy_folder()](#copy_folder), [move_file()](#move_file) and [move_folder()](#move_folder) (+ the internal handler 
-  [handle_cp_or_mv()](#handle_cp_or_mv))
-- [remove_file()](#remove_file) and [remove_folder()](#remove_folder) (+ the internal handler - [handle_rm()](#handle_rm))
+- [get_real_path()](#get_real_path)
+- [get_existing_path_part()](#get_existing_path_part)
+- [get_new_path_part()](#get_new_path_part)
+- [get_script_path()](#get_script_path)
+- [is_path_a()](#is_path_a)
+- [is_readable()](#is_readable)
+- [is_writeable()](#is_writeable)
 - [load_configuration_file_value()](#load_configuration_file_value)
+- [move_file()](#move_file) and [move_folder()](#move_folder) (+ the internal handler [handle_cp_or_mv()](#handle_cp_or_mv))
+- [remove_file()](#remove_file) and [remove_folder()](#remove_folder) (+ the internal handler - [handle_rm()](#handle_rm))
+- [try_filepath_deduction()](#try_filepath_deduction)
 
 ## Function documentation
 If the pipes are not documented, the default is:
