@@ -219,7 +219,7 @@ function handle_rm()
 		default_msg_defs[2]="removal error: no write permission on %path\n"
 		default_msg_defs[3]="removal error: %path doesn't exist\n"
 		default_msg_defs[4]="removal error: path is empty\n"
-		local stderr_msg="$(handle_rm "$1" "stderr")" status=$? msg_def
+		local stderr_msg="$(handle_rm "$1" "stderr" "" $4)" status=$? msg_def
 		[ -n "$3" ] && local msg_def="$(get_array_element "$3" $status)"
 		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
 		local path_exp="$(get_sed_replace_expression "%path" "$1")" stderr_msg_exp="$(get_sed_replace_expression "%stderr_msg" "$stderr_msg")"

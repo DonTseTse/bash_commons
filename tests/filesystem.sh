@@ -413,7 +413,7 @@ test remove_folder
 configure_test 0 ""
 test remove_file "$not_existing_file_path"
 
-configure_test 0 "$not_existing_file_path removed\n"
+configure_test 3 "removal error: $not_existing_file_path doesn't exist\n"
 test remove_file "$not_existing_file_path" "verbose" "" 1
 
 if [ "$UID" -ne 0 ]; then
