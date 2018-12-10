@@ -420,5 +420,6 @@ test load_configuration_file_value "$test_file_path" "variable2"
 #rm "/tmp/test.conf" "/tmp/test2.conf"
 cd "$pwd_before_tests"
 
-[ "$UID" -eq 0 ] && printf " - Note: If you want to run the test as normal user, try \$> su -c \"cd $commons_path; /bin/bash tests/filesystem.sh\" -s /bin/bash <user>\n   If <user> has no permissions on <commons_path>, create a copy f.ex. \$> cp -r <commons_path> /tmp/bash_commons <\$ and use /tmp/bash_commons as <commons_path>\n"
+#[ "$UID" -eq 0 ] && printf " - Note: If you want to run the test as normal user, try \$> su -c \"cd $commons_path; /bin/bash tests/filesystem.sh\" -s /bin/bash <user>\n   If <user> has no permissions on <commons_path>, create a copy f.ex. \$> cp -r <commons_path> /tmp/bash_commons <\$ and use /tmp/bash_commons as <commons_path>\n"
+[ "$UID" -eq 0 ] && printf " - Note: If you want to run the test as non-root user, have a look at run_test_as_another_user.sh in the tests folder\n"
 conclude_test_session
