@@ -141,7 +141,6 @@ test get_real_path "$link_test_path/folder_link_rel"
 echo " - Filesystem info: $(ls -l "$link_test_path/folder_link_rel_broken" | sed 's#^[^/]*##')"
 configure_test 1 ""
 test get_real_path "$link_test_path/folder_link_rel_broken"
-
 echo " - Filesystem info: $(ls -l "$link_test_path/folder_link_rel_inner" | sed 's#^[^/]*##')"
 configure_test 0 "$link_test_path/folder/subfolder"
 test get_real_path "$link_test_path/folder_link_rel_inner"
@@ -176,6 +175,52 @@ configure_test 0 "$commons_path/tests/filesystem.sh"
 test get_script_path
 cd "$test_base_folder"
 echo " - \$> cd $test_base_folder"
+
+###
+echo "*** is_path_a() ***"
+configure_test 0 ""
+test is_path_a "$test_base_folder" "folder"
+
+configure_test 1 ""
+test is_path_a "$test_base_folder" "file"
+
+configure_test 0 ""
+test is_path_a "$existing_file_path" "file"
+
+configure_test 0 ""
+test is_path_a "$link_test_path/folder_link_abs" "symlink"
+
+configure_test 2 ""
+test is_path_a "$not_existing_file_path" "folder"
+
+configure_test 3 ""
+test is_path_a "" "folder"
+
+configure_test 4 ""
+test is_path_a "$existing_file_path" ""
+
+configure_test 5 ""
+test is_path_a "$existing_file_path" "unknown"
+
+###
+echo "*** is_readable() ***"
+configure_test 0 ""
+test is_readable "$test_base_folder"
+
+#configure_test 1 ""
+#test is_readable "$test_base_folder"
+
+configure_test 2 ""
+test is_readable "$not_existing_file_path"
+
+configure_test 3 ""
+test is_readable "$existing_file_path" "folder"
+
+configure_test 4 ""
+test is_readable ""
+
+configure_test 5 ""
+test is_readable "$existing_file_path" "unknown"
 
 ###
 echo "*** is_writeable() ***"
@@ -260,10 +305,10 @@ echo "*** create_folder() ***"
 configure_test 0 ""
 test create_folder "$test_base_folder/mkdir_test"
 
-configure_test 2 ""
+configure_test 4 ""
 test create_folder ""
 
-configure_test 3 ""
+configure_test 2 ""
 test create_folder "$filepath_deduction_test_folder"
 
 configure_test 0 "0"
@@ -272,7 +317,7 @@ test create_folder "$test_base_folder/mkdir_test2" "status"
 configure_test 0 "folder $test_base_folder/mkdir_test3 created\n"
 test create_folder "$test_base_folder/mkdir_test3" "verbose"
 
-configure_test 3 "folder creation error: $test_base_folder/mkdir_test3 exists\n"
+configure_test 2 "folder creation error: $test_base_folder/mkdir_test3 exists\n"
 test create_folder "$test_base_folder/mkdir_test3" "verbose"
 
 mkdir_msgs=("Success %path" "Error %err_msg")
@@ -283,7 +328,7 @@ test create_folder "$test_base_folder/mkdir_test3" "verbose" "mkdir_msgs"
 configure_test 0 "Success $test_base_folder/mkdir_test4"
 test create_folder "$test_base_folder/mkdir_test4" "verbose" "mkdir_msgs"
 
-return_val=4
+return_val=3
 if [ "$UID" -eq 0 ]; then
 	return_val=1
 	mkdir_err_msg="mkdir: cannot create directory ‘$not_writable_folder_path/mkdir_test’: No such file or directory"
@@ -305,7 +350,7 @@ echo " - Created $test_base_folder/a , folders $test_base_folder/folder_to_move 
 configure_test 0 ""
 test "move_file" "$test_base_folder/a" "$test_base_folder/b"
 
-return_val=6
+return_val=5
 if [ "$UID" -eq 0 ]; then
 	return_val=1
 	mv_err_msg="mv: cannot create regular file '$not_writable_folder_path/a': No such file or directory"
@@ -338,7 +383,7 @@ echo "*** copy_file() / copy_folder() ***"
 touch "$test_base_folder/c"
 echo ' - touch "$test_base_folder/c"'
 
-configure_test 5 "copy error: $test_base_folder/a -> $test_base_folder/c failed because destination path exists (won't overwrite)\n"
+configure_test 4 "copy error: $test_base_folder/a -> $test_base_folder/c failed because destination path exists (won't overwrite)\n"
 test copy_file "$test_base_folder/a" "$test_base_folder/c" "verbose"
 
 configure_test 0 "$test_base_folder/folder_to_copy copied to $test_base_folder/copied_folder\n"
@@ -347,28 +392,34 @@ test copy_folder "$test_base_folder/folder_to_copy" "$test_base_folder/copied_fo
 configure_test 0 "0"
 test copy_folder "$test_base_folder/folder_to_copy" "$test_base_folder/copied folder" "status"
 
-msg_defs=("My success message: moved %src to %dest" "%stderr_msg" "Source empty" "Source %src doesn't exist")
-configure_test 2 "Source empty"
+msg_defs=("My success message: moved %src to %dest" "%stderr_msg" "Source %src doesn't exist" [6]="Source empty")
+configure_test 6 "Source empty"
 test copy_folder "" "" "verbose" "msg_defs"
 
-configure_test 3 "Source $not_existing_file_path doesn't exist"
+configure_test 2 "Source $not_existing_file_path doesn't exist"
 test copy_file "$not_existing_file_path" "$test_base_folder/shouldntexist" "verbose" "msg_defs"
+
+configure_test 7 ""
+test copy_folder "$test_base_folder/folder_to_copy" ""
 
 ###
 echo "*** remove_file() / remove_folder() ***"
 configure_test 0 ""
 test remove_file "$test_base_folder/c"
 
-configure_test 2 ""
+configure_test 4 ""
 test remove_folder
 
-configure_test 3 "removal error: $not_existing_file_path doesn't exist\n"
-test remove_file "$not_existing_file_path" "verbose"
+configure_test 0 ""
+test remove_file "$not_existing_file_path"
+
+configure_test 0 "$not_existing_file_path removed\n"
+test remove_file "$not_existing_file_path" "verbose" "" 1
 
 if [ "$UID" -ne 0 ]; then
 	mkdir "$test_base_folder/non_writable_dir" && chmod -w "$test_base_folder/non_writable_dir"
-	configure_test 4 "custom msg - removal error: no write permission on $test_base_folder/non_writable_dir"
-	removal_msg_defs[4]="custom msg - removal error: no write permission on %path"
+	configure_test 2 "custom msg - removal error: no write permission on $test_base_folder/non_writable_dir"
+	removal_msg_defs[2]="custom msg - removal error: no write permission on %path"
 	test remove_folder "$test_base_folder/non_writable_dir" "verbose" "removal_msg_defs"
 fi
 
@@ -392,16 +443,16 @@ echo "*** load_configuration_file_value() ***"
 echo "------ Configuration file used for testing ------"
 cat "$test_file_path"
 echo "-------------------------------------------------"
-configure_test 1 ""
+configure_test 5 ""
 test load_configuration_file_value "" ""
-configure_test 2 ""
+configure_test 6 ""
 test load_configuration_file_value "$test_file_path" ""
-configure_test 3 ""
+configure_test 1 ""
 test load_configuration_file_value "unknown" "whatever"
 #configure_test 4 ""
 #test su -s /bin/bash -c ". \"$commons_path/configuration_file_handling.sh\"; echo $?  load_value_from_file \"$test_root_path/cfg_testfile_unreadable\" \"variable\" echo $?"  man
 #test load_value_from_file "$test_root_path/cfg_testfile_unreadable" "variable"
-configure_test 5 ""
+configure_test 4 ""
 test load_configuration_file_value "$test_file_path" "undefined"
 configure_test 0 "value"
 test load_configuration_file_value "$test_file_path" "variable"

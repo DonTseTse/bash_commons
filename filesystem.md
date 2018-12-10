@@ -51,6 +51,34 @@ entry  only contains that relative filepath and if the current directory changes
 	<tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 </table>
 
+### is_path_a()
+<table>
+        <tr><td rowspan="2"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
+        <tr>    <td align="center">[<code>$2</code>]</td><td>type, can be <em>folder</em>, <em>file</em> or <em>symlink</em></td></tr>
+        <tr><td rowspan="6"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>path <code>$1</code> is of type <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>path <code>$1</code> is not of type <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>pth <code>$1</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td><code>$1</code> is empty</td></tr>
+        <tr>    <td align="center"><em>4</em></td><td><code>$2</code> is empty</td></tr>
+        <tr>    <td align="center"><em>5</em></td><td><code>$2</code> is unknown</td></tr>
+</table>
+
+### is_readable()
+<table>
+        <tr><td rowspan="2"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
+        <tr>    <td align="center">[<code>$2</code>]</td><td>type, can be <em>folder</em>, <em>file</em> or <em>symlink</em></td></tr>
+        <tr><td rowspan="6"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>path <code>$1</code> is readable</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>path <code>$1</code> is not readable</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>path <code>$1</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td><code>$1</code> doesn't have type <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>4</em></td><td><code>$1</code> is empty</td></tr>
+        <tr>    <td align="center"><em>5</em></td><td><code>$2</code> is unknown</td></tr>
+</table>
+
 ### is_writeable()
 Helper to avoid write permission errors. Example:
 
@@ -185,12 +213,12 @@ prints *custom message: folder /new/folder/path/ created\n* if it's successful.
                 </ul>
         </td></tr>
         <tr><td rowspan="5"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td><code>$1</code> created</td></tr>
+                <td align="center"><em>0</em></td><td>folder <code>$1</code> created</td></tr>
         <tr>    <td align="center"><em>1</em></td><td><code>mkdir</code> error, if <code>$2</code> is set to <em>error_message</em>, <code>stdout</code>
                 contains the content of <code>mkdir</code>'s <code>stderr</code> output</td></tr>
-        <tr>    <td align="center"><em>2</em></td><td><code>$1</code> is empty</td></tr>
-        <tr>    <td align="center"><em>3</em></td><td><code>$1</code> exists</td></tr>
-        <tr>    <td align="center"><em>4</em></td><td><code>$1</code> is not writeable</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>path <code>$1</code> exists</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td>path <code>$1</code> is not writeable</td></tr>
+        <tr>    <td align="center"><em>4</em></td><td><code>$1</code> is empty</td></tr>
 </table>
 
 ### handle_cp_or_mv()
@@ -289,11 +317,12 @@ prints *custom message: /path/to/src copied to /path/to/dest* if it's successful
                 <td align="center"><em>0</em></td><td>operation successful</td></tr>
         <tr>    <td align="center"><em>1</em></td><td>operation failure, if <code>$3</code> is set to <em>error_message</em> (or its aliases), <code>stdout</code>
                 contains <code>mv</code>'s respectively <code>cp</code>'s <code>stderr</code> output</td></tr>
-        <tr>    <td align="center"><em>2</em></td><td>the source path <code>$2</code> is empty</td></tr>
-        <tr>    <td align="center"><em>3</em></td><td>the source path <code>$2</code> doesn't exist</td></tr>
-        <tr>    <td align="center"><em>4</em></td><td>no read permission on source path <code>$2</code></td></tr>
-        <tr>    <td align="center"><em>5</em></td><td>the destination path <code>$3</code> exists</td></tr>
-        <tr>    <td align="center"><em>6</em></td><td>no write permission on destination path <code>$3</code></td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>the source path <code>$2</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td>no read permission on source path <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>4</em></td><td>the destination path <code>$3</code> exists</td></tr>
+        <tr>    <td align="center"><em>5</em></td><td>no write permission on destination path <code>$3</code></td></tr>
+        <tr>    <td align="center"><em>6</em></td><td>the source path <code>$2</code> is empty</td></tr>
+        <tr>    <td align="center"><em>7</em></td><td>the destination path <code>$3</code> is empty</td></tr>
 </table>
 
 ### handle_rm()
@@ -372,6 +401,12 @@ err_msg=$(remove_folder "/path/to/my_new_dir" "error_message")
         </td></tr>
         <tr>    <td align="center">[<code>$3</code>]</td><td>if <code>$2</code> is set to <em>verbose</em>, the name of the array variable which contains
         the custom message templates - see explanations above</td></tr>
+	<tr>	<td align="center">[<code>$4</code>]</td><td>"return error if <code>$1</code> doesn't exist" flag:
+		<ul>
+			<li><em>1</em>: the function returns with status <em>2</em> if <code>$1</code> doesn't exist
+			<li>omitted or any other value: the function returns with status <em>0</em> if <code>$1</code> doesn't exist
+		</ul>
+	</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>
                 <ul>
                         <li>empty if <code>$2</code> omitted or set to an empty string
@@ -381,12 +416,12 @@ err_msg=$(remove_folder "/path/to/my_new_dir" "error_message")
                 </ul>
         </td></tr>
         <tr><td rowspan="5"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td><code>$1</code> removed</td></tr>
+                <td align="center"><em>0</em></td><td><code>$1</code> removed or doesn't exist (if <code>$4</code> is omitted or set to something else than <em>1</em>)</td></tr>
         <tr>    <td align="center"><em>1</em></td><td><code>rm</code> error, if <code>$2</code> is set to <em>error_message</em> (or aliases), <code>stdout</code>
                 contains the content of <code>rm</code>'s <code>stderr</code> output</td></tr>
-        <tr>    <td align="center"><em>2</em></td><td><code>$1</code> is empty</td></tr>
-        <tr>    <td align="center"><em>3</em></td><td><code>$1</code> exists</td></tr>
-        <tr>    <td align="center"><em>4</em></td><td><code>$1</code> is not writeable</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>path <code>$1</code> is not writeable</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td>path <code>$1</code> doesn't exist (only if <code>$4</code> is set to <em>1</em>)</td></tr>
+        <tr>    <td align="center"><em>4</em></td><td><code>$1</code> is empty</td></tr>
 </table>
 
 ### load_configuration_file_value()
@@ -417,9 +452,10 @@ If the variable is enclosed in quotes (i.e. the quotes are loaded as part of the
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the loaded value, empty otherwise</td></tr>
 	<tr><td rowspan="6"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>successful, value is written on <code>stdout</code></td></tr>
-        <tr>    <td align="center"><em>1</em></td><td><code>$1</code> is empty</td></tr>                                                    
-        <tr>    <td align="center"><em>2</em></td><td><code>$2</code> is empty</td></tr>
-        <tr>    <td align="center"><em>3</em></td><td><code>$1</code> doesn't exist</td></tr>
-        <tr>    <td align="center"><em>4</em></td><td>no read permission on <code>$1</code></td></tr>
-        <tr>    <td align="center"><em>5</em></td><td>a variable with name <code>$2</code> could not be found or its value is empty</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>file <code>$1</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>path <code>$1</code> is not a file</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td>no read permission on file <code>$1</code></td></tr>
+        <tr>    <td align="center"><em>4</em></td><td>no variable definition for the name <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>5</em></td><td><code>$1</code> is empty</td></tr>                                                    
+        <tr>    <td align="center"><em>6</em></td><td><code>$2</code> is empty</td></tr>
 </table>

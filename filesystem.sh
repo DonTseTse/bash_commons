@@ -37,19 +37,33 @@ function get_script_path()
 	get_real_path "${BASH_SOURCE[((${#BASH_SOURCE[@]}-1))]}"
 }
 
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#is_writeable
-#function is_writeable()
-#{
-#	[ -z "$1" ] && return 1
-#	local check_on_existing_path_part="${2:-0}" path_to_check
-#	[ -e "$1" ] && [ ! -w "$1" ] && echo 0 && return
-#	[ -e "$1" ] && [ -w "$1" ] && echo 1 && return
-#	[ $check_on_existing_path_part -eq 0 ] && path_to_check="$(dirname "$1")"
-#	[ $check_on_existing_path_part -eq 0 ] && [ ! -d "$path_to_check" ] && echo 2 && return
-#	[ $check_on_existing_path_part -eq 1 ] && path_to_check="$(get_existing_path_part "$1")"
-#	[ -w "$path_to_check" ] && echo 1 || echo 0
-#}
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#is_path_a
+function is_path_a()
+{
+	[ -z "$1" ] && return 3
+	[ ! -e "$1" ] && return 2
+	[ -z "$2" ] && return 4
+	local type_known=0
+	[ "$2" = "file" ] && type_known=1 && [ -f "$1" ] && return
+	[ "$2" = "folder" ] && type_known=1 && [ -d "$1" ] && return
+	[ "$2" = "symlink" ] && type_known=1 && [ -h "$1" ] && return
+	[ $type_known -eq 0 ] && return 5
+	return 1
+}
 
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#is_readable
+function is_readable()
+{
+	[ -n "$1" ] || return 4
+	[ -e "$1" ] || return 2
+	if [ -n "$2" ]; then
+		local is_path_a_error_status_map=([1]=3 [5]=5)
+		is_path_a "$1" "$2" || return ${is_path_a_error_status_map[$?]}		# given the other checks, is_path_a() can "only" return 0, 1 or 5
+	fi
+	[ -r "$1" ]
+}
+
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#is_writeable
 function is_writeable()
 {
 	[ -z "$1" ] && return 3
@@ -98,7 +112,7 @@ function try_filepath_deduction()
 	[ $file_cnt -eq 2  ] && return 3
 	[ $file_cnt -eq 0 ] && return 2
 	[ $file_cnt -eq 1 ] && echo "$filepath" && return
-}
+	}
 
 ########### Filesystem operations
 # - status & verbose modes are handled with recursion to be able to cope with all the returns statuses
@@ -112,9 +126,9 @@ function create_folder()
 	if [ "$2" = "verbose" ]; then
 		local default_msg_defs[0]="folder %path created\n"
 		default_msg_defs[1]="%stderr_msg\n"
-		default_msg_defs[2]="folder creation error: no path provided\n"
-		default_msg_defs[3]="folder creation error: %path exists\n"
-		default_msg_defs[4]="folder creation error: no write permission for %path\n"
+		default_msg_defs[2]="folder creation error: %path exists\n"
+		default_msg_defs[3]="folder creation error: no write permission for %path\n"
+		default_msg_defs[4]="folder creation error: no path provided\n"
 		local stderr_msg="$(create_folder "$1" "stderr")" status=$? msg_def
 		[ -n "$3" ] && msg_def="$(get_array_element "$3" $status)"
 		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
@@ -122,10 +136,10 @@ function create_folder()
 		printf '%s' "$(echo "$msg_def" | sed -e "$path_exp" -e "$stderr_msg_exp")"
 		return $status
 	fi
-	[ -z "$1" ] && return 2
-	[ -d "$1" ] && return 3
+	[ -z "$1" ] && return 4
+	[ -d "$1" ] && return 2
 	# is_writeable() is configured to check on the highest level *existing* directory (since it's mkdir with -p)
-	! is_writeable "$1" 1 && return 4
+	! is_writeable "$1" 1 && return 3
 	# when mkdir fails, it prints on stderr, captured here
 	local err_msg="$(2>&1 mkdir -p "$1")" status=$?
 	[ "$2" = "stderr" ] || [ "$2" = "err_msg" ] || [ "$2" = "error_message" ] && echo "$err_msg"
@@ -142,12 +156,13 @@ function handle_cp_or_mv()
 		local default_msg_defs[0]="%src moved to %dest\n"
 		[ "$1" = "cp" ] || [ "$1" = "copy" ] && default_msg_defs[0]="%src copied to %dest\n"
 		default_msg_defs[1]="%stderr_msg\n"
-		default_msg_defs[2]="%op error: source path empty\n"
-		default_msg_defs[3]="%op error: %src -> %dest failed because source path doesn't exist\n"
-		default_msg_defs[4]="%op error: %src -> %dest failed because of a lack of read permission on the source path\n"
-		default_msg_defs[5]="%op error: %src -> %dest failed because destination path exists (won't overwrite)\n"
-		default_msg_defs[6]="%op error: %src -> %dest failed because of a lack of write permission on the destination path\n"
-		default_msg_defs[7]="handle_cp_or_mv error: mode '$1' unknown\n"
+		default_msg_defs[2]="%op error: %src -> %dest failed because source path doesn't exist\n"
+		default_msg_defs[3]="%op error: %src -> %dest failed because of a lack of read permission on the source path\n"
+		default_msg_defs[4]="%op error: %src -> %dest failed because destination path exists (won't overwrite)\n"
+		default_msg_defs[5]="%op error: %src -> %dest failed because of a lack of write permission on the destination path\n"
+		default_msg_defs[6]="%op error: source path empty\n"
+		default_msg_defs[7]="%op error: destination path empty\n"
+		default_msg_defs[8]="handle_cp_or_mv error: mode '$1' unknown\n"
 		local stderr_msg="$(handle_cp_or_mv "$1" "$2" "$3" "stderr")" status=$? msg_def
 		[ -n "$5" ] && local msg_def="$(get_array_element "$5" $status)"
 		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
@@ -158,13 +173,13 @@ function handle_cp_or_mv()
 	fi
 	[ "$1" = "mv" ] || [ "$1" = "move" ] && local operation="mv -n"	# mv with -n forbids overwrites
 	[ "$1" = "cp" ] || [ "$1" = "copy" ] && local operation="cp -r"
-	[ -z "$operation" ] && return 7
-	[ -z "$2" ] && return 2
-	[ ! -e "$2" ] && return 3
-	[ ! -r "$2" ] && return 4
-	[ -e "$3" ] && return 5
+	[ -z "$operation" ] && return 8
+	local is_readable_error_status_map=([1]=3 [2]=2 [4]=6)
+	is_readable "$2" || return ${is_readable_error_status_map[$?]}
+	[ -z "$3" ] && return 7
+	[ -e "$3" ] && return 4
 	# cp and mv for both files and folder always need the direct parent folder of the the destination path to exist => is_writeable() configured to check that
-	! is_writeable "$3" && return 6
+	is_writeable "$3" || return 5
 	# when mv/cp fails, it prints on stderr, captured here
 	local err_msg="$(2>&1 $operation "$2" "$3")" status=$?
 	[ "$4" = "stderr" ] || [ "$4" = "err_msg" ] || [ "$4" = "error_message" ] && echo "$err_msg"
@@ -201,9 +216,9 @@ function handle_rm()
 	if [ "$2" = "verbose" ]; then
 		local default_msg_defs[0]="%path removed\n"
 		default_msg_defs[1]="%stderr_msg\n"
-		default_msg_defs[2]="removal error: path is empty\n"
+		default_msg_defs[2]="removal error: no write permission on %path\n"
 		default_msg_defs[3]="removal error: %path doesn't exist\n"
-		default_msg_defs[4]="removal error: no write permission on %path\n"
+		default_msg_defs[4]="removal error: path is empty\n"
 		local stderr_msg="$(handle_rm "$1" "stderr")" status=$? msg_def
 		[ -n "$3" ] && local msg_def="$(get_array_element "$3" $status)"
 		[ -z "$msg_def" ] && msg_def="${default_msg_defs[$status]}"
@@ -211,9 +226,11 @@ function handle_rm()
 		printf '%s' "$(echo "$msg_def" | sed -e "$path_exp" -e "$stderr_msg_exp")"
 		return $status
 	fi
-	[ -z "$1" ] && return 2
-	[ ! -e "$1" ] && return 3
-	[ ! -w "$1" ] && return 4
+	[ -z "$1" ] && return 4
+	if [ ! -e "$1" ]; then
+		[ "$4" = "1" ] && return 3 || return 0
+	fi
+	[ ! -w "$1" ] && return 2
 	local operation="rm"
 	[ -d "$1" ] && local operation="rm -r"
 	# when rm fails, it prints on stderr, captured here
@@ -236,11 +253,15 @@ handle_rm "$@"
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md#load_configuration_file_value
 function load_configuration_file_value()
 {
-	[ -z "$1" ] && return 1
-	[ -z "$2" ] && return 2
-	[ ! -f "$1" ] && return 3
-	[ ! -r "$1" ] && return 4
-	local val="$(grep "^\s*$2\s*\=" "$1" | awk -F = '{print $2}')"
-	[ -z "$val" ] && return 5
+	local is_readable_error_status_map=([1]=3 [2]=1 [3]=2 [4]=5)
+	is_readable "$1" "file" || return ${is_readable_error_status_map[$?]}
+	#[ -z "$1" ] && return 1
+	[ -z "$2" ] && return 6
+	#[ ! -f "$1" ] && return 3
+	#[ ! -r "$1" ] && return 4
+	#local val="$(grep "^\s*$2\s*\=" "$1" | awk -F = '{print $2}')"
+	local val_def="$(grep "^\s*$2\s*\=" "$1")"
+	local val="$(echo "$val_def" | awk -F = '{print $2}')"
+	[ -z "$val_def" ] && return 4
 	echo "$(sanitize_variable_quotes "$val")"
 }
