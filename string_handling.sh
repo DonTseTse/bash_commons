@@ -12,17 +12,15 @@
 #                         see [TODO: fill URL]
 #
 # Commons dependencies
-[ -z "$commons_path" ] && echo "Bash commons - String handling: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
-[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - String handling: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
-. "$commons_path/helpers.sh" 		# for get_piped_input()
+# none
 
 ########### String transformation utilities
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#escape
 function escape()
 {
 	local globbing_was_enabled=0
-	is_globbing_enabled && set -f && globbing_was_enabled=1	# set -f adds the f (= no_glob) option = disables globbing
-	local string="$(get_piped_input)" sep
+	[ -z "$(echo $- | grep f)" ] && set -f && globbing_was_enabled=1		# set -f adds the f (= no_glob) option = disables globbing
+	local string="$([ -p /dev/stdin ] && echo "$(cat)")" sep
 	for escape_char in $@; do
 		# to get "normal" escaping, the sed special chars have to be "disabled"
 		escape_char=$(escape_sed_special_characters "$escape_char")
@@ -36,7 +34,7 @@ function escape()
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#sanitize_variable_quotes
 function sanitize_variable_quotes()
 {
-        local input="${1:-$(get_piped_input)}"
+        local input="${1:-$([ -p /dev/stdin ] && echo "$(cat)")}"
 	# 1st checks double quotes ", the 2nd checks simple/single quotes '
         [ -n "$(echo "$input" | grep "^\s*'" | grep "'\s*$")" ] && echo "$input" | sed -e "s/^\s*'//" -e "s/\(.*\)'\s*$/\1/" && return
         [ -n "$(echo "$input" | grep '^\s*"' | grep '"\s*$')" ] && echo "$input" | sed -e 's/^\s*"//' -e 's/\(.*\)"\s*$/\1/' && return
@@ -47,7 +45,7 @@ function sanitize_variable_quotes()
 # Note: in the sed expressions, \s stands for [[:space:]]
 function trim()
 {
-        local input="${1:-$(get_piped_input)}"
+        local input="${1:-$([ -p /dev/stdin ] && echo "$(cat)")}"
         [ -n "$input" ] && echo "$input" | sed -e 's/^\s*//' -e 's/\s*$//'
 	return 0	# enforces status; otherwise if $input is an empty string, it would be 1 (from the failed [ -n ])
 }
@@ -61,13 +59,10 @@ function find_substring()
 	# escape bash's string expansion pattern special chars to get "normal" matching
 	local match="$(echo "$2" | escape '*' '?' )" search_string="$1" offset="${3:-0}"
 	#DEBUG >&2 printf 'input: %s - match: %s - pattern: ${1%%%%%s*}\n' "$1" "$match" "$match"
-	#local substr="${1%%$match*}"
-	#[ ${#substr} -eq ${#1} ] && echo "-1" || echo ${#substr}
 	[[ "$offset" =~ ^[0-9]+$ ]] && [ "$offset" -gt 0 ] && [ "$offset" -lt ${#1} ] && search_string="${1:$offset}"
 	local substr="${search_string%%$match*}"
 	[ ${#substr} -eq ${#search_string} ] && echo "-1" || echo "$(calculate "$offset + ${#substr}" "int")"
 }
-
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#get_absolute_path
 # Dev note: this function is here and not in the filesystem collection because it doesn't require the provided paths to exist

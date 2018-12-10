@@ -66,6 +66,7 @@ The string handling collections includes functions to modify strings and control
   passed to `sed` - the functions take care to select a collision-free separator character using 
   [find_sed_operation_separator()](string_handling.md#find_sed_operation_separator) and escape characters with special signification 
   using [escape_sed_special_characters()](string_handling.md#escape_sed_special_characters). 
+- [get_random_string()](helpers.md#get_random_string) 
 
 ### Interaction
 The interaction collection provides the basic building blocks for interactive scripts, f.ex. installers:
@@ -102,12 +103,8 @@ Used by the other modules. Function index:
 - [calculate()](helpers.md#calculate)
 - [capture()](helpers.md#capture)
 - [conditional_exit()](helpers.md#conditional_exit)
+- [execute_working_directory_dependant_command()](helpers.md#execute_working_directory_dependant_command)
 - [get_array_element()](helpers.md#get_array_element)
-- [get_random_string()](helpers.md#get_random_string)
-- [get_piped_input()](helpers.md#get_piped_input)
-- [is_command_defined()](helpers.md#is_command_defined)
-- [is_function_defined()](helpers.md#is_function_defined)
-- [is_globbing_enabled()](helpers.md#is_globbing_enabled)
 - [set_global_variable()](helpers.md#set_global_variable)
 
 # TODO

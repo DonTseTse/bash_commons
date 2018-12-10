@@ -1,16 +1,11 @@
 Documentation for the functions in [helpers.sh](helpers.sh).
 
 ## Quick access
-- [calculate()](#calculate)
 - [capture()](#capture)
+- [execute_working_directory_dependant_command()](#execute_working_directory_dependant_command)
 - [conditional_exit()](#conditional_exit)
-- [get_array_element()](#get_array_element)
-- [get_random_string()](#get_random_string)
-- [get_piped_input()](#get_piped_input)
-- [is_command_defined()](#is_command_defined)
-- [is_function_defined()](#is_function_defined)
-- [is_globbing_enabled()](#is_globbing_enabled)
 - [set_global_variable()](#set_global_variable)
+- [calculate()](#calculate)
 
 ## Function documentation
 If the pipes are not documented, the default is:
@@ -55,39 +50,37 @@ defined the `stderr` capture variable has the name `$VARNAME_stderr`.
 	</td></tr>
 </table>
 
-### is_command_defined()
-Returns with status *0* if the shell has a "definition" for the command `$1`, regardless what type it is (function, built-in, 
-file, etc.). It's similar to `which` but may also be used for bash functions and helps avoid "command ... unknown" errors. It 
-may be used in instruction chains:
-
-        is_command_defined "tail" && tail "..."
-will only call `tail` if it's defined (aka installed). The example shows an essential difference with 
-<a href="#is_function_defined">is_function_defined()</a> which will always return status *1* (not defined) for `tail` because it 
-has the type *file*, not *function*. 
+### execute_working_directory_dependant_command()
+Execute `$2` with the parameters `$3` in the directory `$1`. Useful for some commands like `git` which work in the context of the current working
+directory. 
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">name of the function</td></tr>
-        <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>function <code>$1</code> is defined</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>function <code>$1</code> is not defined</td></tr>
+        <tr><td rowspan="3"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">absolute path to the directory where <code>$2</code> shall be executed</td></tr>
+        <tr>    <td align="center"><code>$2</code></td><td>command</td></tr>
+        <tr>    <td align="center">[<code>$3</code>]</td>command parameters, default to an empty string if omitted</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the <code>stdout</code>output of the command execution</td></tr>
+        <tr><td><b>Status</b></td><td align="center"></td><td>the status of the command, <em>1</em> if <code>$1</code> is not found</td></tr>
 </table>
 
-### is_function_defined()
-Returns with status *0* if a bash function with the name `$1` exists. Useful to avoid "command ... unknown" errors.
+### conditional_exit()
+Example:
+```
+important_fct_call
+conditional_exit $? "important_fct_call failed! Aborting..." 20
+````
+If `important_fct_call` returns with a status code other than *0*, the script prints the "... failed! ..." message and exits with status code *20*
 
-**Important**: do not use this function to check for the availability of standard shell utilities like `echo` or `tail` f.ex. - these
-are not considered functions by bash (types *builtin* and *file*, respectively). Even if they are defined, this function returns 
-status *1* (not defined) - use <a href="#is_command_defined">is_command_defined()</a> instead.
-
-Example of the use in an instruction chain:
-
-	is_function_defined "log" && log "..."
-will only call `log` if it's defined. 
 <table>
-        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">name of the function</td></tr>
-        <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>function <code>$1</code> is defined</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>function <code>$1</code> is not defined</td></tr>
+        <tr><td rowspan="3"><b>Param.</b></td>
+                <td align="center"><code>$1</code></td><td width="90%">condition, if it's different than <em>0</em>, the exit is triggered</td></tr>
+        <tr>    <td align="center">[<code>$2</code>]</td><td>exit message, defaults to a empty string if omitted (it always prints a newline to reset
+                  the terminal)</td></tr>
+        <tr>    <td align="center">[<code>$3</code>]</td><td>exit code, defaults to <em>1</em></td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the exit is triggered, <code>$2</code> followed by a newline</td></tr>
+        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>only applicable if the exit is not triggered</td></tr>
+        <tr><td><b>Exit</b></td><td colspan="2"><code>$3</code> - defaults to <em>1</em> if <code>$3</code> is omitted, empty or non numeric</td></tr>
 </table>
+
 
 ### set_global_variable()
 Sets up a variable called `$1` with the value `$2`, on global level (i.e. accessible everywhere in the execution context)
@@ -136,49 +129,4 @@ If f.ex. `bc` returned  *3.00000* the function writes *3* on `stdout`, regardles
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the <code>bc</code> execution was successful (status code <em>0</em>),
 	 the calculus result with at most <code>$2</code> decimals. Empty if <code>bc</code> failed</td></tr>
         <tr><td><b>Status</b></td><td colspan="2">the status returned by the <code>bc</code> call</td></tr>
-</table>
-
-### get_piped_input()
-Returns the piped `stdin` content on `stdout`, which allows to capture it into a variable, here f.ex. to `$input`:
-
-	input="$(get_piped_input)"
-<table>
-        <tr><td rowspan="2"><b>Pipes</b></td>
-                <td align="center"><code>stdin</code></td><td width="90%">read completely</td></tr>
-        <tr>    <td align="center"><code>stdout</code></td><td>copy of <code>stdin</code>'s piped input</td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
-</table>
-
-### is_globbing_enabled()
-Returns with status *0* if bash globbing is enabled. One typical usecase is to "protect" an instruction which relies on globbing:
-
-	is_globbing_enabled && command_which_requires_globbing
-Another is to check whether globbing needs to be turned off before an instruction where it is not desired:
-
-	is_globbing_enabled && set -f
-`set -f` disables bash globbing; it sets its `no_glob` option to true. To (re)enable globbing, use `set +f`
-
-<table>
-        <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td width="90%">globbing is enabled</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td>globbing is disabled</td></tr>
-</table>
-
-### conditional_exit()
-Example:
-```
-important_fct_call
-conditional_exit $? "important_fct_call failed! Aborting..." 20
-````
-If `important_fct_call` returns with a status code other than *0*, the script prints the "... failed! ..." message and exits with status code *20*
-
-<table>
-        <tr><td rowspan="3"><b>Param.</b></td>
-		<td align="center"><code>$1</code></td><td width="90%">condition, if it's different than <em>0</em>, the exit is triggered</td></tr>
-	<tr>	<td align="center">[<code>$2</code>]</td><td>exit message, defaults to a empty string if omitted (it always prints a newline to reset
-                  the terminal)</td></tr>
-	<tr>	<td align="center">[<code>$3</code>]</td><td>exit code, defaults to <em>1</em></td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the exit is triggered, <code>$2</code> followed by a newline</td></tr>
-        <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td>only applicable if the exit is not triggered</td></tr>
-        <tr><td><b>Exit</b></td><td colspan="2"><code>$3</code> - defaults to <em>1</em> if <code>$3</code> is omitted, empty or non numeric</td></tr>
 </table>

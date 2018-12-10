@@ -44,63 +44,9 @@ configure_test 127 ""
 test execute_working_directory_dependant_command "/tmp" "unknown"
 
 echo "*** conditional_exit() ***"
+configure_test 22 "Dead!"
 stdout="$(conditional_exit 1 "Dead!" 22)"
-check_test_results "\$(conditional_exit 1 \"Dead!\" 22)" 22 "$stdout"
-
-###
-echo "*** is_command_defined() ***"
-configure_test 0 ""
-test is_command_defined "tail"
-
-configure_test 1 ""
-test is_command_defined "unknown"
-
-###
-echo "*** is_function_defined() ***"
-echo "The function test() is defined in the testing commons"
-configure_test 0 ""
-test is_function_defined "test"
-
-configure_test 1 ""
-test is_function_defined "unknown"
-
-configure_test 1 ""
-test is_function_defined ""
-
-configure_test 1 ""
-test is_function_defined "tail"
-
-###
-echo "*** is_array_defined() ***"
-arr=("1st" "2nd")
-echo " - \$> arr=(\"1st\" \"2nd\") <\$"
-configure_test 0 ""
-test is_array_defined "arr"
-
-configure_test 1 ""
-test is_array_defined "unexistant"
-
-configure_test 2 ""
-test is_array_defined ""
-
-###
-echo "*** is_globbing_enabled() ***"
-[ -z "$(echo $- | grep f)" ]
-prev_glob_status=$?
-
-set -f
-echo " - Globbing disabled"
-configure_test 1 ""
-test is_globbing_enabled
-
-set +f
-echo " - Globbing enabled"
-configure_test 0 ""
-test is_globbing_enabled
-
-[ $prev_glob_status -eq 1 ] && set -f
-echo " - Globbing reset"
-
+check_test_results "\$(conditional_exit 1 \"Dead!\" 22)" $? "$stdout"
 
 ###
 echo "*** set_global_variable() ***"
@@ -155,15 +101,5 @@ test calculate "(250 * 2 + 0.22278999921) / 100" "int"
 
 configure_test 0 "0.000"
 test calculate ""
-
-###
-echo "*** get_piped_input() ***"
-configure_test 0 "test piped input"
-stdout="$(echo "test piped input" | get_piped_input)"
-check_test_results "\$(echo \"test piped input\" | get_piped_input)" $? "$stdout"
-
-configure_test 0 ""
-stdout="$(echo "" | get_piped_input)"
-check_test_results "\$(echo \"\" | get_piped_input)" $? "$stdout"
 
 conclude_test_session

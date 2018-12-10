@@ -6,6 +6,7 @@ Documentation for the functions in [string_handling.sh](string_handling.sh). A g
 - [find_sed_operation_separator()](#find_sed_operation_separator)
 - [find_substring()](#find_substring) 
 - [get_absolute_path()](#get_absolute_path) 
+- [get_random_string()](#get_random_string)
 - [get_sed_extract_expression()](#get_sed_extract_expression)
 - [get_sed_replace_expression()](#get_sed_replace_expression)
 - [get_string_bytelength()](#get_string_bytelength)

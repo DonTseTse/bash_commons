@@ -33,6 +33,7 @@ function capture()
 	#DEBUG >&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#execute_working_directory_dependant_command
 function execute_working_directory_dependant_command()
 {
         local current_dir=$(pwd) status
@@ -53,36 +54,6 @@ function conditional_exit()
                 [[ ! "$code" =~ ^[0-9]*$ ]] && code=1   # if code is non-numeric, exit complains
                 exit $code
         fi
-}
-
-########### Status getters
-function is_command_defined()
-{
-	[ -n "$(type -t $1)" ]
-}
-
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#is_function_defined
-function is_function_defined()
-{
-	[ "$(type -t $1)" = "function" ]
-}
-
-# TODO: add tests and doc
-function is_array_defined()
-{
-	[ -z "$1" ] && return 2
-	printf -v var_syntax '${%s}' "$1"
-        local res=$(eval "[ -v \"$var_syntax\" ] && echo $?")
-	#>&2 echo "Pattern: [ -n \"$var_syntax\" ] - Result: $res"
-	return $res
-}
-
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#is_globbing_enabled
-function is_globbing_enabled()
-{
-        # why -z ? if the bash status contains f = no_glob is enabled. if the $(...) return is empty (= no f, globbing is enabled
-        # since no no_glob disables it), -z makes the function return status 0/success
-        [ -z "$(echo $- | grep f)" ]
 }
 
 ########### Variable handlers
@@ -106,12 +77,6 @@ function get_array_element
 }
 
 ########### Misc
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#get_piped_input
-function get_piped_input()
-{
-	[ -p /dev/stdin ] && echo "$(cat)"
-}
-
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#calculate
 function calculate()
 {
