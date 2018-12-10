@@ -102,4 +102,22 @@ test calculate "(250 * 2 + 0.22278999921) / 100" "int"
 configure_test 0 "0.000"
 test calculate ""
 
+###
+echo "*** is_globbing_enabled() ***"
+[ -z "$(echo $- | grep f)" ]
+prev_glob_status=$?
+
+set -f
+echo " - Globbing disabled"
+configure_test 1 ""
+test is_globbing_enabled
+
+set +f
+echo " - Globbing enabled"
+configure_test 0 ""
+test is_globbing_enabled
+
+[ $prev_glob_status -eq 1 ] && set -f
+echo " - Globbing reset"
+
 conclude_test_session

@@ -91,3 +91,11 @@ function calculate()
         done
         printf "%.${nb_decimals}f" "$res"
 }
+
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#is_globbing_enabled
+function is_globbing_enabled()
+{
+        # why -z ? if the bash status contains f = no_glob is enabled. if the $(...) return is empty (= no f, globbing is enabled
+        # since no no_glob disables it), -z makes the function return status 0/success
+        [ -z "$(echo $- | grep f)" ]
+}

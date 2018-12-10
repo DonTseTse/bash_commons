@@ -12,14 +12,16 @@
 #                         see [TODO: fill URL]
 #
 # Commons dependencies
-# none
+[ -z "$commons_path" ] && echo "Bash commons - Filesystem: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
+[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - Filesystem: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
+. "$commons_path/helpers.sh"                    # is_globbing_enabled()
 
 ########### String transformation utilities
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#escape
 function escape()
 {
 	local globbing_was_enabled=0
-	[ -z "$(echo $- | grep f)" ] && set -f && globbing_was_enabled=1		# set -f adds the f (= no_glob) option = disables globbing
+	is_globbing_enabled && set -f && globbing_was_enabled=1		# set -f adds the f (= no_glob) option = disables globbing
 	local string="$([ -p /dev/stdin ] && echo "$(cat)")" sep
 	for escape_char in $@; do
 		# to get "normal" escaping, the sed special chars have to be "disabled"
@@ -28,7 +30,7 @@ function escape()
 		string="$(printf '%s' "$string" | sed -e $(get_sed_replace_expression "$escape_char" "$(printf '\\\\%s' "$escape_char")"))"
 	done
 	printf '%s' "$string"
-	[ $globbing_was_enabled -eq 1 ] && set +f		# set +f removes the f option
+	[ $globbing_was_enabled -eq 1 ] && set +f			# set +f removes the f option
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#sanitize_variable_quotes

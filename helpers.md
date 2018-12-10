@@ -1,11 +1,12 @@
 Documentation for the functions in [helpers.sh](helpers.sh).
 
 ## Quick access
-- [capture()](#capture)
-- [execute_working_directory_dependant_command()](#execute_working_directory_dependant_command)
-- [conditional_exit()](#conditional_exit)
-- [set_global_variable()](#set_global_variable)
 - [calculate()](#calculate)
+- [capture()](#capture)
+- [conditional_exit()](#conditional_exit)
+- [execute_working_directory_dependant_command()](#execute_working_directory_dependant_command)
+- [is_globbing_enabled()](#is_globbing_enabled)
+- [set_global_variable()](#set_global_variable)
 
 ## Function documentation
 If the pipes are not documented, the default is:
@@ -129,4 +130,19 @@ If f.ex. `bc` returned  *3.00000* the function writes *3* on `stdout`, regardles
         <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if the <code>bc</code> execution was successful (status code <em>0</em>),
 	 the calculus result with at most <code>$2</code> decimals. Empty if <code>bc</code> failed</td></tr>
         <tr><td><b>Status</b></td><td colspan="2">the status returned by the <code>bc</code> call</td></tr>
+</table>
+
+### is_globbing_enabled()
+Returns with status *0* if bash globbing is enabled. One typical usecase is to "protect" an instruction which relies on globbing:
+
+        is_globbing_enabled && command_which_requires_globbing
+Another is to check whether globbing needs to be turned off before an instruction where it is not desired:
+
+        is_globbing_enabled && set -f
+`set -f` disables bash globbing; it sets its `no_glob` option to true. To (re)enable globbing, use `set +f`
+
+<table>
+        <tr><td rowspan="2"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td width="90%">globbing is enabled</td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>globbing is disabled</td></tr>
 </table>
