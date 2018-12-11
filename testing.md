@@ -37,7 +37,7 @@ Sets up the expected test result values
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">expected return status</td></tr>
-        <tr>    <td align="center">[<code>$2</code>]</td><td>expected <code>stdout</code></td></tr>
+        <tr>    <td align="center">[<code>$2</code>]</td><td>expected <code>stdout</code>, default to n empty string if omitted</td></tr>
         <tr><td><b>Status</b></td><td align="center"><em>0</em></td><td></td></tr>
 	<tr><td><b>Globals</b></td><td colspan="2">
 		<ul>

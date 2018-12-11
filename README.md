@@ -3,34 +3,37 @@ Library of bash functions organized in several thematic collections; each is one
 
 ## How to:
 - Clone this repository
-- Set up a global variable `$commons_path` set to the absolute path of the folder with the cloned code. The collections use it to load
-their internal dependancies, most will complain if it's not set
+- Set up a global variable `$commons_path` set to the absolute path of the folder with the cloned code. Most collections use it to load
+their internal dependencies (details in the table below)
 - Source the collection file which contains the desired functions
 
 Example:
 ```bash
 commons_path="/path/to/bash_commons"
 . "$commons_path/filesystem.sh"
-# from here on, all functions from filesystem.sh can be used
+# from here on, all filesystem collection functions are available
 ```
 
 The **tests** can be found in `/tests`. 
 
 ## Collections:
 <table>
-<tr><td><b>Filesystem</b></td><td><a href="#filesystem">Overview</a></td><td><a href="filesystem.md">Documentation</a></td><td><a href="filesystem.sh">Code</a></td>
-	<td><a href="tests/filesystem.sh">Tests</a></td></tr>
-<tr><td><b>String handling</b></td><td><a href="#string-handling">Overview</a></td><td><a href="string_handling.md">Documentation</a></td>
-	<td><a href="string_handling.sh">Code</a></td><td><a href="tests/string_handling.sh">Tests</a></td></tr>
-<tr><td><b>Logging</b></td><td><a href="#logging">Overview</a></td><td><a href="logging.md">Documentation</a></td>
-	<td><a href="logging.sh">Code</a></td><td><a href="tests/logging.sh">Tests</a></td></tr>
-<tr><td><b>Interaction</b></td><td><a href="#interaction">Overview</a></td><td><a href="interaction.md">Documentation</a></td><td><a href="interaction.sh">Code</a></td>
-	<td></td></tr>
-<tr><td><b>Helpers</b></td><td><a href="#helpers">Function index</a></td><td><a href="helpers.md">Documentation</a></td><td><a href="helpers.sh">Code</a></td>
-	<td><a href="tests/helpers.sh">Tests</a></td></tr>
-<tr><td><b>Testing</b></td><td><a href="#testing">Overview</a></td><td><a href="testing.md">Documentation</a></td><td><a href="testing.sh">Code</a></td>
-	<td></td></tr>
+<tr><td>#</td><td>Name</td><td colspan="3" align="center">Links</td><td>Internal dependency</td></tr>
+<tr><td>1</td><td><b>Filesystem</b></td><td><a href="#filesystem">Overview</a></td><td><a href="filesystem.md">Documentation</a></td><td><a href="filesystem.sh">Code</a></td>
+	<td><a href="tests/filesystem.sh">Tests</a></td><td>#2, #5</td></tr>
+<tr><td>2</td><td><b>String handling</b></td><td><a href="#string-handling">Overview</a></td><td><a href="string_handling.md">Documentation</a></td>
+	<td><a href="string_handling.sh">Code</a></td><td><a href="tests/string_handling.sh">Tests</a></td><td>#5</td></tr>
+<tr><td>3</td><td><b>Logging</b></td><td><a href="#logging">Overview</a></td><td><a href="logging.md">Documentation</a></td>
+	<td><a href="logging.sh">Code</a></td><td><a href="tests/logging.sh">Tests</a></td><td>#2</td></tr>
+<tr><td>4</td><td><b>Interaction</b></td><td><a href="#interaction">Overview</a></td><td><a href="interaction.md">Documentation</a></td><td><a href="interaction.sh">Code</a></td>
+	<td></td><td>-</td></tr>
+<tr><td>5</td><td><b>Helpers</b></td><td><a href="#helpers">Function index</a></td><td><a href="helpers.md">Documentation</a></td><td><a href="helpers.sh">Code</a></td>
+	<td><a href="tests/helpers.sh">Tests</a></td><td>-</td></tr>
+<tr><td>6</td><td><b>Testing</b></td><td><a href="#testing">Overview</a></td><td><a href="testing.md">Documentation</a></td><td><a href="testing.sh">Code</a></td>
+	<td></td><td>#2, #5</td></tr>
 </table>
+
++ the git handling and installer tool collections which are work in progress, in the dev branch.
 
 ### Filesystem
 The filesystem collection provides: 
@@ -42,8 +45,9 @@ The filesystem collection provides:
 	- [copy_file()](filesystem.md#copy_file) and [copy_folder()](filesystem.md#copy_folder)
 	- [remove_file()](filesystem.md#remove_file) and [remove_folder()](filesystem.md#remove_folder)
 - [get_real_path()](filesystem.md#get_real_path) and the special application [get_script_path()](filesystem.md#get_script_path) 
-  which return "clean" paths. Further path utilities include the complementary 
-  [get_existing_path_part()](filesystem.md#get_existing_path_part) and [get_new_path_part()](filesystem.md#get_new_path_part)
+  which return "clean" paths. Further path utilities include [is_path_a()](filesystem.md#is_path_a) to check if a path fulfills certain conditions as
+  well as the complementary [get_existing_path_part()](filesystem.md#get_existing_path_part) and [get_new_path_part()](filesystem.md#get_new_path_part)
+- [is_readable()](filesystem.md#is_readable) which allows to get a detailed status about a path
 - [is_writeable()](filesystem.md#is_writeable) which, on top of the classic write permission check, is able to handle permission 
   checks for filesystem operations involving nested folders, like `mkdir` with the `-p` flag
 - [try_filepath_deduction()](filesystem.md#try_filepath_deduction) for a "if there's only one file matching, take that" logic
@@ -109,3 +113,13 @@ Used by the other modules. Function index:
 
 # TODO
 - helpers/get_array_element() doc: add links to problem explanations
+- improve handling & clean up test handling of root user executing the test, especially for filesystem functions
+- add bash_miscs snippets for one-liners
+- clean up function documentation
+- transform verbose mode for wrapper functions in filesystem: merge the "stdout configuration" and "external message template definition array name" parameters. 
+  The logic is:
+	- if that new merged parameter is omitted or an empty string, it's still stdout *silent* mode
+	- if it's set to *stderr* and *status*, these modes are applied as before
+	- if it's set to a non-empty value which is not a variable name, it uses the default message templates (= current *verbose* mode without external msg def param.)
+	- if it's set to an array variable name, it tries to use find and use the custom message templates in this var. (= current *verbose* mode with external msg def param)
+  The only restriction is that an external message definition array variable can't have the names *stderr* or *status*.

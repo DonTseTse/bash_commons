@@ -4,8 +4,8 @@ Documentation for the functions in [logging.sh](logging.sh). A general overview 
 ## Module documentation
 The logging module provides `stdout` and file logging at once, each with a individual pattern and log level. These levels follow a verbosity logic 
 where a message with a lower level should be more important than one with a higher level. Through a configuration flag, the logger may be
-put in a "delayed logging" mode where the messages go into a buffer a processing later on. That's useful f.ex. when application starts up and
-the actual logging configuration is not yet fully determined. 
+put in a "delayed logging" mode where the messages go into a buffer for a processing later on. That's useful when an application wants to start to use
+the logger before the logging configuration is fully determined. 
 
 Since all these configurations have to persist between the [log()](#log) calls, the module relies on global variables:
 - `$logging_available`: the "delayed logging" flag
@@ -33,8 +33,8 @@ If the pipes are not documented, the default is:
 Parameters enclosed in brackets [ ] are optional.
 
 ### log()
-Central piece of the logging module. Supports prefix-aware multi-line output and independent `stdout` and file output handling. Copies messages
-to `$logging_backlog` as long as `$logging_available` is set to *0*. See the [module documentation](#module-documentation) for details.
+The central piece of the module. Supports prefix-aware multi-line output and independent `stdout` and file output handling. Copies messages
+to the `$logging_backlog` as long as `$logging_available` is set to *0*. See the [module documentation](#module-documentation) for details.
 
 **Important**: always call this function and `launch_logging()` directly on global level and not through `$(...)`, otherwise the global 
 variables don't work (a subshell receives a copy of the parent shell's variable set and has no access to the "original" ones).
@@ -57,7 +57,7 @@ variables don't work (a subshell receives a copy of the parent shell's variable 
 </table>
 
 ### launch_logging()
-Processes the `$logging_backlog` by calling [log()](#log) for each entry and clears it. Sets `$logging_available` to *1*.
+Processes the `$logging_backlog` by calling [log()](#log) for each entry. Before returning, it clears that backlog and sets `$logging_available` to *1*.
 <table>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td width="90%">if stdout logging is enabled, the logs for <code>stdout</code>, 
 	empty otherwise</td></tr>
@@ -80,12 +80,12 @@ security factor is *0.25*. Example with a negative `$2`:
 ```
 test prepare_secret_for_logging "longer_secret" -5
 ```
-writes *[Secret - ends with 'ret']* on `stdout`. It contains only 3 instead of the *5* characters requested because the default security factor sets the  
+writes *[Secret - ends with 'ret']* on `stdout`. It contains only 3 instead of the *5* characters requested because the default security factor sets the 
 limit to 13*0.25=3.25.
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">secret</td></tr>
-        <tr>    <td align="center"><code>[$2]</code></td><td>amount of chars to show. If it's positive, the amount is shown from the beginning of the secret, if it's 
+        <tr>    <td align="center"><code>[$2]</code></td><td>amount of charcters to show. If it's positive, the amount is shown from the beginning of the secret, if it's 
 		negative, from the end. If it's omitted, the first fourth of the secret will be shown.</td></tr>
         <tr>    <td align="center">[<code>$3</code>]</td><td>security factor: a value between 0 and 1 which configures how much of the secret can be shown at most.
                 Defaults to <em>0.25</em>, which means that by default at most one fourth of the secret's characters will be shown. It's enforced as limit for the amount

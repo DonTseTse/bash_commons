@@ -52,15 +52,15 @@ defined the `stderr` capture variable has the name `$VARNAME_stderr`.
 </table>
 
 ### execute_working_directory_dependant_command()
-Execute `$2` with the parameters `$3` in the directory `$1`. Useful for some commands like `git` which work in the context of the current working
-directory. 
+Executes `$2` with the parameters `$3` in the directory `$1`. Useful for "localized" commands like f.ex. `git` and the repository context; 
+the working directory of the ongoing execution is not affected.
 <table>
         <tr><td rowspan="3"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">absolute path to the directory where <code>$2</code> shall be executed</td></tr>
         <tr>    <td align="center"><code>$2</code></td><td>command</td></tr>
-        <tr>    <td align="center">[<code>$3</code>]</td>command parameters, default to an empty string if omitted</td></tr>
-        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the <code>stdout</code>output of the command execution</td></tr>
-        <tr><td><b>Status</b></td><td align="center"></td><td>the status of the command, <em>1</em> if <code>$1</code> is not found</td></tr>
+        <tr>    <td align="center">[<code>$3</code>]</td><td>command parameters, defaults to an empty string if omitted</td></tr>
+        <tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>the <code>stdout</code>output of the executed command</td></tr>
+        <tr><td><b>Status</b></td><td align="center"></td><td>the status returned by the executed command, <em>1</em> if <code>$1</code> is not a directory</td></tr>
 </table>
 
 ### conditional_exit()

@@ -56,7 +56,7 @@ both print *quoted value*
 </table>
 
 ### trim()
-Cut leading and trailing whitespace on either the provided parameter or the piped stdin
+Cut leading and trailing whitespace on either the provided parameter or the piped `stdin`
 
 Examples:
 - Input as parameter: `trimmed_string=$(trim "$string_to_trim")`

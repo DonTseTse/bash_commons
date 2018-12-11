@@ -54,24 +54,34 @@ entry  only contains that relative filepath and if the current directory changes
 </table>
 
 ### is_path_a()
+Combined existence and type check. Example:
+```bash
+is_path_a "$path" "file" || echo "$path is not a file" && return
+# do something with the file at $path...
+```
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
-        <tr>    <td align="center">[<code>$2</code>]</td><td>type, can be <em>folder</em>, <em>file</em> or <em>symlink</em></td></tr>
+        <tr>    <td align="center"><code>$2</code></td><td>inode type: accepted values are <em>folder</em>, <em>file</em> or <em>symlink</em></td></tr>
         <tr><td rowspan="6"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>path <code>$1</code> is of type <code>$2</code></td></tr>
         <tr>    <td align="center"><em>1</em></td><td>path <code>$1</code> is not of type <code>$2</code></td></tr>
-        <tr>    <td align="center"><em>2</em></td><td>pth <code>$1</code> doesn't exist</td></tr>
+        <tr>    <td align="center"><em>2</em></td><td>path <code>$1</code> doesn't exist</td></tr>
         <tr>    <td align="center"><em>3</em></td><td><code>$1</code> is empty</td></tr>
         <tr>    <td align="center"><em>4</em></td><td><code>$2</code> is empty</td></tr>
         <tr>    <td align="center"><em>5</em></td><td><code>$2</code> is unknown</td></tr>
 </table>
 
 ### is_readable()
+Helpers to avoid read permission errors, with an optional additional internal <a href="#is_path_a">is_path_a()</a> type check. A typical use example is:
+```bash
+is_readable "$path" || echo "Path $path is not readable. Aborting..." && exit
+```
 <table>
         <tr><td rowspan="2"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
-        <tr>    <td align="center">[<code>$2</code>]</td><td>type, can be <em>folder</em>, <em>file</em> or <em>symlink</em></td></tr>
+        <tr>    <td align="center">[<code>$2</code>]</td><td>inode type: accepted values are <em>folder</em>, <em>file</em> or <em>symlink</em>. If the value is 
+		omitted or empty, no type check is performed.</td></tr>
         <tr><td rowspan="6"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>path <code>$1</code> is readable</td></tr>
         <tr>    <td align="center"><em>1</em></td><td>path <code>$1</code> is not readable</td></tr>
@@ -83,9 +93,9 @@ entry  only contains that relative filepath and if the current directory changes
 
 ### is_writeable()
 Helper to avoid write permission errors. Example:
-
-	is_writeable <path> && ... do something with <path> ...
-
+```bash
+is_writeable "$path" || echo "Path $path is not writeable. Aborting..." && exit
+```
 The function has a "check on existing path part" flag  which configures the behavior for filepaths that don't exist on the system (yet). In 
 these cases the answer whether a write will succeed or not depends on the type of operation and whether it requires the direct parent folder to 
 exist or not. `mkdir` is a good example - let's imagine there's a empty directory `/test` where the user has write permission and wants to create 
@@ -315,7 +325,7 @@ prints *custom message: /path/to/src copied to /path/to/dest* if it's successful
                         <li>the status specific message if <code>$3</code> is set to <em>verbose</em></li>
                 </ul>
         </td></tr>
-	<tr><td rowspan="7"><b>Status</b></td>
+	<tr><td rowspan="8"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>operation successful</td></tr>
         <tr>    <td align="center"><em>1</em></td><td>operation failure, if <code>$3</code> is set to <em>error_message</em> (or its aliases), <code>stdout</code>
                 contains <code>mv</code>'s respectively <code>cp</code>'s <code>stderr</code> output</td></tr>
@@ -391,14 +401,14 @@ prints *custom message: /path/to/remove removed* if it's successful.
 err_msg=$(remove_folder "/path/to/my_new_dir" "error_message")
 ```
 <table>
-        <tr><td rowspan="3"><b>Param.</b></td>
+        <tr><td rowspan="4"><b>Param.</b></td>
                 <td align="center"><code>$1</code></td><td width="90%">path</td></tr>
         <tr>    <td align="center">[<code>$2</code>]</td><td><code>stdout</code> configuration:
                 <ul>
                         <li>if omitted or an empty string, nothing is printed on <code>stdout</code></li>
-                        <li><em>status</em> / <em>$?</em> <code>mkdir</code> status code</li>
-                        <li><em>error_message</em> / <em>err_msg</em> / <em>stderr</em> <code>mkdir</code> call <code>stderr</code> output</li>
-                        <li><em>verbose</em> for a status specific message, see explanations above</li>
+                        <li><em>status</em> / <em>$?</em>: <code>mkdir</code> status code</li>
+                        <li><em>error_message</em> / <em>err_msg</em>: / <em>stderr</em> <code>mkdir</code> call <code>stderr</code> output</li>
+                        <li><em>verbose</em>: for a status specific message, see explanations above</li>
                 </ul>
         </td></tr>
         <tr>    <td align="center">[<code>$3</code>]</td><td>if <code>$2</code> is set to <em>verbose</em>, the name of the array variable which contains
@@ -452,7 +462,7 @@ If the variable is enclosed in quotes (i.e. the quotes are loaded as part of the
 		<td align="center"><code>$1</code></td><td width="90%">path of the configuration file</td></tr>
 	<tr>    <td align="center"><code>$2</code></td><td>name of the variable to load</td></tr>
 	<tr><td><b>Pipes</b></td><td align="center"><code>stdout</code></td><td>if status is <em>0</em>, the loaded value, empty otherwise</td></tr>
-	<tr><td rowspan="6"><b>Status</b></td>
+	<tr><td rowspan="7"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>successful, value is written on <code>stdout</code></td></tr>
         <tr>    <td align="center"><em>1</em></td><td>file <code>$1</code> doesn't exist</td></tr>
         <tr>    <td align="center"><em>2</em></td><td>path <code>$1</code> is not a file</td></tr>
