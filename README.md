@@ -18,7 +18,7 @@ The **tests** can be found in `/tests`.
 
 ## Collections:
 <table>
-<tr><td>#</td><td>Name</td><td colspan="3" align="center">Links</td><td>Internal dependency</td></tr>
+<tr><td>#</td><td>Name</td><td colspan="4" align="center">Links</td><td>Internal dependency</td></tr>
 <tr><td>1</td><td><b>Filesystem</b></td><td><a href="#filesystem">Overview</a></td><td><a href="filesystem.md">Documentation</a></td><td><a href="filesystem.sh">Code</a></td>
 	<td><a href="tests/filesystem.sh">Tests</a></td><td>#2, #5</td></tr>
 <tr><td>2</td><td><b>String handling</b></td><td><a href="#string-handling">Overview</a></td><td><a href="string_handling.md">Documentation</a></td>
@@ -109,7 +109,10 @@ Used by the other modules. Function index:
 - [conditional_exit()](helpers.md#conditional_exit)
 - [execute_working_directory_dependant_command()](helpers.md#execute_working_directory_dependant_command)
 - [get_array_element()](helpers.md#get_array_element)
-- [set_global_variable()](helpers.md#set_global_variable)
+- [is_array_index()](helpers.md#is_array_index)
+- [is_globbing_enabled()](helpers.md#is_globbing_enabled)
+- [is_variable_defined()](helpers.md#is_variable_defined)
+
 
 # TODO
 - helpers/get_array_element() doc: add links to problem explanations
