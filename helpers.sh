@@ -22,14 +22,14 @@ function capture()
 		stderr_capture_filepath=$(mktemp)
 		stdout_capture="$(2>$stderr_capture_filepath "${param_array[@]}")"
 		status_capture=$?
-		set_global_variable "${varname_prefix}stderr" "$(< $stderr_capture_filepath)"
+		eval "${varname_prefix}stderr=\"$(< $stderr_capture_filepath)\""
 		rm "$stderr_capture_filepath"
 	else
 		stdout_capture="$("${param_array[@]}")"
 		status_capture=$?
 	fi
-	set_global_variable "${varname_prefix}return" "$status_capture"
-	set_global_variable "${varname_prefix}stdout" "$stdout_capture"
+	eval "${varname_prefix}return=$status_capture"
+	eval "${varname_prefix}stdout=\"$stdout_capture\""
 	#DEBUG >&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 
@@ -57,23 +57,30 @@ function conditional_exit()
 }
 
 ########### Variable handlers
-# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#set_global_variable
-# Dev note: used to be done with $> IFS="" read $1 <<< "$2"  <$ but this created problems for multi-line $2
-#           see https://stackoverflow.com/questions/9871458/declaring-global-variable-inside-a-function for details about this method
-function set_global_variable()
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#is_variable_defined
+function is_variable_defined
 {
-	[ -z "$1" ] && return 1
-	printf -v $1 %s "$2"
+	[ -z "$1" ] && return 2
+	[ -v "$1" ] || eval "[ \${#$1[*]} -gt 0 ]"
+}
+
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#is_array_index
+function is_array_index
+{
+	[ -z "$1" ] && return 2
+	[ -z "$2" ] && return 3
+	local array_indizes="$(printf '${!%s[@]}' "$1")"
+        eval "echo $array_indizes | grep $2 > /dev/null"
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#get_array_element
 function get_array_element
 {
-	[ -z "$1" ] && return 2
-	[ -z "$2" ] && return 3
-	local var_syntax
-	printf -v var_syntax '${%s[%s]}' "$1" "$2"
-        eval "[ -n \"$var_syntax\" ] && echo \"$var_syntax\""
+	local is_array_error_map=([1]=1 [2]=3)
+	is_variable_defined "$1" || return ${is_array_error_map[$?]}
+	is_array_index_error_map=([1]=2 [3]=4)
+	is_array_index "$1" "$2" || return ${is_array_index_error_map[$?]}
+        eval "echo \${$1[$2]}"
 }
 
 ########### Misc

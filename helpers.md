@@ -5,8 +5,10 @@ Documentation for the functions in [helpers.sh](helpers.sh).
 - [capture()](#capture)
 - [conditional_exit()](#conditional_exit)
 - [execute_working_directory_dependant_command()](#execute_working_directory_dependant_command)
+- [get_array_element()](#get_array_element)
+- [is_array_index()](#is_array_index)
 - [is_globbing_enabled()](#is_globbing_enabled)
-- [set_global_variable()](#set_global_variable)
+- [is_variable_defined()](#is_variable_defined)
 
 ## Function documentation
 If the pipes are not documented, the default is:
@@ -82,22 +84,33 @@ If `important_fct_call` returns with a status code other than *0*, the script pr
         <tr><td><b>Exit</b></td><td colspan="2"><code>$3</code> - defaults to <em>1</em> if <code>$3</code> is omitted, empty or non numeric</td></tr>
 </table>
 
-
-### set_global_variable()
-Sets up a variable called `$1` with the value `$2`, on global level (i.e. accessible everywhere in the execution context)
+### is_variable_defined()
+Extends bash's `-v` check for associative arrays. 
 
 <table>
+        <tr><td><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">variable name</td></tr>
+        <tr><td rowspan="3"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>a variable with the name <code>$1</code> exists</td></tr>
+                <td align="center"><em>1</em></td><td>an variable with the name <code>$1</code> doesn't exist</td></tr>
+                <td align="center"><em>2</em></td><td><code>$1</code> is undefined or empty</td></tr>
+</table>
+
+### is_array_index()
+Compensates the behavior of non-associative arrays if a caller attempts to access a element at a string index. 
+<table>
         <tr><td rowspan="2"><b>Param.</b></td>
-		<td align="center"><code>$1</code></td><td width="90%">variable name - the usual bash variable name restrictions apply</td></tr>
-	<tr>	<td align="center"><code>$2</code></td><td>value</td></tr>
-        <tr><td rowspan="2"><b>Status</b></td>
-                <td align="center"><em>0</em></td><td>success</td></tr>
-        <tr>    <td align="center"><em>1</em></td><td><code>$1</code> is empty</td></tr>
+                <td align="center"><code>$1</code></td><td width="90%">array variable name</td></tr>
+        <tr>    <td align="center"><code>$2</code></td><td>index</td></tr>
+        <tr><td rowspan="3"><b>Status</b></td>
+                <td align="center"><em>0</em></td><td>array <code>$1</code> has an element at index <code>$2</code></td></tr>
+        <tr>    <td align="center"><em>1</em></td><td>the array with the name <code>$1</code> has no element at index <code>$2c/code></td></tr>
+        <tr>    <td align="center"><em>2</em></td><td><code>$1</code> is undefined or empty</td></tr>
+        <tr>    <td align="center"><em>3</em></td><td><code>$2</code> is undefined or empty</td></tr>
 </table>
 
 ### get_array_element()
-The usual bash syntax to access array elements is `${<array_name>[<index>]}` where index can be a variable, however, if `<array_name>` is a variable, 
-things get complex, a syntax like `${$var_name[$index]}` fails. The variable name expansion syntax with `!` works but it expands to the first and only 
+The usual bash syntax to access array elements is `${<array_name>[<index>]}` where index can be a variable. But what if `<array_name>` is a variable?  
+A syntax like `${$var_name[$index]}` fails. The variable name expansion syntax with `!` works but it expands to the first and only 
 the first array element, and all attemps to use both syntaxes combined don't seem to work, see []()
 
 This function uses `printf` to "inject" the variable name and index into a code snippet which is then eval'd, this works, at least for numeric
@@ -110,8 +123,10 @@ return an empty string, but the value of the first element in the array.
 	<tr><td><b>Pipes</b></td><td><code>stdout</code></td><td>the value at index <code>$2</code> in the array with the name <code>$1</code></td></tr>
 	<tr><td rowspan="3"><b>Status</b></td>
                 <td align="center"><em>0</em></td><td>success, value is written on <code>stdout</code></td></tr>
-		<td align="center"><em>1</em></td><td><code>$1</code> is undefined or empty</td></tr>
-		<td align="center"><em>2</em></td><td><code>$2</code> is undefined or empty</td></tr>
+		<td align="center"><em>1</em></td><td>an array with name <code>$1</code> doesn't exist</td></tr>
+		<td align="center"><em>2</em></td><td>there's no element at index <code>$2</code> in the array <code>$1</code></td></tr>
+		<td align="center"><em>3</em></td><td><code>$1</code> is undefined or empty</td></tr>
+		<td align="center"><em>4</em></td><td><code>$2</code> is undefined or empty</td></tr>
         <tr>
 </table>
 
