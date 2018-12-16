@@ -49,28 +49,63 @@ stdout="$(conditional_exit 1 "Dead!" 22)"
 check_test_results "\$(conditional_exit 1 \"Dead!\" 22)" $? "$stdout"
 
 ###
-echo "*** set_global_variable() ***"
-echo "set_global_variable() is used in capture(), just checking the error case here"
+echo "*** is_variable_defined() ***"
+declare -A associative_array_var && associative_array_var[index]="value"
+echo " - \$> declare associative_array_var && associative_array_var[index]=\"value\""
+configure_test 0 ""
+test is_variable_defined "associative_array_var"
+
+###
+echo "*** is_array_index() ***"
+numeric_array_var=("1st" "2nd")
+echo " - \$> numeric_array_var=(\"1st\" \"2nd\")"
+
+configure_test 0 ""
+test is_array_index "numeric_array_var" 0
 configure_test 1 ""
-test set_global_variable
+test is_array_index "numeric_array_var" 100
+configure_test 1 ""
+test is_array_index "numeric_array_var" "string"
+configure_test 0 ""
+test is_array_index "associative_array_var" "index"
+configure_test 1 ""
+test is_array_index "associative_array_var" "undefined"
+configure_test 1 ""
+test is_array_index "associative_array_var" 0
+
+#echo "associative_array_var element @ index 'index': $(get_array_element "associative_array_var" "index")"
+#echo "associative_array_var element @ index 'undefined': $(get_array_element "associative_array_var" "undefined")"
+#echo "associative_array_var element @ index '0': $(get_array_element "associative_array_var" "0")"
 
 echo "*** get_array_element() ***"
-echo ' - $> arr=("1st" "2nd" "3rd")'
 arr=("idx0" "idx1" "idx2")
+echo " - \$> arr=(\"idx0\" \"idx1\" \"idx2\")"
 configure_test 0 "idx1"
 test get_array_element "arr" 1
-
-configure_test 1 ""
-test get_array_element "arr" 5
 
 configure_test 1 ""
 test get_array_element "unexistant" 1
 
 configure_test 2 ""
-test get_array_element ""
+test get_array_element "arr" 5
+
+configure_test 2 ""
+test get_array_element "arr" "string"
 
 configure_test 3 ""
+test get_array_element ""
+
+configure_test 4 ""
 test get_array_element "arr"
+
+configure_test 0 "value"
+test get_array_element "associative_array_var" "index"
+
+configure_test 2 ""
+test get_array_element "associative_array_var" "undefined"
+
+configure_test 2 ""
+test get_array_element "associative_array_var" 0
 
 ###
 echo "*** calculate() ***"
