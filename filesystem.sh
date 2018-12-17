@@ -4,13 +4,13 @@
 #
 # Author: DonTseTse
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/filesystem.md
-# Dependencies: awk, basename, cd, dirname, echo, grep, printf, pwd, readlink, sed
+# Dependencies: awk, basename, cd, dirname, echo, grep, mkdir, printf, pwd, readlink, sed + bash set
 
 ##### Commons dependencies
 [ -z "$commons_path" ] && echo "Bash commons - Filesystem: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
 [ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - Filesystem: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
 . "$commons_path/helpers.sh"           		# for get_array_element(), is_globbing_enabled()
-[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Filesystem: unable to source string handling function at '$commons_path/string_handling.sh' - aborting..." && exit 1
+[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Filesystem: unable to source string handling functions at '$commons_path/string_handling.sh' - aborting..." && exit 1
 . "$commons_path/string_handling.sh"  		# for sanitize_variable_quotes()
 
 ##### Functions
@@ -255,11 +255,7 @@ function load_configuration_file_value()
 {
 	local is_readable_error_status_map=([1]=3 [2]=1 [3]=2 [4]=5)
 	is_readable "$1" "file" || return ${is_readable_error_status_map[$?]}
-	#[ -z "$1" ] && return 1
 	[ -z "$2" ] && return 6
-	#[ ! -f "$1" ] && return 3
-	#[ ! -r "$1" ] && return 4
-	#local val="$(grep "^\s*$2\s*\=" "$1" | awk -F = '{print $2}')"
 	local val_def="$(grep "^\s*$2\s*\=" "$1")"
 	local val="$(echo "$val_def" | awk -F = '{print $2}')"
 	[ -z "$val_def" ] && return 4

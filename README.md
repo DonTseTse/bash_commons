@@ -20,20 +20,22 @@ The **tests** can be found in `/tests`.
 <table>
 <tr><td>#</td><td>Name</td><td colspan="4" align="center">Links</td><td>Internal dependency</td></tr>
 <tr><td>1</td><td><b>Filesystem</b></td><td><a href="#filesystem">Overview</a></td><td><a href="filesystem.md">Documentation</a></td><td><a href="filesystem.sh">Code</a></td>
-	<td><a href="tests/filesystem.sh">Tests</a></td><td>#2, #5</td></tr>
+	<td><a href="tests/filesystem.sh">Tests</a></td><td>#2, #7</td></tr>
 <tr><td>2</td><td><b>String handling</b></td><td><a href="#string-handling">Overview</a></td><td><a href="string_handling.md">Documentation</a></td>
-	<td><a href="string_handling.sh">Code</a></td><td><a href="tests/string_handling.sh">Tests</a></td><td>#5</td></tr>
+	<td><a href="string_handling.sh">Code</a></td><td><a href="tests/string_handling.sh">Tests</a></td><td>#7</td></tr>
 <tr><td>3</td><td><b>Logging</b></td><td><a href="#logging">Overview</a></td><td><a href="logging.md">Documentation</a></td>
-	<td><a href="logging.sh">Code</a></td><td><a href="tests/logging.sh">Tests</a></td><td>#2</td></tr>
-<tr><td>4</td><td><b>Interaction</b></td><td><a href="#interaction">Overview</a></td><td><a href="interaction.md">Documentation</a></td><td><a href="interaction.sh">Code</a></td>
-	<td></td><td>-</td></tr>
-<tr><td>5</td><td><b>Helpers</b></td><td><a href="#helpers">Function index</a></td><td><a href="helpers.md">Documentation</a></td><td><a href="helpers.sh">Code</a></td>
-	<td><a href="tests/helpers.sh">Tests</a></td><td>-</td></tr>
-<tr><td>6</td><td><b>Testing</b></td><td><a href="#testing">Overview</a></td><td><a href="testing.md">Documentation</a></td><td><a href="testing.sh">Code</a></td>
-	<td></td><td>#2, #5</td></tr>
+	<td><a href="logging.sh">Code</a></td><td><a href="tests/logging.sh">Tests</a></td><td>#2, #7</td></tr>
+<tr><td>4</td><td><b>Installer tools</b></td><td><a href="#installer-tools">Overview</a></td><td><a href="installer_tools.md">Documentation</a></td>
+	<td><a href="installer_tools.sh">Code</a></td><td></td><td>#1, #2, #7</td></tr>
+<tr><td>5</td><td><b>Git handling</b></td><td><a href="#git-handling">Overview</a></td><td><a href="git_handling.md">Documentation</a></td>
+	<td><a href="git_handling.sh">Code</a></td><td></td><td>#1, #2, #7</td></tr>
+<tr><td>6</td><td><b>Interaction</b></td><td><a href="#interaction">Overview</a></td><td><a href="interaction.md">Documentation</a></td>
+	<td><a href="interaction.sh">Code</a></td><td></td><td>-</td></tr>
+<tr><td>7</td><td><b>Helpers</b></td><td><a href="#helpers">Function index</a></td><td><a href="helpers.md">Documentation</a></td>
+	<td><a href="helpers.sh">Code</a></td><td><a href="tests/helpers.sh">Tests</a></td><td>-</td></tr>
+<tr><td>8</td><td><b>Testing</b></td><td><a href="#testing">Overview</a></td><td><a href="testing.md">Documentation</a></td><td><a href="testing.sh">Code</a></td>
+	<td></td><td>#2, #7</td></tr>
 </table>
-
-+ the git handling and installer tool collections which are work in progress, in the dev branch.
 
 ### Filesystem
 The filesystem collection provides: 
@@ -71,6 +73,22 @@ The string handling collections includes functions to modify strings and control
   [find_sed_operation_separator()](string_handling.md#find_sed_operation_separator) and escape characters with special signification 
   using [escape_sed_special_characters()](string_handling.md#escape_sed_special_characters). 
 - [get_random_string()](helpers.md#get_random_string) 
+
+### Installer tools
+The installer tools module provides a helper called [get_executable_status()](installer_tools.md#get_executable_status) which checks all 
+details about an executable beyond what `which` does. The installer tools' [handle_dependency()](installer_tools#handle_dependency) takes 
+in charge the installation of packages if necessary and provides an extensive status return for a precise overview of the situation. 
+This allows an installer to define package lists (by package manager) and every time a command is missing, this list is looked up and it 
+attempts to install the package(s) listed. The handler's behavior may be further customized with callback functions and configurable 
+status message templates. 
+
+### Git handling
+The git handling module provides [execute_git_command_in_repository()](git_handling.md#execute_git_command_in_repository) to execute git
+commands in a repository context and [get_git_repository_remote_url()](git_handling.md#get_git_repository_remote_url) to get details
+about a local repository. [get_git_repository()](git_handling.md#get_git_repository) is a `git clone` wrapper with detailed error status codes
+combined with a parameter which controls the functions' `stdout` behavior and a verbose mode with configurable  message templates using runtime
+variable injection.
+
 
 ### Interaction
 The interaction collection provides the basic building blocks for interactive scripts, f.ex. installers:
@@ -113,16 +131,16 @@ Used by the other modules. Function index:
 - [is_globbing_enabled()](helpers.md#is_globbing_enabled)
 - [is_variable_defined()](helpers.md#is_variable_defined)
 
-
 # TODO
-- helpers/get_array_element() doc: add links to problem explanations
-- improve handling & clean up test handling of root user executing the test, especially for filesystem functions
-- add bash_miscs snippets for one-liners
-- clean up function documentation
-- transform verbose mode for wrapper functions in filesystem: merge the "stdout configuration" and "external message template definition array name" parameters. 
+- improve handling & clean up test handling of root user executing the test, especially for filesystem functions and installer tools
+- clean up & documentation template
+- transform verbose mode for wrapper functions in filesystem collection: merge the "stdout configuration" and "external message template definition array name" parameters. 
   The logic is:
-	- if that new merged parameter is omitted or an empty string, it's still stdout *silent* mode
+	- if that new merged parameter is omitted or an empty string, it corresponds to stdout *silent* mode
 	- if it's set to *stderr* and *status*, these modes are applied as before
 	- if it's set to a non-empty value which is not a variable name, it uses the default message templates (= current *verbose* mode without external msg def param.)
-	- if it's set to an array variable name, it tries to use find and use the custom message templates in this var. (= current *verbose* mode with external msg def param)
-  The only restriction is that an external message definition array variable can't have the names *stderr* or *status*.
+	- if it's set to an array variable name, it tries to find a custom message template (a element in the array at the index corresponding to the status, 
+          = current *verbose* mode with external msg def param). If no template is found, it falls back to the defaults
+  The only restriction is that an external message definition array variable can't have the names *stderr* or *status*. It's implemented this way in the git handling
+  get_git_repository(). 
+- extend git handling with other git operations

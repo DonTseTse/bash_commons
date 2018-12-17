@@ -4,7 +4,7 @@
 #
 # Author: DonTseTse
 # Documentation https://github.com/DonTseTse/bash_commons/blob/master/helpers.md
-# Dependencies: mktemp, rm, type, echo, bc, printf, cat, grep, head, tr, eval
+# Dependencies: mktemp, rm, echo, printf, grep, eval
 
 ##### Commons dependencies
 # None
@@ -22,14 +22,14 @@ function capture()
 		stderr_capture_filepath=$(mktemp)
 		stdout_capture="$(2>$stderr_capture_filepath "${param_array[@]}")"
 		status_capture=$?
-		eval "${varname_prefix}stderr=\"$(< $stderr_capture_filepath)\""
+		printf -v "${varname_prefix}stderr" '%s' "$(< $stderr_capture_filepath)"
 		rm "$stderr_capture_filepath"
 	else
 		stdout_capture="$("${param_array[@]}")"
 		status_capture=$?
 	fi
-	eval "${varname_prefix}return=$status_capture"
-	eval "${varname_prefix}stdout=\"$stdout_capture\""
+	printf -v "${varname_prefix}return" "$status_capture"
+	printf -v "${varname_prefix}stdout" '%s' "$stdout_capture" 	# $> eval "${varname_prefix}stdout=\"$stdout_capture\"" <$ doesn't work in case of single quotes
 	#DEBUG >&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 
@@ -61,7 +61,7 @@ function conditional_exit()
 function is_variable_defined
 {
 	[ -z "$1" ] && return 2
-	[ -v "$1" ] || eval "[ \${#$1[*]} -gt 0 ]"
+	[ -v "$1" ] || eval "[ \${#$1[*]} -gt 0 ]" &> /dev/null
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#is_array_index
@@ -70,7 +70,7 @@ function is_array_index
 	[ -z "$1" ] && return 2
 	[ -z "$2" ] && return 3
 	local array_indizes="$(printf '${!%s[@]}' "$1")"
-        eval "echo $array_indizes | grep $2 > /dev/null"
+        eval "echo \"$array_indizes\" | grep $2 &> /dev/null"
 }
 
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/helpers.md#get_array_element
@@ -80,7 +80,7 @@ function get_array_element
 	is_variable_defined "$1" || return ${is_array_error_map[$?]}
 	is_array_index_error_map=([1]=2 [3]=4)
 	is_array_index "$1" "$2" || return ${is_array_index_error_map[$?]}
-        eval "echo \${$1[$2]}"
+        eval "echo \"\${$1[$2]}\""
 }
 
 ########### Misc

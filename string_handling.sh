@@ -1,19 +1,20 @@
 #! /bin/bash
-# Written in 2018 by DonTseTse
 
-# Dependencies: echo, grep, sed, printf
-#               + bash modules: set
+# String handling functions
+#
+# Author: DonTseTse
+# Dependencies: echo, grep, sed, printf + bash modules: set
 #
 # Credits: get_string_bytelength() and get_string_bytes() are based on https://stackoverflow.com/questions/17368067/length-of-string-in-bash/31009961#31009961
 #          find_substring() draws on explanations from https://stackoverflow.com/questions/5031764/position-of-a-string-within-a-string-using-linux-shell-script
 #
 # Note:
 # - substring extraction: no specific functions for this since everything can be done with properly parametered variable expansion,
-#                         see [TODO: fill URL]
+#                         see https://github.com/DonTseTse/bash_misc/blob/master/documentation/string_variable_extraction.md
 #
 # Commons dependencies
-[ -z "$commons_path" ] && echo "Bash commons - Filesystem: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
-[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - Filesystem: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
+[ -z "$commons_path" ] && echo "Bash commons - String handling: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
+[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - String handling: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
 . "$commons_path/helpers.sh"                    # is_globbing_enabled()
 
 ########### String transformation utilities
@@ -36,10 +37,10 @@ function escape()
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/string_handling.md#sanitize_variable_quotes
 function sanitize_variable_quotes()
 {
-        local input="${1:-$([ -p /dev/stdin ] && echo "$(cat)")}"
+	local input="${1:-$([ -p /dev/stdin ] && echo "$(cat)")}"
 	# 1st checks double quotes ", the 2nd checks simple/single quotes '
-        [ -n "$(echo "$input" | grep "^\s*'" | grep "'\s*$")" ] && echo "$input" | sed -e "s/^\s*'//" -e "s/\(.*\)'\s*$/\1/" && return
-        [ -n "$(echo "$input" | grep '^\s*"' | grep '"\s*$')" ] && echo "$input" | sed -e 's/^\s*"//' -e 's/\(.*\)"\s*$/\1/' && return
+	[ -n "$(echo "$input" | grep "^\s*'" | grep "'\s*$")" ] && echo "$input" | sed -e "s/^\s*'//" -e "s/\(.*\)'\s*$/\1/" && return
+	[ -n "$(echo "$input" | grep '^\s*"' | grep '"\s*$')" ] && echo "$input" | sed -e 's/^\s*"//' -e 's/\(.*\)"\s*$/\1/' && return
 	echo "$input"
 }
 
