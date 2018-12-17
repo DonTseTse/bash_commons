@@ -19,12 +19,14 @@ initialize_test_session "installer_tools.sh functions"
 echo "*** get_executable_status() ***"
 ln -s "/tmp/exec_test" "/usr/bin/exec_test"
 echo " - \$> ln -s \"/tmp/exec_test\" \"/usr/bin/exec_test\""
-configure_test 4 "/usr/bin/exec_test"
+configure_test 3 "/usr/bin/exec_test"
 test get_executable_status "exec_test" 1
+
 touch "/tmp/exec_test"
 echo " - \$> touch \"/tmp/exec_test\""
 configure_test 1 "/tmp/exec_test"
 test get_executable_status "exec_test" 1
+
 chmod +x "/tmp/exec_test"
 echo " - \$> chmod +x \"/tmp/exec_test\""
 configure_test 0 ""
@@ -32,54 +34,47 @@ test get_executable_status "exec_test"
 
 configure_test 2 ""
 test get_executable_status "unexistant"
-configure_test 3 ""
+configure_test 5 ""
 test get_executable_status
 
 rm "/usr/bin/exec_test" "/tmp/exec_test"
 echo " - \$> rm \"/usr/bin/exec_test\" \"/tmp/exec_test\""
+
 echo "*** handle_dependency() ***"
-configure_test 1 " - exec_test: not found, please install [Error]"
+configure_test 5 ""
 test handle_dependency "exec_test"
+
 ln -s "/tmp/exec_test" "/usr/bin/exec_test"
 echo " - \$> ln -s \"/tmp/exec_test\" \"/usr/bin/exec_test\""
-configure_test 1 " - exec_test: found a correponding element in \$PATH but /usr/bin/exec_test doesn't resolve to a existing location (broken folder or file symlink?) [Error]"
+configure_test 8 ""
 test handle_dependency "exec_test"
+
 touch "/tmp/exec_test"
 echo " - \$> touch \"/tmp/exec_test\""
-configure_test 0 " - exec_test: /tmp/exec_test was not executable, applied chmod +x [OK]"
+configure_test 2 ""
 test handle_dependency "exec_test"
-#chmod +x "/tmp/exec_test"
-#echo " - \$> chmod +x \"/tmp/exec_test\""
-configure_test 0 " - exec_test: /usr/bin/exec_test [OK]"
-test handle_dependency "exec_test"
+
+configure_test 1 "exec_test (/usr/bin/exec_test) already installed\n"
+test handle_dependency "exec_test" 1
+
+msg_defs=([1]=" - %command already installed, found under %path\n")
+configure_test 1 " - exec_test already installed, found under /usr/bin/exec_test\n"
+test handle_dependency "exec_test" "msg_defs"
 
 rm "/tmp/exec_test" "/usr/bin/exec_test"
+echo " - \$> rm \"/tmp/exec_test\" \"/usr/bin/exec_test\""
 
-echo "*** get_git_repository_remote_url() ***"
-configure_test 0 "https://github.com/DonTseTse/bash_commons.git"
-test get_git_repository_remote_url "$commons_path"
+function handle_dependency_installation()
+{
+	echo "I'm the installer for $1"
+}
+echo "Defined function handle_dependency_installation() which prints the message \"I'm the installer for \$1\""
 
-configure_test 1 ""
-test get_git_repository_remote_url "/tmp/unexistant"
-touch "/tmp/test.file"
-echo " - \$> touch \"/tmp/test.file\""
-configure_test 2 ""
-test get_git_repository_remote_url "/tmp/test.file"
+configure_test 0 "I'm the installer for exec_test"
+test handle_dependency "exec_test"
 
-configure_test 4 ""
-test get_git_repository_remote_url "/tmp"
-
-configure_test 6 ""
-test get_git_repository_remote_url
-
-rm "/tmp/test.file"
-
-echo "*** get_git_repository() ***"
-configure_test 0 ""
-test get_git_repository "https://github.com/DonTseTse/sendmail2mailgun" "/tmp/sendmail2mailgun"
-
-configure_test 0 ""
-test get_git_repository "https://github.com/DonTseTse/sendmail2mailgun" "/tmp/sendmail2mailgun" "update"
+configure_test 10 ""
+test handle_dependency
 
 [ -d "/tmp/sendmail2mailgun" ] && rm -r "/tmp/sendmail2mailgun"
 conclude_test_session
