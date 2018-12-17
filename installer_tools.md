@@ -28,6 +28,8 @@ Customization functions:
 - handle_dependency_installation(): called if a command is not defined. Receives the command as `$1` and the package manager (return value
   of [get_package_manager()](#get_package_manager)) as `$2`
 
+" - $1: no package name specified for $1 (package manager: $2), trying with the name of the command itself"
+
 **Verbose mode / message customization**
 
 The variable placeholders `%command`, `%path` and `%package` are replaced with the corresponding values. `%path` and `%package` are

@@ -16,6 +16,8 @@ commons_path="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && dirname "$(
 set +e
 initialize_test_session "installer_tools.sh functions"
 
+[ "$UID" -ne 0 ] && echo "Please run as root. Aborting..." && exit 1
+
 echo "*** get_executable_status() ***"
 ln -s "/tmp/exec_test" "/usr/bin/exec_test"
 echo " - \$> ln -s \"/tmp/exec_test\" \"/usr/bin/exec_test\""

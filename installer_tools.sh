@@ -3,16 +3,16 @@
 # Git helper functions
 #
 # Author: DonTseTse
-# Documentation:
-# Dependencies:
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/installer_tools.md
+# Dependencies: chmod echo printf sed type
 
 ##### Commons dependencies
 [ -z "$commons_path" ] && echo "Bash commons - Installer tools: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
-[ ! -r "$commons_path/filsystem.sh" ] && echo "Bash commons - Installer tools: unable to source filesystem functions at '$commons_path/filesystem.sh' - aborting..."
+[ ! -r "$commons_path/filsystem.sh" ] && echo "Bash commons - Installer tools: unable to source filesystem functions at '$commons_path/filesystem.sh' - aborting..." && exit 1
 . "$commons_path/filesystem.sh"		# for get_real_path()
-[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Installer tools: unable to source string handling functions at '$commons_path/string_handling.sh' - aborting..."
+[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Installer tools: unable to source string handling functions at '$commons_path/string_handling.sh' - aborting..." && exit 1
 . "$commons_path/string_handling.sh"	# for get_sed_replace_expression()
-[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - Installer tools: unable to source helper functions at '$commons_path/helpers.sh' - aborting..."
+[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - Installer tools: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
 . "$commons_path/helpers.sh"		# for get_array_element()
 
 
@@ -56,10 +56,8 @@ function handle_dependency()
 {
 	if [ -n "$2" ]; then
 		local temp_var
-		#local stdout="$(handle_dependency $1)" status=$?
 		handle_dependency "$1"
 		local status=$?
-		>&2 echo "temp: $temp_var"
 		local default_msg_defs=([1]="%command (%path) already installed\n" "%command (%path) was not executable, applied chmod +x successfully\n" \
 					[3]="%command installed successfully (package %package)\n" "Error: %command (%path) is not executable and chmod +x failed\n" \
 					[5]="Error: %command installation failed (package %package)\n" "Error: %command not installed and no package manager found\n" \
@@ -85,7 +83,6 @@ function handle_dependency()
 		[ "$(type -t "handle_dependency_installation")" = "function" ]  && handle_dependency_installation "$1" "$package_manager" && return
 		local package="$(get_array_element "${package_manager}_packages" "$1")" install_command install_status
 		[ -z "$package" ] && package="$1"
-		#echo " - $1: no package name specified for $1 (package manager: $2), trying with the name of the command itself"
 		[ "$2" = "apt" ] && install_command="apt-get install"
 		[ "$2" = "yum" ] && install_command="yum install"
 		temp_var="$package"
