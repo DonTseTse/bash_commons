@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Git helper functions
+# Installer tool functions
 #
 # Author: DonTseTse
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/installer_tools.md
@@ -27,7 +27,7 @@ function get_package_manager()
 # Documentation: https://github.com/DonTseTse/bash_commons/blob/master/installer_tools.md#get_executable_status
 function get_executable_status()
 {
-        [ -z "$1" ] && return 5
+	[ -z "$1" ] && return 5
 	local path_on_stdout="${2:-0}" exec_path which_avail=0 path_folder
 	if [ -n "$(type -t "which")" ]; then
 		which_avail=1
@@ -78,7 +78,7 @@ function handle_dependency()
 		[ "$(type -t "handle_non_executable_dependency")" = "function" ] && handle_non_executable_dependency "$1" && return
 		chmod +x "$exec_path" &> /dev/null && return 2 || return 4
 	fi
-        if [ $dep_status -eq 2 ]; then		# which returned an empty result
+	if [ $dep_status -eq 2 ]; then		# which returned an empty result
 		local package_manager="$(get_package_manager)"
 		[ "$(type -t "handle_dependency_installation")" = "function" ]  && handle_dependency_installation "$1" "$package_manager" && return
 		local package="$(get_array_element "${package_manager}_packages" "$1")" install_command install_status
@@ -98,8 +98,9 @@ function handle_dependencies()
 	local package_manager="$(get_package_manager)"
 	[ -n "$package_manager" ] && echo "Package manager: $package_manager" || echo "Package manager unknown"
 	[ "$package_manager" = "apt" ] && echo "Updating package list" && apt-get update > /dev/null
-        for dependency in $@; do  # $@ has to be unquoted otherwise everything is treated as a single string
-		handle_dependency "$dependency" "$package_manager"
+	for dependency in $@; do  # $@ has to be unquoted otherwise everything is treated as a single string
+		handle_dependency "$dependency" 
+		#"$package_manager"
 		[ $? -ne 0 ] && err=1
 	done
 	return $err

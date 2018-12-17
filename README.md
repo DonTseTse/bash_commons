@@ -26,9 +26,9 @@ The **tests** can be found in `/tests`.
 <tr><td>3</td><td><b>Logging</b></td><td><a href="#logging">Overview</a></td><td><a href="logging.md">Documentation</a></td>
 	<td><a href="logging.sh">Code</a></td><td><a href="tests/logging.sh">Tests</a></td><td>#2, #7</td></tr>
 <tr><td>4</td><td><b>Installer tools</b></td><td><a href="#installer-tools">Overview</a></td><td><a href="installer_tools.md">Documentation</a></td>
-	<td><a href="installer_tools.sh">Code</a></td><td></td><td>#1, #2, #7</td></tr>
+	<td><a href="installer_tools.sh">Code</a></td><td><a href="tests/installer_tools.sh">Tests</a></td><td>#1, #2, #7</td></tr>
 <tr><td>5</td><td><b>Git handling</b></td><td><a href="#git-handling">Overview</a></td><td><a href="git_handling.md">Documentation</a></td>
-	<td><a href="git_handling.sh">Code</a></td><td></td><td>#1, #2, #7</td></tr>
+	<td><a href="git_handling.sh">Code</a></td><td><a href="tests/git_handling.sh">Tests</a></td><td>#1, #2, #7</td></tr>
 <tr><td>6</td><td><b>Interaction</b></td><td><a href="#interaction">Overview</a></td><td><a href="interaction.md">Documentation</a></td>
 	<td><a href="interaction.sh">Code</a></td><td></td><td>-</td></tr>
 <tr><td>7</td><td><b>Helpers</b></td><td><a href="#helpers">Function index</a></td><td><a href="helpers.md">Documentation</a></td>
@@ -76,7 +76,7 @@ The string handling collections includes functions to modify strings and control
 
 ### Installer tools
 The installer tools module provides a helper called [get_executable_status()](installer_tools.md#get_executable_status) which checks all 
-details about an executable beyond what `which` does. The installer tools' [handle_dependency()](installer_tools#handle_dependency) takes 
+details about an executable beyond what `which` does. The installer tools' [handle_dependency()](installer_tools.md#handle_dependency) takes 
 in charge the installation of packages if necessary and provides an extensive status return for a precise overview of the situation. 
 This allows an installer to define package lists (by package manager) and every time a command is missing, this list is looked up and it 
 attempts to install the package(s) listed. The handler's behavior may be further customized with callback functions and configurable 

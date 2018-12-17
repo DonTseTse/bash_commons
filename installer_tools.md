@@ -6,6 +6,7 @@ If the pipes are not documented, the default is:
 - `stdout`: empty
 
 ### get_package_manager()
+Tries to detect the installed package manager.
 <table>
 	<tr><td><b>Pipes</b><td align="center"><code>stdout</code></td><td>in case of success, the package manager. Can be <em>apt</em> or <em>yum</em></td></tr>
         <tr><td rowspan="2"><b>Status</b></td><td align="center"><em>0</em></td><td>package manager written on <code>stdout</code></td></tr>
@@ -13,6 +14,7 @@ If the pipes are not documented, the default is:
 </table>
 
 ### get_executable_status()
+Get a detailed executable status about a path. 
 <table>
 	<tr><td rowspan="2"><b>Param.</b></td><td align="center"><code>$1</code></td><td width="90%">executable name</td></tr>
         <tr>    <td align="center">[<code>$2</code>]</td><td>if it's set to <em>1</em>, the executable path is written on <code>stdout</code> if status is <em>0</em></td></tr>
@@ -28,15 +30,15 @@ If the pipes are not documented, the default is:
 </table>
 
 ### handle_dependency()
+If a command misses, the function looks for a package list depending on the detected package manager: <code>$apt_packages</code>
+for *apt*, <code>$yum_packages</code> for *yum*, etc. It looks for a element in the array with the name of the command. If no package list or
+no corresponding entry is found, the function tries to use the command name (<code>$1</code>) itself.
 
-Customization functions:
+**Customization functions**
+
 - handle_non_executable_dependency(): called if a path is found for the command but it's not executable. Receives that path as `$1`
 - handle_dependency_installation(): called if a command is not defined. Receives the command as `$1` and the package manager (return value
   of [get_package_manager()](#get_package_manager)) as `$2`
-
-If a command misses, the function looks for a package list depending on the detected package manager: <code>$apt_packages</code>
-for *apt*, <code>$yum_packages</code> for *yum*, etc. It looks for a element in the array with the name of the command. If no package list or
-no corresponding entry is found, the function tries to use the command name (<code>$1</code>) itself. 
 
 **Verbose mode / message customization**
 
@@ -48,7 +50,7 @@ obtained via a  `$temp_var`, depending on the situation
 |*1*| `%path` | `%command` (`%path`) already installed\n
 |*2*| `%path` | `%command` (`%path`) was not executable, applied chmod +x successfully\n
 |*3*| `%package` | `%command` installed successfully (package `%package`)\n
-|*4*| `%path` | Error: `%command (`%path`) is not executable and chmod +x failed\n
+|*4*| `%path` | Error: `%command` (`%path`) is not executable and chmod +x failed\n
 |*5*| `%package` | Error: `%command` installation failed (package `%package`)\n
 |*6*| | Error: `%command` not installed and no package manager found\n
 |*7*| | Error: `%command` is not installed and no package found to install it\n
