@@ -4,7 +4,7 @@
 #
 # Author: DonTseTse
 # Documentation https://github.com/DonTseTse/bash_commons/blob/master/helpers.md
-# Dependencies: mktemp, rm, type, echo, bc, printf, cat, grep, head, tr, eval
+# Dependencies: mktemp, rm, echo, printf, grep, eval
 
 ##### Commons dependencies
 # None
@@ -22,14 +22,14 @@ function capture()
 		stderr_capture_filepath=$(mktemp)
 		stdout_capture="$(2>$stderr_capture_filepath "${param_array[@]}")"
 		status_capture=$?
-		eval "${varname_prefix}stderr=\"$(< $stderr_capture_filepath)\""
+		printf -v "${varname_prefix}stderr" '%s' "$(< $stderr_capture_filepath)"
 		rm "$stderr_capture_filepath"
 	else
 		stdout_capture="$("${param_array[@]}")"
 		status_capture=$?
 	fi
-	eval "${varname_prefix}return=$status_capture"
-	eval "${varname_prefix}stdout=\"$stdout_capture\""
+	printf -v "${varname_prefix}return" "$status_capture"
+	printf -v "${varname_prefix}stdout" '%s' "$stdout_capture" 	# $> eval "${varname_prefix}stdout=\"$stdout_capture\"" <$ doesn't work in case of single quotes
 	#DEBUG >&2 printf 'capture %s ... returns status: %i , stdout: %s\n' "${param_array[0]}" "$status_capture"  "$stdout_capture"
 }
 

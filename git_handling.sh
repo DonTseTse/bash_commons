@@ -3,23 +3,27 @@
 # Git helper functions
 #
 # Author: DonTseTse
-# Documentation:
-# Dependencies:
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/git_handling.md
+# Dependencies: echo git printf sed
 
 ##### Commons dependencies
-[ -z "$commons_path" ] && echo "Bash commons - Logging: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
-[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Git handling: unable to source string handling function at '$commons_path/string_handling.sh' - aborting..." && exit 1
-. "$commons_path/filesystem.sh"    # for is_readable()
+[ -z "$commons_path" ] && echo "Bash commons - Git handling: \$commons_path not set or empty, unable to resolve internal dependencies. Aborting..." && exit 1
+[ ! -r "$commons_path/filesystem.sh" ] && echo "Bash commons - Git handling: unable to source filesystem functions at '$commons_path/filesystem.sh' - aborting..." && exit 1
+. "$commons_path/filesystem.sh"    	# for is_readable()
+[ ! -r "$commons_path/string_handling.sh" ] && echo "Bash commons - Git handling: unable to source string handling functions at '$commons_path/string_handling.sh' - aborting..." && exit 1
+. "$commons_path/string_handling.sh" 	# for get_sed_replace_expression()
+[ ! -r "$commons_path/helpers.sh" ] && echo "Bash commons - Git handling: unable to source helper functions at '$commons_path/helpers.sh' - aborting..." && exit 1
+. "$commons_path/helpers.sh"       	# for execute_working_directory_dependant_command()
 
 ##### Functions
 ########### Command helpers
-# Documentation: https://github.com/DonTseTse/bash_commons/git_handling.md#execute_git_command_in_repository
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/git_handling.md#execute_git_command_in_repository
 function execute_git_command_in_repository()
 {
         execute_working_directory_dependant_command "$1" "git" "$2"
 }
 
-# Documentation: https://github.com/DonTseTse/bash_commons/git_handling.md#get_git_repository_remote_url
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/git_handling.md#get_git_repository_remote_url
 function get_git_repository_remote_url()
 {
         local current_dir=$(pwd) repo_url remote_name="${2:-origin}" error_status_map=([1]=3 [2]=1 [3]=2 [4]=6)
@@ -28,9 +32,7 @@ function get_git_repository_remote_url()
         repo_url="$(execute_git_command_in_repository "$1" "config --get remote.$remote_name.url")" && echo "$repo_url" || return 5
 }
 
-#       split tests
-#       other git operations
-# Documentation: https://github.com/DonTseTse/bash_commons/git_handling.md#get_git_repository
+# Documentation: https://github.com/DonTseTse/bash_commons/blob/master/git_handling.md#get_git_repository
 function get_git_repository()
 {
 	if [ -n "$3" ]; then
@@ -58,5 +60,3 @@ function get_git_repository()
         fi
 	return 2
 }
-
-#[ "$3" = "update" ] && execute_git_command_in_repository "$2" "fetch"
