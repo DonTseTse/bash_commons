@@ -132,9 +132,8 @@ Used by the other modules. Function index:
 - [is_variable_defined()](helpers.md#is_variable_defined)
 
 # TODO
-- improve handling & clean up test handling of root user executing the test, especially for filesystem functions and installer tools
-- clean up & documentation template
-- transform verbose mode for wrapper functions in filesystem collection: merge the "stdout configuration" and "external message template definition array name" parameters. 
+- improve handling & clean up if the root user executes the tests, especially for filesystem functions and installer tools
+- transform verbose mode for wrapper functions in filesystem collection: merge the "stdout configuration" and "external message template definition array name" parameters.
   The logic is:
 	- if that new merged parameter is omitted or an empty string, it corresponds to stdout *silent* mode
 	- if it's set to *stderr* and *status*, these modes are applied as before
@@ -144,4 +143,4 @@ Used by the other modules. Function index:
   The only restriction is that an external message definition array variable can't have the names *stderr* or *status*. It's implemented this way in the git handling
   get_git_repository(). 
 - extend git handling with other git operations
-- extend installer tools to support other package managers
+- extend installer tools to detect/support other package managers
