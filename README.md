@@ -144,3 +144,4 @@ Used by the other modules. Function index:
   The only restriction is that an external message definition array variable can't have the names *stderr* or *status*. It's implemented this way in the git handling
   get_git_repository(). 
 - extend git handling with other git operations
+- extend installer tools to support other package managers

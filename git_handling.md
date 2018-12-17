@@ -1,9 +1,4 @@
-Documentation for the functions in [string_handling.sh](string_handling.sh). A general overview is given in [the project documentation](README.md#string-handling).
-
-## Quick access
-- [execute_git_command_in_repository()](#execute_git_command_in_repository)
-- [get_git_repository_remote_url()](#get_git_repository_remote_url)
-- [get_git_repository()](#get_git_repository)
+Documentation for the functions in [git_handling.sh](git_handling.sh). A general overview is given in [the project documentation](README.md#git-handling).
 
 ## Function documentation
 If the pipes are not documented, the default is:
@@ -44,16 +39,17 @@ Inspired by this [SO answer](https://stackoverflow.com/questions/4089430/how-can
 
 ### get_git_repository()
 Default messages:
+
 | Status | Template
 |:------:| --------
-|*0*| $1 cloned to $2\n
-|*1*| Git clone error: could not clone $1 to $2\n
-|*2*| $1 already cloned to $2 - nothing to do\n
-|*3*| $2 exists and it's not a folder\n
-|*4*| $2 exists but it's not readable\n
-|*5*| $2 exist but it doesn't seem to be a git repository (no .git folder inside)\n
-|*6*| $2 exists but the attempt to run git config to get the remote URL failed\n
-|*7*| $2 exists and it's a git repository but the remote URL is not $1\n
+|*0*| `$1` cloned to `$2`\n
+|*1*| Git clone error: could not clone `$1` to `$2`\n
+|*2*| `$1` already cloned to `$2` - nothing to do\n
+|*3*| `$2` exists and it's not a folder\n
+|*4*| `$2` exists but it's not readable\n
+|*5*| `$2` exist but it doesn't seem to be a git repository (no .git folder inside)\n
+|*6*| `$2` exists but the attempt to run git config to get the remote URL failed\n
+|*7*| `$2` exists and it's a git repository but the remote URL is not $1\n
 |*8*| Repository URL is empty\n
 |*9*| Repository path empty\n
 
