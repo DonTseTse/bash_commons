@@ -48,7 +48,7 @@ test handle_dependency "exec_test"
 
 ln -s "/tmp/exec_test" "/usr/bin/exec_test"
 echo " - \$> ln -s \"/tmp/exec_test\" \"/usr/bin/exec_test\""
-configure_test 8 ""
+configure_test 7 ""
 test handle_dependency "exec_test"
 
 touch "/tmp/exec_test"
@@ -56,11 +56,11 @@ echo " - \$> touch \"/tmp/exec_test\""
 configure_test 2 ""
 test handle_dependency "exec_test"
 
-configure_test 1 "exec_test (/usr/bin/exec_test) already installed\n"
+configure_test 1 "exec_test (/usr/bin/exec_test) already installed"
 test handle_dependency "exec_test" 1
 
-msg_defs=([1]=" - %command already installed, found under %path\n")
-configure_test 1 " - exec_test already installed, found under /usr/bin/exec_test\n"
+msg_defs=([1]=" - %command already installed, found under %path")
+configure_test 1 " - exec_test already installed, found under /usr/bin/exec_test"
 test handle_dependency "exec_test" "msg_defs"
 
 rm "/tmp/exec_test" "/usr/bin/exec_test"
@@ -75,8 +75,17 @@ echo "Defined function handle_dependency_installation() which prints the message
 configure_test 0 "I'm the installer for exec_test"
 test handle_dependency "exec_test"
 
-configure_test 10 ""
+configure_test 9 ""
 test handle_dependency
+
+configure_test 0 " - sed (/bin/sed) already installed
+ - echo (/bin/echo) already installed"
+test handle_dependencies "sed echo" 1 " - %s\n"
+
+# reset_package_lists() can't be tested because it contains a capture, test() also
+#configure_test 0 ""
+#test reset_package_lists
+#echo "out: $stdout err: $stderr"
 
 [ -d "/tmp/sendmail2mailgun" ] && rm -r "/tmp/sendmail2mailgun"
 conclude_test_session
