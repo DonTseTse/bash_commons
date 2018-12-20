@@ -186,11 +186,7 @@ status is *1* (`mkdir` error), otherwise it should be empty. The default message
 be customized by setting up an array variable where the indizes are the states and the values the corresponding templates (i.e. the success message
 template is at index *0*, etc.). The name of the array variable - and not the variable itself - has to be provided as 3rd call parameter.
 It's perfectly valid to customize a subset of states/templates, the function falls back to the default templates where it can't find a
-customization.
-
-Example: `create_folder "/new/folder/path" "verbose"` would print *folder /new/folder/path created\n* in case of success. These messages can
-be customized by creating an array variable with elements that have the status as index. The name of the array variable has to be provided
-as 3rd call parameter. In the next example, the success message template is overwritten:
+customization. In the next example, the success message template is overwritten:
 ```
 msg_defs[0]="custom message: folder %path created\n"
 create_folder "new/folder/path" "verbose" "msg_defs"
