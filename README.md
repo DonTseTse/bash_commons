@@ -3,13 +3,20 @@ Library of bash functions organized in several thematic collections; each is one
 
 ## How to:
 - Clone this repository
-- Set up a global variable `$commons_path` set to the absolute path of the folder with the cloned code. Most collections use it to load
-their internal dependencies (details in the table below)
 - Source the collection file which contains the desired functions
 
 Example:
 ```bash
 commons_path="/path/to/bash_commons"
+. "$commons_path/filesystem.sh"
+# from here on, all filesystem collection functions are available
+```
+It's compulsory to set up `$commons_path` with the absolute path of the folder with the cloned code (many collections use it to load internal dependencies; for details see the table below). `$commons_path` may also be set up as global variable, the easiest way to do this it to append an entry to  `/etc/environment`, with the command
+```bash
+echo "commons_path=\"/path/to/bash_commons\"" >> /etc/environment
+```
+Then, sourcing a collection simply becomes: 
+```bash
 . "$commons_path/filesystem.sh"
 # from here on, all filesystem collection functions are available
 ```
